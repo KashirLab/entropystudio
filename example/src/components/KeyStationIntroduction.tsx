@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BottomSheet as AndroidBottomSheet } from '@expo/ui';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BottomSheet, Host, Text as SwiftText, VStack } from '@expo/ui/swift-ui';
 import { padding } from '@expo/ui/swift-ui/modifiers';
 
@@ -52,34 +53,19 @@ export function KeyStationIntroduction({ colors }: Props) {
             </BottomSheet>
           </Host>
         ) : (
-          <Modal
-            allowSwipeDismissal
-            onRequestClose={() => setIsDescriptionPopupVisible(false)}
-            presentationStyle="pageSheet"
-            visible
+          <AndroidBottomSheet
+            contentPadding={20}
+            isPresented
+            onDismiss={() => setIsDescriptionPopupVisible(false)}
+            shouldDismissOnClickOutside
           >
-            <View
-              accessibilityViewIsModal
-              style={[styles.popup, { backgroundColor: colors.background }]}
-              testID="key-station-introduction-description-popup"
+            <Text
+              style={[styles.description, { color: colors.muted }]}
+              testID="key-station-introduction-description"
             >
-              <Pressable
-                accessibilityLabel={UPSTREAM_TEXT.common.done}
-                accessibilityRole="button"
-                onPress={() => setIsDescriptionPopupVisible(false)}
-                style={styles.popupCloseButton}
-                testID="key-station-introduction-description-popup-close"
-              >
-                <Text accessibilityElementsHidden style={[styles.popupCloseIcon, { color: colors.muted }]}>×</Text>
-              </Pressable>
-              <Text
-                style={[styles.description, { color: colors.muted }]}
-                testID="key-station-introduction-description"
-              >
-                {UPSTREAM_TEXT.keys.stationIntroduction.description}
-              </Text>
-            </View>
-          </Modal>
+              {UPSTREAM_TEXT.keys.stationIntroduction.description}
+            </Text>
+          </AndroidBottomSheet>
         )
       ) : null}
     </View>
@@ -111,22 +97,6 @@ const styles = StyleSheet.create({
   },
   headingToggle: {
     alignSelf: 'flex-start',
-  },
-  popup: {
-    flex: 1,
-    padding: 20,
-  },
-  popupCloseButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-    height: 28,
-    justifyContent: 'center',
-    marginBottom: 8,
-    width: 28,
-  },
-  popupCloseIcon: {
-    fontSize: 24,
-    lineHeight: 28,
   },
   swiftUiHost: {
     position: 'absolute',
