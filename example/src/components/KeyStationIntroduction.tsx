@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BottomSheet, Host, Text as SwiftText, VStack } from '@expo/ui/swift-ui';
+import { padding } from '@expo/ui/swift-ui/modifiers';
 
 import type { DiceColors } from '../features/dice/diceTheme';
 import { UPSTREAM_TEXT } from '../features/upstreamUiCopy';
@@ -36,34 +38,49 @@ export function KeyStationIntroduction({ colors }: Props) {
         </View>
       </Pressable>
       {isDescriptionPopupVisible ? (
-        <Modal
-          allowSwipeDismissal
-          onRequestClose={() => setIsDescriptionPopupVisible(false)}
-          presentationStyle="pageSheet"
-          visible
-        >
-          <View
-            accessibilityViewIsModal
-            style={[styles.popup, { backgroundColor: colors.background }]}
-            testID="key-station-introduction-description-popup"
+        Platform.OS === 'ios' ? (
+          <Host pointerEvents="none" style={styles.swiftUiHost}>
+            <BottomSheet
+              fitToContents
+              isPresented
+              onDismiss={() => setIsDescriptionPopupVisible(false)}
+              onIsPresentedChange={setIsDescriptionPopupVisible}
+            >
+              <VStack alignment="leading" modifiers={[padding({ all: 20 })]} spacing={12}>
+                <SwiftText>{UPSTREAM_TEXT.keys.stationIntroduction.description}</SwiftText>
+              </VStack>
+            </BottomSheet>
+          </Host>
+        ) : (
+          <Modal
+            allowSwipeDismissal
+            onRequestClose={() => setIsDescriptionPopupVisible(false)}
+            presentationStyle="pageSheet"
+            visible
           >
-            <Pressable
-              accessibilityLabel={UPSTREAM_TEXT.common.done}
-              accessibilityRole="button"
-              onPress={() => setIsDescriptionPopupVisible(false)}
-              style={styles.popupCloseButton}
-              testID="key-station-introduction-description-popup-close"
+            <View
+              accessibilityViewIsModal
+              style={[styles.popup, { backgroundColor: colors.background }]}
+              testID="key-station-introduction-description-popup"
             >
-              <Text accessibilityElementsHidden style={[styles.popupCloseIcon, { color: colors.muted }]}>×</Text>
-            </Pressable>
-            <Text
-              style={[styles.description, { color: colors.muted }]}
-              testID="key-station-introduction-description"
-            >
-              {UPSTREAM_TEXT.keys.stationIntroduction.description}
-            </Text>
-          </View>
-        </Modal>
+              <Pressable
+                accessibilityLabel={UPSTREAM_TEXT.common.done}
+                accessibilityRole="button"
+                onPress={() => setIsDescriptionPopupVisible(false)}
+                style={styles.popupCloseButton}
+                testID="key-station-introduction-description-popup-close"
+              >
+                <Text accessibilityElementsHidden style={[styles.popupCloseIcon, { color: colors.muted }]}>×</Text>
+              </Pressable>
+              <Text
+                style={[styles.description, { color: colors.muted }]}
+                testID="key-station-introduction-description"
+              >
+                {UPSTREAM_TEXT.keys.stationIntroduction.description}
+              </Text>
+            </View>
+          </Modal>
+        )
       ) : null}
     </View>
   );
@@ -110,6 +127,9 @@ const styles = StyleSheet.create({
   popupCloseIcon: {
     fontSize: 24,
     lineHeight: 28,
+  },
+  swiftUiHost: {
+    position: 'absolute',
   },
   title: {
     fontSize: 12,

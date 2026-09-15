@@ -3,6 +3,7 @@
  */
 
 import { StyleSheet } from 'react-native';
+import { BottomSheet, Text as SwiftText } from '@expo/ui/swift-ui';
 
 import {
   activeMethodList,
@@ -1805,7 +1806,7 @@ test('keeps derived keys in removable Key Station tabs', async () => {
   });
 });
 
-test('opens the Key Station introduction description in a native sheet when its heading is pressed', async () => {
+test('opens the Key Station introduction description in a content-sized native sheet when its heading is pressed', async () => {
   let app: ReactTestRenderer.ReactTestRenderer;
   await ReactTestRenderer.act(async () => {
     app = ReactTestRenderer.create(<App />);
@@ -1824,15 +1825,16 @@ test('opens the Key Station introduction description in a native sheet when its 
   await ReactTestRenderer.act(async () => {
     toggle.props.onPress();
   });
-  const popup = introduction.findByProps({ testID: 'key-station-introduction-description-popup' });
-  expect(popup.findByProps({ testID: 'key-station-introduction-description' }).props.children).toBe(
+  const popup = introduction.findByType(BottomSheet);
+  expect(popup.props.fitToContents).toBe(true);
+  expect(popup.findByType(SwiftText).props.children).toBe(
     UPSTREAM_TEXT.keys.stationIntroduction.description,
   );
 
   await ReactTestRenderer.act(async () => {
-    popup.findByProps({ testID: 'key-station-introduction-description-popup-close' }).props.onPress();
+    popup.props.onIsPresentedChange(false);
   });
-  expect(introduction.findAllByProps({ testID: 'key-station-introduction-description' })).toHaveLength(0);
+  expect(introduction.findAllByType(BottomSheet)).toHaveLength(0);
 });
 
 test('syncs entropy across methods through the native snapshot', async () => {
