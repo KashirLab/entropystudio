@@ -109,7 +109,11 @@ Initialize the pinned EntropyLab source and install the JavaScript tooling:
 ```sh
 git submodule update --init --recursive
 npm install
+npm --prefix example install
 ```
+
+The example app has its own dependencies, including Expo and Expo module
+autolinking. Install them before running an Android or iOS app command.
 
 Run the Rust contract tests:
 
