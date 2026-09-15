@@ -227,9 +227,6 @@ export function KeyStationResultScreen({
             <Text style={[styles.walletDataTitle, { color: colors.text }]} testID="wallet-data-title">
               {UPSTREAM_TEXT.result.walletRecoveryDetails}
             </Text>
-            <Text style={[styles.walletDataIntro, { color: colors.muted }]} testID="wallet-data-intro">
-              {UPSTREAM_TEXT.result.walletDataIntro}
-            </Text>
             <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="wallet-data-safety" />
             <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.privateRecoveryMaterial}

@@ -429,23 +429,23 @@ export function PrivateKeyScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="private-key-setup-view">
-          <KeyStationIntroduction colors={colors} />
-          <View style={styles.header}>
+            <KeyStationIntroduction colors={colors} />
+            <View style={styles.header}>
             <View style={styles.headerCopy}>
               <Text style={[styles.subtitle, { color: colors.muted }]}>
                 {UPSTREAM_TEXT.key.inputHelp}
               </Text>
             </View>
-          </View>
+            </View>
 
-          <EntropyMethodList
+            <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
             isActive={isActive}
             onSelect={onSelectTool}
-          />
+            />
 
-          <View style={styles.setupSettings}>
+            <View style={styles.setupSettings}>
             <Text style={[styles.label, { color: colors.muted }]}>
               {UPSTREAM_TEXT.key.formatHeading}
             </Text>
@@ -479,7 +479,7 @@ export function PrivateKeyScreen({
                 );
               })}
             </View>
-          </View>
+            </View>
 
           <View style={styles.setupActionArea}>
             <Pressable

@@ -375,23 +375,23 @@ export function SeedPhraseScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="seed-phrase-setup-view">
-          <KeyStationIntroduction colors={colors} />
-          <View style={styles.header}>
+            <KeyStationIntroduction colors={colors} />
+            <View style={styles.header}>
             <View style={styles.headerCopy}>
               <Text style={[styles.subtitle, { color: colors.muted }]}>
                 {SEED_METHOD_COPY[seedMethod].description}
               </Text>
             </View>
-          </View>
+            </View>
 
-          <EntropyMethodList
+            <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
             isActive={isActive}
             onSelect={onSelectTool}
-          />
+            />
 
-          <View style={styles.setupSettings}>
+            <View style={styles.setupSettings}>
             <Text style={[styles.label, { color: colors.muted }]}>{UPSTREAM_TEXT.seed.how}</Text>
             <View style={styles.methodOptions}>
               {(['words', 'numbers'] as const).map(method => {
@@ -429,7 +429,7 @@ export function SeedPhraseScreen({
             >
               {methodRequirement}
             </Text>
-          </View>
+            </View>
 
           <View style={styles.setupActionArea}>
             <Pressable

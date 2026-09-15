@@ -358,33 +358,33 @@ export function CardsScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="cards-setup-view">
-        <KeyStationIntroduction colors={colors} />
-        <View style={styles.header}>
-          <View style={styles.headerCopy}>
-            <Text style={[styles.subtitle, { color: colors.muted }]} testID="cards-screen-how">
-              {copy.how}
-            </Text>
-          </View>
-        </View>
+            <KeyStationIntroduction colors={colors} />
+            <View style={styles.header}>
+              <View style={styles.headerCopy}>
+                <Text style={[styles.subtitle, { color: colors.muted }]} testID="cards-screen-how">
+                  {copy.how}
+                </Text>
+              </View>
+            </View>
 
-        <EntropyMethodList
-          activeTool={activeTool}
-          colors={colors}
-          isActive={isActive}
-          onSelect={onSelectTool}
-        />
+            <EntropyMethodList
+              activeTool={activeTool}
+              colors={colors}
+              isActive={isActive}
+              onSelect={onSelectTool}
+            />
 
-          <View style={styles.setupSettings} testID="cards-setup-settings">
-            {renderCardMethodSelector()}
-            {copy.methodRequirement ? (
-              <Text
-                style={[styles.methodHelp, { color: colors.muted }]}
-                testID="cards-method-requirement"
-              >
-                {copy.methodRequirement}
-              </Text>
-            ) : null}
-          </View>
+            <View style={styles.setupSettings} testID="cards-setup-settings">
+              {renderCardMethodSelector()}
+              {copy.methodRequirement ? (
+                <Text
+                  style={[styles.methodHelp, { color: colors.muted }]}
+                  testID="cards-method-requirement"
+                >
+                  {copy.methodRequirement}
+                </Text>
+              ) : null}
+            </View>
 
           <View style={styles.setupActionArea}>
             <Pressable

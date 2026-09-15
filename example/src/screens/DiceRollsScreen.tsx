@@ -306,15 +306,15 @@ export function DiceRollsScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="dice-setup-view">
-          <KeyStationIntroduction colors={colors} />
-          <EntropyMethodList
+            <KeyStationIntroduction colors={colors} />
+            <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
             isActive={isActive}
             onSelect={onSelectTool}
-          />
+            />
 
-          <View style={styles.setupSettings} testID="dice-setup-settings">
+            <View style={styles.setupSettings} testID="dice-setup-settings">
             <Text
               numberOfLines={1}
               style={[styles.subtitle, styles.optionsHeading, { color: colors.muted }]}
@@ -336,7 +336,7 @@ export function DiceRollsScreen({
             <Text style={[styles.methodHelp, { color: colors.muted }]} testID="dice-method-requirement">
               {copy.methodRequirement}
             </Text>
-          </View>
+            </View>
 
           <View style={styles.setupActionArea}>
             <Pressable

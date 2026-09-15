@@ -352,15 +352,15 @@ export function NumberBasesScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="number-bases-setup-view">
-          <KeyStationIntroduction colors={colors} />
-          <EntropyMethodList
+            <KeyStationIntroduction colors={colors} />
+            <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
             isActive={isActive}
             onSelect={onSelectTool}
-          />
+            />
 
-          <View style={styles.setupSettings} testID="number-bases-setup-settings">
+            <View style={styles.setupSettings} testID="number-bases-setup-settings">
             <Text style={[styles.label, { color: colors.muted }]}>{UPSTREAM_TEXT.hex.heading}</Text>
             <View style={styles.formatRows}>
               {NUMBER_BASE_FORMATS.map(option => {
@@ -401,7 +401,7 @@ export function NumberBasesScreen({
             >
               {formatRequirement}
             </Text>
-          </View>
+            </View>
 
           <View
             style={[

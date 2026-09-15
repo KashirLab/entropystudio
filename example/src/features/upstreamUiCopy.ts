@@ -326,7 +326,7 @@ export const UPSTREAM_TEXT = {
     privateAccountMaterialWarningLead:
       'Keep these exports together only in secure offline backups.',
     privateAccountMaterialWarningTail:
-      "An account extended public key combined with any non-hardened descendant private key, including a WIF shown in the address tables below, can reconstruct that account's extended private key.",
+      "An account extended public key combined with any non-hardened descendant private key, including a WIF shown in the address tables, can reconstruct that account's extended private key.",
     genericDescriptorCompatibility: 'Generic {name} for descriptor compatibility',
     multisigCosigner: 'Multisig co-signer {prefix} · {label}',
     addressCheckSearching: 'Not in the {n} shown addresses. Checking further indices',
@@ -430,8 +430,6 @@ export const UPSTREAM_TEXT = {
       },
     },
     walletData: 'Wallet data',
-    walletDataIntro:
-      'Review the root material derived from this seed. Private recovery data is grouped first; watch-only data appears below.',
     walletRecoveryDetails: 'Wallet recovery details',
     wifCompressed: 'WIF compressed',
     wifUncompressed: 'WIF uncompressed',

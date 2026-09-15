@@ -1805,37 +1805,34 @@ test('keeps derived keys in removable Key Station tabs', async () => {
   });
 });
 
-test('keeps every method setup view fixed', async () => {
+test('opens the Key Station introduction description in a native sheet when its heading is pressed', async () => {
   let app: ReactTestRenderer.ReactTestRenderer;
   await ReactTestRenderer.act(async () => {
     app = ReactTestRenderer.create(<App />);
   });
 
-  for (const [tool, setupView] of [
-    ['dice', 'dice-setup-view'],
-    ['cards', 'cards-setup-view'],
-    ['hex', 'number-bases-setup-view'],
-    ['seed', 'seed-phrase-setup-view'],
-    ['key', 'private-key-setup-view'],
-  ] as const) {
-    await selectEntropyTool(app!, tool);
-    expect(app!.root.findByProps({ testID: setupView }).findAllByType(ScrollView)).toHaveLength(0);
-  }
-
-  await selectEntropyTool(app!, 'hex');
-  await ReactTestRenderer.act(async () => {
-    app!.root.findByProps({ testID: 'number-base-format-base32' }).props.onPress();
-  });
+  const introduction = app!
+    .root
+    .findByProps({ testID: 'dice-setup-view' })
+    .findByProps({ testID: 'key-station-introduction' });
+  const toggle = introduction.findByProps({ testID: 'key-station-introduction-description-toggle' });
   expect(
-    app!.root.findByProps({ testID: 'number-bases-setup-view' }).findAllByType(ScrollView),
-  ).toHaveLength(0);
+    introduction.findByProps({ testID: 'key-station-introduction-description-indicator' }).props.children,
+  ).toBe('▶');
+  expect(introduction.findAllByProps({ testID: 'key-station-introduction-description' })).toHaveLength(0);
 
   await ReactTestRenderer.act(async () => {
-    app!.root.findByProps({ testID: 'number-base-format-base64' }).props.onPress();
+    toggle.props.onPress();
   });
-  expect(
-    app!.root.findByProps({ testID: 'number-bases-setup-view' }).findAllByType(ScrollView),
-  ).toHaveLength(0);
+  const popup = introduction.findByProps({ testID: 'key-station-introduction-description-popup' });
+  expect(popup.findByProps({ testID: 'key-station-introduction-description' }).props.children).toBe(
+    UPSTREAM_TEXT.keys.stationIntroduction.description,
+  );
+
+  await ReactTestRenderer.act(async () => {
+    popup.findByProps({ testID: 'key-station-introduction-description-popup-close' }).props.onPress();
+  });
+  expect(introduction.findAllByProps({ testID: 'key-station-introduction-description' })).toHaveLength(0);
 });
 
 test('syncs entropy across methods through the native snapshot', async () => {
