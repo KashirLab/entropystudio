@@ -230,14 +230,11 @@ export function directDiceProgressCopy(
     return `${progress}${extra}${skipped}`;
   }
 
-  const groups = UPSTREAM_UI_FALLBACK_COPY.dice.d8d16.groups(
-    state.completedGroups,
-    state.partialWords,
-    state.activeWord,
-  );
-  const completeGroups = UPSTREAM_UI_FALLBACK_COPY.dice.d8d16.rollsComplete(
-    state.partialWords,
-  );
+  const groups = formatCopy(UPSTREAM_TEXT.dice.dplus.wordProgress, {
+    partial: wordCount,
+    word: state.activeWord,
+  });
+  const completeGroups = UPSTREAM_TEXT.dice.dplus.rolledWordsComplete;
   const progress =
     state.step === DirectDiceStep.D8D16WordD8
       ? `${groups} · ${UPSTREAM_TEXT.dice.dplus.roll.d8}${UPSTREAM_TEXT.dice.dplus.range.d8}`

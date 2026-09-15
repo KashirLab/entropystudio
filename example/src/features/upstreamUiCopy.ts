@@ -119,6 +119,7 @@ export const UPSTREAM_TEXT = {
         d8: ' (1–8)',
       },
       ready: '{words} of {words} seed words · checksum valid · ready to derive',
+      rolledWordsComplete: 'All lookup-table words are complete.',
       roll: {
         checksumCoin: 'final D8 as a coin flip',
         checksumD16: 'final D16 checksum roll',
@@ -131,6 +132,7 @@ export const UPSTREAM_TEXT = {
       rollOnceMore: 'roll the {die} once more',
       rollTwice: 'roll a final {die} twice',
       title: 'D++ / Direct word selection',
+      wordProgress: 'Word {word} of {partial}',
     },
     help: {
       bitbox: '{partialWords} lookup-table words fill one slot at a time, then choose a confirmed final checksum word. Use 1–4 for the first five rolls (if you get 5 or 6, roll again). The sixth roll is treated as the coin: 1–3 is Heads, 4–6 is Tails. Or flip a real coin!',
