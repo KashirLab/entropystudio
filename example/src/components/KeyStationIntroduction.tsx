@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { BottomSheet as AndroidBottomSheet } from '@expo/ui';
+import { BottomSheet } from '@expo/ui';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { BottomSheet, Host, Text as SwiftText, VStack } from '@expo/ui/swift-ui';
-import { padding } from '@expo/ui/swift-ui/modifiers';
 
 import type { DiceColors } from '../features/dice/diceTheme';
 import { UPSTREAM_TEXT } from '../features/upstreamUiCopy';
@@ -39,34 +37,20 @@ export function KeyStationIntroduction({ colors }: Props) {
         </View>
       </Pressable>
       {isDescriptionPopupVisible ? (
-        Platform.OS === 'ios' ? (
-          <Host pointerEvents="none" style={styles.swiftUiHost}>
-            <BottomSheet
-              fitToContents
-              isPresented
-              onDismiss={() => setIsDescriptionPopupVisible(false)}
-              onIsPresentedChange={setIsDescriptionPopupVisible}
-            >
-              <VStack alignment="leading" modifiers={[padding({ all: 20 })]} spacing={12}>
-                <SwiftText>{UPSTREAM_TEXT.keys.stationIntroduction.description}</SwiftText>
-              </VStack>
-            </BottomSheet>
-          </Host>
-        ) : (
-          <AndroidBottomSheet
-            contentPadding={20}
-            isPresented
-            onDismiss={() => setIsDescriptionPopupVisible(false)}
-            shouldDismissOnClickOutside
+        <BottomSheet
+          contentPadding={20}
+          isPresented
+          onDismiss={() => setIsDescriptionPopupVisible(false)}
+          snapPoints={Platform.OS === 'ios' ? [{ height: 280 }] : undefined}
+          shouldDismissOnClickOutside
+        >
+          <Text
+            style={[styles.description, { color: colors.muted }]}
+            testID="key-station-introduction-description"
           >
-            <Text
-              style={[styles.description, { color: colors.muted }]}
-              testID="key-station-introduction-description"
-            >
-              {UPSTREAM_TEXT.keys.stationIntroduction.description}
-            </Text>
-          </AndroidBottomSheet>
-        )
+            {UPSTREAM_TEXT.keys.stationIntroduction.description}
+          </Text>
+        </BottomSheet>
       ) : null}
     </View>
   );
@@ -77,8 +61,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   description: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 17,
+    lineHeight: 23,
   },
   disclosureIndicator: {
     fontSize: 16,
@@ -97,9 +81,6 @@ const styles = StyleSheet.create({
   },
   headingToggle: {
     alignSelf: 'flex-start',
-  },
-  swiftUiHost: {
-    position: 'absolute',
   },
   title: {
     fontSize: 12,

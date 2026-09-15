@@ -3,7 +3,7 @@
  */
 
 import { StyleSheet } from 'react-native';
-import { BottomSheet, Text as SwiftText } from '@expo/ui/swift-ui';
+import { BottomSheet } from '@expo/ui';
 
 import {
   activeMethodList,
@@ -1806,7 +1806,7 @@ test('keeps derived keys in removable Key Station tabs', async () => {
   });
 });
 
-test('opens the Key Station introduction description in a content-sized native sheet when its heading is pressed', async () => {
+test('opens the Key Station introduction description in a text-fitting native sheet when its heading is pressed', async () => {
   let app: ReactTestRenderer.ReactTestRenderer;
   await ReactTestRenderer.act(async () => {
     app = ReactTestRenderer.create(<App />);
@@ -1826,13 +1826,13 @@ test('opens the Key Station introduction description in a content-sized native s
     toggle.props.onPress();
   });
   const popup = introduction.findByType(BottomSheet);
-  expect(popup.props.fitToContents).toBe(true);
-  expect(popup.findByType(SwiftText).props.children).toBe(
+  expect(popup.props.snapPoints).toEqual([{ height: 280 }]);
+  expect(popup.findByProps({ testID: 'key-station-introduction-description' }).props.children).toBe(
     UPSTREAM_TEXT.keys.stationIntroduction.description,
   );
 
   await ReactTestRenderer.act(async () => {
-    popup.props.onIsPresentedChange(false);
+    popup.props.onDismiss();
   });
   expect(introduction.findAllByType(BottomSheet)).toHaveLength(0);
 });
