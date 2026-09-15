@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import type { TextInputInstance } from 'react-native';
 import { BackspaceIconButton } from '../../../components/BackspaceKey';
 import { formatDiceTranscript } from '../dice';
 import type { DiceMethod, WordCount } from '../dice';
@@ -42,7 +41,7 @@ export function DiceTranscriptInput({
   selectionRequestId,
   wordCount,
 }: Props) {
-  const inputRef = useRef<TextInputInstance>(null);
+  const inputRef = useRef<TextInput>(null);
   const appliedSelectionRequestId = useRef(selectionRequestId);
   const displayRolls = formatDiceTranscript(rolls, method, wordCount);
   const displaySelection = selection

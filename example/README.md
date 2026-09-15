@@ -1,97 +1,86 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# EntropyStudio example app
 
-# Getting Started
+This is EntropyStudio's native React Native app. It uses Expo Modules and Expo
+CLI so that [`@expo/ui`](https://docs.expo.dev/versions/latest/sdk/ui/) is
+available, while retaining the checked-in Android and iOS projects and the
+generated EntropyStudio UniFFI TurboModule. This is not an Expo Router,
+Continuous Native Generation, or EAS migration.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+The app is pinned to Expo SDK 57 and React Native 0.86.3. Its iOS deployment
+target is 16.4.
 
-## Step 1: Start Metro
+## Install
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+First initialize the repository and install the Rust wrapper's dependencies:
 
 ```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+git submodule update --init --recursive
+npm install
 ```
 
-### iOS
+Then install the example application's dependencies:
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+```sh
+cd example
+npm install
+```
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+For iOS, install CocoaPods dependencies after the JavaScript install and after
+any native dependency change:
 
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Run
+
+Start Expo's Metro server from `example/`:
 
 ```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+cd example
+npm start
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+In another terminal, compile and launch the native app:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+cd example
+npm run android
+# or
+npm run ios
+```
 
-## Step 3: Modify your app
+`npm start` uses Expo CLI for bundling, and `npm run android` / `npm run ios`
+use Expo CLI to build the existing native projects. The platform scripts first
+regenerate the Rust bridge, then compile the app. Native changes—including
+adding or updating Expo modules or changing `@expo/ui`—require another platform
+build. A Metro refresh only applies JavaScript changes.
 
-Now that you have successfully run the app, let's make changes!
+## Expo Go is not supported
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Do not open this project in Expo Go. Expo Go does not include EntropyStudio's
+generated UniFFI/TurboModule native code, so it cannot load this application.
+Use the local Android or iOS build commands above; they produce a custom native
+app containing both the Expo modules and EntropyStudio bridge.
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## Using `@expo/ui`
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+Import universal components from `@expo/ui` and place them inside a `Host`. The
+host renders SwiftUI on iOS and Jetpack Compose on Android while leaving the
+rest of the existing React Native screen intact.
 
-## Congratulations! :tada:
+```tsx
+import { Button, Host } from '@expo/ui';
 
-You've successfully run and modified your React Native App. :partying_face:
+export function NativeButtonExample() {
+  return (
+    <Host matchContents>
+      <Button label="Continue" onPress={() => {}} />
+    </Host>
+  );
+}
+```
 
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Adopt these components incrementally. Existing React Native UI, navigation,
+and EntropyStudio native-binding calls remain valid outside the `Host`.

@@ -1,4 +1,7 @@
 {
-  "name": "EntropyStudio",
-  "displayName": "Entropy Studio"
+  "expo": {
+    "name": "Entropy Studio",
+    "slug": "entropy-studio",
+    "version": "1.0.0"
+  }
 }

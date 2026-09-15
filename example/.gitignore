@@ -39,7 +39,7 @@ keystore.properties
 # node.js
 #
 node_modules/
-/package-lock.json
+.expo/
 npm-debug.log
 yarn-error.log
 

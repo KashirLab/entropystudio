@@ -7,7 +7,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import type { TextInputInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
@@ -95,7 +94,7 @@ export function PrivateKeyScreen({
   onDeriveKey,
   onSelectTool,
 }: Props) {
-  const inputRef = useRef<TextInputInstance>(null);
+  const inputRef = useRef<TextInput>(null);
   const appliedSelectionRequestId = useRef(0);
   const [activeView, setActiveView] = useState<PrivateKeyView>('setup');
   const [brainWalletWarningAcknowledgements, setBrainWalletWarningAcknowledgements] = useState<

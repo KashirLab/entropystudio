@@ -99,7 +99,8 @@ function numberBaseInputHelp(
     : '';
 
   const labels = UPSTREAM_UI_LABELS.hexFormat[format];
-  return [labels.desc, labels.detail, remainder].filter(Boolean).join(' ');
+  const detail = 'detail' in labels ? labels.detail : '';
+  return [labels.desc, detail, remainder].filter(Boolean).join(' ');
 }
 
 function numberBaseSetupRequirement(
