@@ -20,7 +20,6 @@ import {
 import {
   KeyDerivationBranchRole,
   KeyDerivationNetworkKind,
-  KeyDerivationPathHelpKind,
   KeyDerivationValidationKind,
   KeyDerivationVisiblePathValidationKind,
   keyDerivationAddressBenchmarkMilliseconds,
@@ -37,7 +36,6 @@ import {
   UPSTREAM_UI_FALLBACK_COPY,
   type KeyDerivationAdvancedCopyBranch,
   type KeyDerivationAdvancedCopyNetworkKind,
-  type KeyDerivationAdvancedCopyPathHelpKind,
   type KeyDerivationAdvancedCopyValidationKind,
 } from '../../upstreamUiCopy';
 
@@ -243,23 +241,6 @@ function advancedCopyNetworkKind(
     case KeyDerivationNetworkKind.CustomMainnetAddresses:
       return 'custom-mainnet-addresses';
     case KeyDerivationNetworkKind.Invalid:
-      return 'invalid';
-  }
-}
-
-function advancedCopyPathHelpKind(
-  pathHelpKind: typeof KeyDerivationPathHelpKind[keyof typeof KeyDerivationPathHelpKind],
-): KeyDerivationAdvancedCopyPathHelpKind {
-  switch (pathHelpKind) {
-    case KeyDerivationPathHelpKind.Exact:
-      return 'exact';
-    case KeyDerivationPathHelpKind.MultipleBranches:
-      return 'multiple-branches';
-    case KeyDerivationPathHelpKind.MultipleIndexes:
-      return 'multiple-indexes';
-    case KeyDerivationPathHelpKind.MultipleBranchesAndIndexes:
-      return 'multiple-branches-and-indexes';
-    case KeyDerivationPathHelpKind.Invalid:
       return 'invalid';
   }
 }
@@ -496,9 +477,7 @@ export function KeyDerivationSettingsView({
       }),
     [advancedDerivationInput, derivationPath],
   );
-  const rangePathHelp = UPSTREAM_UI_FALLBACK_COPY.keys.advanced.derivationPathHelp(
-    advancedCopyPathHelpKind(advancedState.pathHelpKind),
-  );
+  const rangePathHelp = undefined;
   let validationPathHelp: string | undefined;
   if (lastDerivationPathEditSource.current === 'advanced' && !advancedState.valid) {
     validationPathHelp = advancedPathValidationHelp(advancedState);

@@ -91,10 +91,10 @@ export const UPSTREAM_TEXT = {
       desc: 'Use five dice showing 1–4, then a coin (or 6th die: 1–3 heads, 4–6 tails). Build {partialWords} lookup-table words, then choose 1 of {candidates} valid final checksum words.',
       die: 'Word {word} of {partial} · die {die} of 5 (faces 1–4)',
       heads: 'Heads',
-      headsRange: '1 – 3',
+      headsRange: '1–3',
       lastWord: '{n} words · choose the final checksum word',
       tails: 'Tails',
-      tailsRange: '4 – 6',
+      tailsRange: '4–6',
       title: 'BitBox diceware / Direct word selection',
     },
     coldcard: {
@@ -240,7 +240,7 @@ export const UPSTREAM_TEXT = {
       index:
         "Each derivation path index must be a whole number from 0 to 2,147,483,647, optionally followed by h or '.",
       missingComponents:
-        'Derivation path must include purpose, network, and account plus every address component shown.',
+        'Derivation path must include purpose, network, and account plus address branch and index components.',
       missingAccount:
         'Derivation path must include purpose, network, and account indexes.',
       root: 'Derivation path must start with m and contain slash-separated BIP32 indexes.',
@@ -436,7 +436,10 @@ export const UPSTREAM_TEXT = {
   },
   seed: {
     count: '{entered} of {words} BIP39 words entered',
-    finalPrefix: '{progress} · {n} valid checksum word(s) start with "{prefix}".',
+    finalPrefix: {
+      singular: '{n} valid checksum word starts with “{prefix}”',
+      plural: '{n} valid checksum words start with “{prefix}”',
+    },
     how: 'How to enter a seed phrase',
     lastWordLabel: 'Valid final word ({n} choices)',
     lastWordPlaceholder: 'Choose a confirmed final word',
@@ -459,7 +462,7 @@ export const UPSTREAM_TEXT = {
       wordsDesc: 'Type or paste the English BIP39 words themselves.',
     },
     nextWord: 'Next word',
-    noFinalPrefix: '{progress} · No valid checksum word starts with "{prefix}".',
+    noFinalPrefix: 'No valid checksum word starts with “{prefix}”',
     numbersHelp: 'Enter one {range} number for each word, separated by spaces. The corresponding BIP39 words appear below.',
     numbersLabel: 'Your {words} BIP39 word numbers',
     numbersPlaceholder0: '0 1 2 …',
@@ -588,13 +591,6 @@ export type KeyDerivationAdvancedCopyNetworkKind =
   | 'mainnet'
   | 'testnet'
   | 'custom-mainnet-addresses'
-  | 'invalid';
-
-export type KeyDerivationAdvancedCopyPathHelpKind =
-  | 'exact'
-  | 'multiple-branches'
-  | 'multiple-indexes'
-  | 'multiple-branches-and-indexes'
   | 'invalid';
 
 export type KeyDerivationAdvancedCopyValidationKind =
@@ -783,22 +779,6 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
             hardened,
           )} · 0 to 2,147,483,647`,
         coinTypeLabel,
-        derivationPathHelp: (
-          kind: KeyDerivationAdvancedCopyPathHelpKind,
-        ): string | undefined => {
-          switch (kind) {
-            case 'exact':
-              return UPSTREAM_TEXT.keys.derivationPathHelp;
-            case 'multiple-branches':
-              return 'Multiple address branches selected · path shown through the account level.';
-            case 'multiple-indexes':
-              return 'Multiple address indexes selected · path shown through the address branch.';
-            case 'multiple-branches-and-indexes':
-              return 'Multiple address branches and indexes selected · path shown through the account level.';
-            case 'invalid':
-              return undefined;
-          }
-        },
         pathValidationHelp: (
           kind: KeyDerivationAdvancedCopyValidationKind,
           branchMaximum: number,
@@ -836,46 +816,16 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
   numberBases: {
     entropyLabel: (label: string, wordCount: number) =>
       `${label} entropy for a ${wordCount}-word seed`,
-    exceptMixed: ' except for a mixed-radix final character when needed',
-    finalBits: (bitCount: number) =>
-      ` · final ${bitCount} entropy bits must each be 0 or 1`,
-    finalCharacter: (bitCount: number, characters: string) =>
-      ` · final ${bitCount}-bit character must be one of ${characters}`,
-    help: (
-      shortLabel: string,
-      bitsPerDigit: number,
-      except: string,
-      digits: number,
-      spaces: string,
-      remainder: string,
-    ) =>
-      `Each complete ${shortLabel} character contributes ${bitsPerDigit} bit${bitsPerDigit === 1 ? '' : 's'}${except}. Seed-word cards fill as enough bits arrive; the checksum-derived final word appears when all ${digits} characters are entered.${spaces}${remainder} No generator — enter entropy you already created.`,
-    invalid: (count: number) =>
-      ` · ${count} invalid character${count === 1 ? '' : 's'} highlighted`,
-    progress: (
-      entered: number,
-      limit: number,
-      unit: string,
-      filled: number,
-      wordCount: number,
-    ) => `${entered} of ${limit} ${unit} · ${filled} of ${wordCount} seed words filled`,
-    ready: ' · ready to derive',
-    spacesBin: ' Spaces are added every 11 bits.',
-    coinNext: (digits: number, shortLabel: string, entered: number, total: number) =>
-      `${digits} ${shortLabel} characters complete · coin flip ${entered} of ${total} · Heads (0) or Tails (1)`,
-    coinReady: (digits: number, shortLabel: string, entered: number, total: number) =>
-      `${digits} ${shortLabel} characters complete · ${entered} of ${total} coin flips entered`,
-    excess: (count: number) => ` · ${count} extra highlighted · remove to continue`,
   },
   privateKey: {
     progress: {
       brain: {
-        boundaryWhitespaceWillBeTrimmed: 'boundary whitespace will be trimmed',
+        boundaryWhitespaceWillBeTrimmed: 'Boundary whitespace will be trimmed',
         empty: () => 'No text entered · brain wallets are unsafe',
         entered: (convention: string) => `Text entered · ${convention} · brain wallets are unsafe`,
-        exactText: 'exact text will be used',
-        exactTextWithBoundaryWhitespace: 'exact text will be used, including boundary whitespace',
-        trimEnabledNoBoundaryWhitespace: 'trim enabled; no boundary whitespace present',
+        exactText: 'Exact text will be used',
+        exactTextWithBoundaryWhitespace: 'Exact text will be used, including boundary whitespace',
+        trimEnabledNoBoundaryWhitespace: 'Trim enabled; no boundary whitespace present',
         trimmedEmpty: () =>
           'Boundary whitespace trimming leaves an empty passphrase · enter non-whitespace text or turn trimming off',
       },
@@ -980,8 +930,6 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
   },
   vanity: {
     actions: {
-      grinding: 'Grinding…',
-      stopOnFirstEnabled: 'Stop on first find: on',
       updateKey: 'Update key',
       updating: 'Updating…',
     },

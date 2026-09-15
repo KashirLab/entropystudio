@@ -44,7 +44,6 @@ import {
   formatCopy,
   UPSTREAM_UI_FALLBACK_COPY,
   UPSTREAM_TEXT,
-  UPSTREAM_UI_LABELS,
 } from '../features/upstreamUiCopy';
 import {
   analyzeSeedPhrase,

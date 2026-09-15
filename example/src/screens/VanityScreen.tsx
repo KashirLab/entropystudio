@@ -1313,7 +1313,7 @@ export function VanityScreen({
           <Pressable
             accessibilityLabel={
               isRunning
-                ? UPSTREAM_UI_FALLBACK_COPY.vanity.actions.grinding
+                ? UPSTREAM_TEXT.vanity.actions.stop
                 : UPSTREAM_TEXT.vanity.actions.startGrinding
             }
             accessibilityRole="button"
@@ -1331,7 +1331,7 @@ export function VanityScreen({
           >
             <Text style={[styles.buttonText, { color: colors.onAccent }]}>
               {isRunning
-                ? UPSTREAM_UI_FALLBACK_COPY.vanity.actions.grinding
+                ? UPSTREAM_TEXT.vanity.actions.stop
                 : UPSTREAM_TEXT.vanity.actions.startGrinding}
             </Text>
           </Pressable>
@@ -1355,9 +1355,7 @@ export function VanityScreen({
           ) : null}
           <Pressable
             accessibilityLabel={
-              stopOnFirst
-                ? UPSTREAM_UI_FALLBACK_COPY.vanity.actions.stopOnFirstEnabled
-                : UPSTREAM_TEXT.vanity.actions.stopOnFirstFind
+              UPSTREAM_TEXT.vanity.actions.stopOnFirstFind
             }
             accessibilityRole="button"
             accessibilityState={{ disabled: isRunning, selected: stopOnFirst }}
@@ -1374,9 +1372,7 @@ export function VanityScreen({
             testID="vanity-stop-on-first"
           >
             <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-              {stopOnFirst
-                ? UPSTREAM_UI_FALLBACK_COPY.vanity.actions.stopOnFirstEnabled
-                : UPSTREAM_TEXT.vanity.actions.stopOnFirstFind}
+              {UPSTREAM_TEXT.vanity.actions.stopOnFirstFind}
             </Text>
           </Pressable>
           <Pressable

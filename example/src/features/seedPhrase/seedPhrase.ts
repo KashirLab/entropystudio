@@ -20,7 +20,7 @@ import type {
 } from '../../native/entropyStudio';
 import type { WordCount } from '../dice/dice';
 import type { SeedPhraseEntryMethod } from './components/SeedPhraseKeypad';
-import { formatCopy, UPSTREAM_TEXT, UPSTREAM_UI_FALLBACK_COPY } from '../upstreamUiCopy';
+import { formatCopy, UPSTREAM_TEXT } from '../upstreamUiCopy';
 
 type InputSelection = { readonly end: number; readonly start: number };
 
@@ -157,15 +157,18 @@ export function seedPhraseStatusCopy(
     case SeedPhraseStatus.Ready:
       return formatCopy(UPSTREAM_TEXT.seed.meta.ready, { progress });
     case SeedPhraseStatus.FinalPrefix:
-      return formatCopy(UPSTREAM_TEXT.seed.finalPrefix, {
+      return formatCopy(
+        state.matchingFinalCandidates === 1
+          ? UPSTREAM_TEXT.seed.finalPrefix.singular
+          : UPSTREAM_TEXT.seed.finalPrefix.plural,
+        {
         n: state.matchingFinalCandidates,
         prefix: finalWord,
-        progress,
-      });
+        },
+      );
     case SeedPhraseStatus.NoFinalPrefix:
       return formatCopy(UPSTREAM_TEXT.seed.noFinalPrefix, {
         prefix: finalWord,
-        progress,
       });
     case SeedPhraseStatus.InvalidWord:
       return formatCopy(UPSTREAM_TEXT.seed.meta.invalidWord, {

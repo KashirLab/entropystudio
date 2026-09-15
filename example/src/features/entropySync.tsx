@@ -7,7 +7,7 @@ import type { DiceColors } from './dice/diceTheme';
 import type { NumberBaseFormat } from './numberBases/numberBases';
 import type { PrivateKeyInputFormat } from './privateKey/privateKey';
 import type { SeedPhraseEntryMethod } from './seedPhrase/components/SeedPhraseKeypad';
-import { formatCopy, UPSTREAM_TEXT, UPSTREAM_UI_FALLBACK_COPY } from './upstreamUiCopy';
+import { formatCopy, UPSTREAM_TEXT } from './upstreamUiCopy';
 import { EntropySyncSource, synchronizeEntropy } from '../native/entropyStudio';
 import type { EntropySyncSnapshot } from '../native/entropyStudio';
 

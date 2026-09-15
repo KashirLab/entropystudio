@@ -98,14 +98,8 @@ function numberBaseInputHelp(
         })
     : '';
 
-  return UPSTREAM_UI_FALLBACK_COPY.numberBases.help(
-    config.shortLabel,
-    config.bitsPerDigit,
-    config.binaryRemainder ? '' : UPSTREAM_UI_FALLBACK_COPY.numberBases.exceptMixed,
-    config.digits,
-    format === 'bin' ? UPSTREAM_UI_FALLBACK_COPY.numberBases.spacesBin : '',
-    remainder,
-  );
+  const labels = UPSTREAM_UI_LABELS.hexFormat[format];
+  return [labels.desc, labels.detail, remainder].filter(Boolean).join(' ');
 }
 
 function numberBaseSetupRequirement(
@@ -137,62 +131,11 @@ function numberBaseSetupRequirement(
 }
 
 function inputStatus(
-  analysis: ReturnType<typeof analyzeNumberBaseInput>,
-  previewWordCount: number,
-  wordCount: WordCount,
+  _analysis: ReturnType<typeof analyzeNumberBaseInput>,
+  _previewWordCount: number,
+  _wordCount: WordCount,
 ): string {
-  const { config } = analysis;
-  const coinPhase = Boolean(
-    config.binaryRemainder &&
-      config.remainderBits &&
-      analysis.digitCount >= config.fullDigits,
-  );
-  const coinFlipsEntered = coinPhase
-    ? Math.min(
-        config.remainderBits,
-        Math.max(0, analysis.digitCount - config.fullDigits),
-      )
-    : 0;
-  let status = coinPhase
-    ? analysis.isReady
-      ? UPSTREAM_UI_FALLBACK_COPY.numberBases.coinReady(
-          config.fullDigits,
-          config.shortLabel,
-          coinFlipsEntered,
-          config.remainderBits,
-        )
-      : UPSTREAM_UI_FALLBACK_COPY.numberBases.coinNext(
-          config.fullDigits,
-          config.shortLabel,
-          Math.min(config.remainderBits, coinFlipsEntered + 1),
-          config.remainderBits,
-        )
-    : UPSTREAM_UI_FALLBACK_COPY.numberBases.progress(
-        analysis.digitCount,
-        config.digits,
-        config.unit,
-        previewWordCount,
-        wordCount,
-      );
-
-  if (analysis.invalidCharacterCount) {
-    status += UPSTREAM_UI_FALLBACK_COPY.numberBases.invalid(analysis.invalidCharacterCount);
-  }
-  if (analysis.finalInvalid) {
-    status += config.binaryRemainder
-      ? UPSTREAM_UI_FALLBACK_COPY.numberBases.finalBits(config.remainderBits)
-      : UPSTREAM_UI_FALLBACK_COPY.numberBases.finalCharacter(
-          config.remainderBits,
-          [...config.finalCharacters].join(', '),
-        );
-  }
-  if (analysis.excessDigitCount) {
-    status += UPSTREAM_UI_FALLBACK_COPY.numberBases.excess(analysis.excessDigitCount);
-  }
-  if (analysis.isReady) {
-    status += UPSTREAM_UI_FALLBACK_COPY.numberBases.ready;
-  }
-  return status;
+  return '';
 }
 
 function normalizedInputSelection(
