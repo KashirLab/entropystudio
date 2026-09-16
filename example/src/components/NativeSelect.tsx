@@ -1,4 +1,4 @@
-import { Picker } from '@react-native-picker/picker';
+import { Picker } from '@expo/ui/community/picker';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -88,14 +88,18 @@ export function NativeSelect<Value extends string | number>({
         >
           <View style={styles.iosPickerWheelBleed}>
             <Picker
-              accessibilityLabel={accessibilityLabel}
               onValueChange={value => setIosPendingValue(value as Value)}
               selectedValue={iosPendingValue}
-              style={[styles.iosPickerWheel, { color: colors.text }]}
+              style={styles.iosPickerWheel}
               testID={`${controlTestID}-wheel`}
             >
               {options.map(option => (
-                <Picker.Item key={option.value} label={option.label} value={option.value} />
+                <Picker.Item
+                  key={option.value}
+                  color={colors.text}
+                  label={option.label}
+                  value={option.value}
+                />
               ))}
             </Picker>
           </View>
@@ -123,17 +127,19 @@ export function NativeSelect<Value extends string | number>({
       ]}
     >
       <Picker
-        accessibilityLabel={accessibilityLabel}
-        dropdownIconColor={colors.muted}
         enabled={!disabled}
-        mode="dropdown"
         onValueChange={value => onValueChange(value as Value)}
         selectedValue={selectedValue}
-        style={[styles.picker, { color: colors.text }]}
+        style={styles.picker}
         testID={controlTestID}
       >
         {options.map(option => (
-          <Picker.Item key={option.value} label={option.label} value={option.value} />
+          <Picker.Item
+            key={option.value}
+            color={colors.text}
+            label={option.label}
+            value={option.value}
+          />
         ))}
       </Picker>
     </View>
@@ -167,7 +173,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   iosPickerWheelBleed: {
-    // RNCPicker already reserves 20pt on each side of its label.
+    // Align the hosted SwiftUI picker with the sheet's content padding.
     alignSelf: 'stretch',
     marginHorizontal: -20,
   },
