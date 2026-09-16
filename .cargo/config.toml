@@ -1,0 +1,5 @@
+# Keep Rust and C dependencies in the generated iOS XCFramework compatible
+# with Expo UI's iOS deployment target. Without this, cc-rs defaults C objects
+# to the installed Xcode SDK version.
+[env]
+IPHONEOS_DEPLOYMENT_TARGET = { value = "16.4", force = true }
