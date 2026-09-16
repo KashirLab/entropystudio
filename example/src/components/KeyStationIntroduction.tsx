@@ -1,38 +1,54 @@
 import { useState } from 'react';
 import { BottomSheet } from '@expo/ui';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { DiceColors } from '../features/dice/diceTheme';
 import { UPSTREAM_TEXT } from '../features/upstreamUiCopy';
 
 type Props = {
   readonly colors: DiceColors;
+  readonly description?: string;
+  readonly descriptionScrollable?: boolean;
+  readonly heading?: string;
+  readonly headingTestID?: string;
+  readonly sheetHeight?: number;
+  readonly testIDPrefix?: string;
+  readonly title?: string;
 };
 
-export function KeyStationIntroduction({ colors }: Props) {
+export function KeyStationIntroduction({
+  colors,
+  description = UPSTREAM_TEXT.keys.stationIntroduction.description,
+  descriptionScrollable = false,
+  heading = UPSTREAM_TEXT.keys.stationIntroduction.heading,
+  headingTestID,
+  sheetHeight = 280,
+  testIDPrefix = 'key-station-introduction',
+  title = UPSTREAM_TEXT.keys.stationIntroduction.title,
+}: Props) {
   const [isDescriptionPopupVisible, setIsDescriptionPopupVisible] = useState(false);
 
   return (
-    <View style={styles.container} testID="key-station-introduction">
+    <View style={styles.container} testID={testIDPrefix}>
       <Text style={[styles.title, { color: colors.accent }]}>
-        {UPSTREAM_TEXT.keys.stationIntroduction.title}
+        {title}
       </Text>
       <Pressable
         accessibilityRole="button"
         onPress={() => setIsDescriptionPopupVisible(true)}
         style={styles.headingToggle}
-        testID="key-station-introduction-description-toggle"
+        testID={`${testIDPrefix}-description-toggle`}
       >
         <View style={styles.headingContent}>
           <Text
             accessibilityElementsHidden
             style={[styles.disclosureIndicator, { color: colors.muted }]}
-            testID="key-station-introduction-description-indicator"
+            testID={`${testIDPrefix}-description-indicator`}
           >
             ▶
           </Text>
-          <Text style={[styles.heading, { color: colors.text }]}>
-            {UPSTREAM_TEXT.keys.stationIntroduction.heading}
+          <Text style={[styles.heading, { color: colors.text }]} testID={headingTestID}>
+            {heading}
           </Text>
         </View>
       </Pressable>
@@ -41,15 +57,30 @@ export function KeyStationIntroduction({ colors }: Props) {
           contentPadding={20}
           isPresented
           onDismiss={() => setIsDescriptionPopupVisible(false)}
-          snapPoints={Platform.OS === 'ios' ? [{ height: 280 }] : undefined}
+          snapPoints={Platform.OS === 'ios' ? [{ height: sheetHeight }] : undefined}
           shouldDismissOnClickOutside
         >
-          <Text
-            style={[styles.description, { color: colors.muted }]}
-            testID="key-station-introduction-description"
-          >
-            {UPSTREAM_TEXT.keys.stationIntroduction.description}
-          </Text>
+          {descriptionScrollable ? (
+            <ScrollView
+              showsVerticalScrollIndicator
+              style={{ height: sheetHeight - 40 }}
+              testID={`${testIDPrefix}-description-scroll`}
+            >
+              <Text
+                style={[styles.description, { color: colors.muted }]}
+                testID={`${testIDPrefix}-description`}
+              >
+                {description}
+              </Text>
+            </ScrollView>
+          ) : (
+            <Text
+              style={[styles.description, { color: colors.muted }]}
+              testID={`${testIDPrefix}-description`}
+            >
+              {description}
+            </Text>
+          )}
         </BottomSheet>
       ) : null}
     </View>

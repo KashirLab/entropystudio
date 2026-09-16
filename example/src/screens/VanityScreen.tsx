@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NativeSelect } from '../components/NativeSelect';
 import type { NativeSelectOption } from '../components/NativeSelect';
+import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
 import { diceColors } from '../features/dice/diceTheme';
 import type { KeyStationTab } from '../features/keyStation/keyStation';
 import {
@@ -998,20 +999,16 @@ export function VanityScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={[styles.kicker, { color: colors.accent }]}>
-            {UPSTREAM_TEXT.vanity.intro.kicker}
-          </Text>
-          <Text
-            style={[styles.title, { color: colors.text }]}
-            testID="vanity-screen-title"
-          >
-            {UPSTREAM_TEXT.vanity.intro.title}
-          </Text>
-          <Text style={[styles.intro, { color: colors.muted }]}>
-            {UPSTREAM_TEXT.vanity.intro.description}
-          </Text>
-        </View>
+        <KeyStationIntroduction
+          colors={colors}
+          description={UPSTREAM_TEXT.vanity.intro.description}
+          descriptionScrollable
+          heading={UPSTREAM_TEXT.vanity.intro.title}
+          headingTestID="vanity-screen-title"
+          sheetHeight={560}
+          testIDPrefix="vanity-introduction"
+          title={UPSTREAM_TEXT.vanity.intro.kicker}
+        />
 
         <View style={[styles.messages, { borderColor: colors.border }]}>
           <Text style={[styles.warning, { color: colors.error }]}>
@@ -1728,9 +1725,6 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginBottom: 6,
   },
-  header: {
-    marginBottom: 18,
-  },
   help: {
     fontSize: 12,
     lineHeight: 17,
@@ -1738,16 +1732,6 @@ const styles = StyleSheet.create({
   },
   hidden: {
     display: 'none',
-  },
-  intro: {
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  kicker: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
   },
   match: {
     borderRadius: 6,
@@ -1934,12 +1918,6 @@ const styles = StyleSheet.create({
     minHeight: 46,
     paddingHorizontal: 10,
     paddingVertical: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 25,
-    marginBottom: 5,
   },
   toggle: {
     alignItems: 'center',

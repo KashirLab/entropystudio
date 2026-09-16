@@ -3,6 +3,7 @@
  */
 
 import { Platform } from 'react-native';
+import { BottomSheet } from '@expo/ui';
 
 import {
   App,
@@ -385,6 +386,21 @@ describe(UPSTREAM_TEXT.vanity.tabLabel, () => {
     );
     expect(app!.root.findByProps({ testID: 'vanity-screen-title' }).props.children).toBe(
       UPSTREAM_TEXT.vanity.intro.title,
+    );
+    await ReactTestRenderer.act(async () => {
+      app!.root
+        .findByProps({ testID: 'vanity-introduction-description-toggle' })
+        .props.onPress();
+    });
+    const popup = app!.root.findByType(BottomSheet);
+    if (Platform.OS === 'ios') {
+      expect(popup.props.snapPoints).toEqual([{ height: 560 }]);
+    }
+    expect(
+      popup.findByProps({ testID: 'vanity-introduction-description-scroll' }).props.style,
+    ).toEqual({ height: 520 });
+    expect(popup.findByProps({ testID: 'vanity-introduction-description' }).props.children).toBe(
+      UPSTREAM_TEXT.vanity.intro.description,
     );
     expect(app!.root.findByProps({ testID: 'vanity-prefix' }).props.value).toBe('');
     expect(app!.root.findByProps({ testID: 'vanity-passphrase-length' }).props.value).toBe('8');
