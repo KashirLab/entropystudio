@@ -1,5 +1,15 @@
 import { Picker } from '@expo/ui/community/picker';
-import { useState } from 'react';
+import {
+  DropdownMenuItem,
+  ExposedDropdownMenu,
+  ExposedDropdownMenuBox,
+  Host,
+  Text as ComposeText,
+  TextField,
+  useNativeState,
+} from '@expo/ui/jetpack-compose';
+import { fillMaxWidth, height, menuAnchor } from '@expo/ui/jetpack-compose/modifiers';
+import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { NativeSheet } from '../features/dice/components/NativeSheet';
@@ -119,6 +129,20 @@ export function NativeSelect<Value extends string | number>({
     );
   }
 
+  if (Platform.OS === 'android') {
+    return (
+      <AndroidNativeSelect
+        accessibilityLabel={accessibilityLabel}
+        colors={colors}
+        controlTestID={controlTestID}
+        disabled={disabled}
+        onValueChange={onValueChange}
+        options={options}
+        selectedLabel={selectedLabel}
+      />
+    );
+  }
+
   return (
     <View
       style={[
@@ -146,7 +170,84 @@ export function NativeSelect<Value extends string | number>({
   );
 }
 
+type AndroidNativeSelectProps<Value extends string | number> = Omit<Props<Value>, 'selectedValue'> & {
+  readonly selectedLabel: string;
+};
+
+function AndroidNativeSelect<Value extends string | number>({
+  colors,
+  controlTestID,
+  disabled = false,
+  onValueChange,
+  options,
+  selectedLabel,
+}: AndroidNativeSelectProps<Value>) {
+  const [expanded, setExpanded] = useState(false);
+  const nativeSelectedLabel = useNativeState(selectedLabel);
+
+  useEffect(() => {
+    nativeSelectedLabel.set(selectedLabel);
+  }, [nativeSelectedLabel, selectedLabel]);
+
+  return (
+    <View testID={controlTestID}>
+      <Host matchContents={{ vertical: true }} style={styles.androidPickerHost}>
+        <ExposedDropdownMenuBox
+          expanded={expanded}
+          onExpandedChange={nextExpanded => setExpanded(nextExpanded && !disabled)}
+        >
+          <TextField
+            colors={{
+              disabledContainerColor: colors.surface,
+              disabledIndicatorColor: colors.border,
+              disabledTextColor: colors.text,
+              focusedContainerColor: colors.surface,
+              focusedIndicatorColor: colors.border,
+              focusedTextColor: colors.text,
+              unfocusedContainerColor: colors.surface,
+              unfocusedIndicatorColor: colors.border,
+              unfocusedTextColor: colors.text,
+            }}
+            enabled={!disabled}
+            modifiers={[
+              fillMaxWidth(),
+              height(48),
+              menuAnchor('primaryNotEditable', !disabled),
+            ]}
+            readOnly
+            value={nativeSelectedLabel}
+          />
+          <ExposedDropdownMenu
+            containerColor={colors.surface}
+            expanded={expanded}
+            onDismissRequest={() => setExpanded(false)}
+          >
+            {options.map(option => (
+              <DropdownMenuItem
+                elementColors={{ textColor: colors.text }}
+                key={option.value}
+                onClick={() => {
+                  onValueChange(option.value);
+                  setExpanded(false);
+                }}
+              >
+                <DropdownMenuItem.Text>
+                  <ComposeText color={colors.text}>{option.label}</ComposeText>
+                </DropdownMenuItem.Text>
+              </DropdownMenuItem>
+            ))}
+          </ExposedDropdownMenu>
+        </ExposedDropdownMenuBox>
+      </Host>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  androidPickerHost: {
+    minHeight: 48,
+    width: '100%',
+  },
   iosPicker: {
     alignItems: 'center',
     flexDirection: 'row',
