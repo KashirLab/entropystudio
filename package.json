@@ -34,7 +34,7 @@
     "prepare:entropylab": "node scripts/enable-entropylab-rlib.mjs entropylab",
     "generate:android": "npm run prepare:entropylab && ubrn build android --config ubrn.config.yaml --release --and-generate",
     "build:android": "npm run update:entropylab && npm run generate:android",
-    "install:android": "npm run build:android && cd example/android && ./gradlew :app:installDebug",
+    "install:android": "npm run build:android && cd example && npm run android",
     "generate:ios": "npm run prepare:entropylab && ubrn build ios --config ubrn.config.yaml --release --and-generate",
     "build:ios": "npm run update:entropylab && npm run generate:ios",
     "install:ios": "npm run build:ios && cd example && npm run ios",

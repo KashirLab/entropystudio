@@ -158,16 +158,11 @@ debug APK to use the development machine's Tailscale address when installing it:
 METRO_HOST="$(tailscale ip -4):8081" npm run install:android
 ```
 
-Then start Metro whenever you want to run or reload the debug app:
-
-```sh
-cd example
-npm start
-```
-
-The device fetches the bundle directly from Metro over Tailscale; it does not
-need an ADB connection or `adb reverse` to load JavaScript. Rebuild with a new
-`METRO_HOST` only when the development machine's reachable address changes.
+`install:android` starts Metro automatically and keeps it running while the
+debug app is open. The device fetches the bundle directly from Metro over
+Tailscale; it does not need an ADB connection or `adb reverse` to load
+JavaScript. Rebuild with a new `METRO_HOST` only when the development machine's
+reachable address changes.
 
 APK installation still uses ADB. For a device already paired through Android's
 Wireless debugging settings, connect it with the reachable device address and
