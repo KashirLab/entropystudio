@@ -394,11 +394,11 @@ describe(UPSTREAM_TEXT.vanity.tabLabel, () => {
     });
     const popup = app!.root.findByType(BottomSheet);
     if (Platform.OS === 'ios') {
-      expect(popup.props.snapPoints).toEqual([{ height: 560 }]);
+      expect(popup.props.snapPoints).toEqual([{ height: 460 }]);
     }
     expect(
       popup.findByProps({ testID: 'vanity-introduction-description-scroll' }).props.style,
-    ).toEqual({ height: 520 });
+    ).toEqual({ height: 420 });
     expect(popup.findByProps({ testID: 'vanity-introduction-description' }).props.children).toBe(
       UPSTREAM_TEXT.vanity.intro.description,
     );

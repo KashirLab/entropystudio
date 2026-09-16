@@ -1005,7 +1005,7 @@ export function VanityScreen({
           descriptionScrollable
           heading={UPSTREAM_TEXT.vanity.intro.title}
           headingTestID="vanity-screen-title"
-          sheetHeight={560}
+          sheetHeight={460}
           testIDPrefix="vanity-introduction"
           title={UPSTREAM_TEXT.vanity.intro.kicker}
         />
