@@ -40,7 +40,7 @@
     "install:ios": "npm run build:ios && cd example && npm run ios",
     "test:rust": "npm run prepare:entropylab && cargo test --manifest-path Cargo.toml --locked",
     "typecheck": "tsc --noEmit",
-    "check:upstream-ui-copy": "node scripts/sync-upstream-ui-copy.mjs && npm --prefix example test -- --runInBand private-key/PrivateKeyCopyProvenance.test.js",
+    "check:upstream-ui-copy": "node scripts/sync-upstream-ui-copy.mjs && npm --prefix example run test:copy-provenance",
     "test": "npm run test:rust && npm run typecheck"
   },
   "dependencies": {

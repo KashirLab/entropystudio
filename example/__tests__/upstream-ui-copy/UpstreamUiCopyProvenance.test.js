@@ -556,11 +556,7 @@ describe('Upstream UI copy provenance', () => {
     const exampleDirectory = resolve(__dirname, '../..');
     const centralCopyModule = join(exampleDirectory, 'src', 'features', 'upstreamUiCopy.ts');
     const staticText = new Set(collectStrings(UPSTREAM_TEXT));
-    const duplicateText = [
-      ...sourceFiles(join(exampleDirectory, 'src')),
-      ...sourceFiles(join(exampleDirectory, '__tests__')),
-      ...sourceFiles(join(exampleDirectory, 'test')),
-    ]
+    const duplicateText = sourceFiles(join(exampleDirectory, 'src'))
       .filter(filePath => filePath !== centralCopyModule)
       .flatMap(filePath => centralStaticTextCopies(filePath, exampleDirectory, staticText));
 

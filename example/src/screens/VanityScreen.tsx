@@ -301,6 +301,10 @@ function Toggle({
   readonly onPress: () => void;
   readonly testID: string;
 }) {
+  const checkboxFillStyle = {
+    backgroundColor: checked ? colors.accent : 'transparent',
+  };
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -317,10 +321,8 @@ function Toggle({
       <View
         style={[
           styles.checkbox,
-          {
-            backgroundColor: checked ? colors.accent : 'transparent',
-            borderColor: colors.accent,
-          },
+          checkboxFillStyle,
+          { borderColor: colors.accent },
         ]}
       >
         {checked ? (
@@ -352,6 +354,9 @@ export function VanityScreen({
   const runMetaRef = useRef<RunMeta | null>(null);
   const runRef = useRef<InstanceType<typeof VanityRun> | null>(null);
   const runningRef = useRef(false);
+  const clearNativeRunRef = useRef<() => void>(() => {});
+  const stopRunRef = useRef<() => void>(() => {});
+  const selectMethodRef = useRef<(method: VanityMethodId) => void>(() => {});
   const updatingMatchRef = useRef<number | null>(null);
   const [derivationCount, setDerivationCount] = useState('100000');
   const [derivationStart, setDerivationStart] = useState('0');
@@ -769,6 +774,10 @@ export function VanityScreen({
     setMethod(nextMethod);
   }
 
+  clearNativeRunRef.current = clearNativeRun;
+  stopRunRef.current = stopRun;
+  selectMethodRef.current = selectMethod;
+
   function selectScript(nextScript: VanityScriptId) {
     if (nextScript === script) {
       return;
@@ -923,13 +932,13 @@ export function VanityScreen({
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      clearNativeRun();
+      clearNativeRunRef.current();
     };
   }, []);
 
   useEffect(() => {
     if (!isActive) {
-      stopRun();
+      stopRunRef.current();
     }
   }, [isActive]);
 
@@ -959,7 +968,7 @@ export function VanityScreen({
       !supportsPassphraseGrind(selectedSource) &&
       method === 'passphrase'
     ) {
-      selectMethod('derivation');
+      selectMethodRef.current('derivation');
     }
   }, [method, selectedSource]);
 
@@ -1203,11 +1212,11 @@ export function VanityScreen({
               spellCheck={false}
               style={[
                 styles.textInput,
+                isRunning && styles.textInputDisabled,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
                   color: colors.text,
-                  opacity: isRunning ? 0.45 : 1,
                 },
               ]}
               testID="vanity-prefix"
@@ -1637,11 +1646,11 @@ function VanityNumberField({
         spellCheck={false}
         style={[
           styles.textInput,
+          disabled && styles.textInputDisabled,
           {
             backgroundColor: colors.surface,
             borderColor: colors.border,
             color: colors.text,
-            opacity: disabled ? 0.45 : 1,
           },
         ]}
         testID={testID}
@@ -1918,6 +1927,9 @@ const styles = StyleSheet.create({
     minHeight: 46,
     paddingHorizontal: 10,
     paddingVertical: 8,
+  },
+  textInputDisabled: {
+    opacity: 0.45,
   },
   toggle: {
     alignItems: 'center',
