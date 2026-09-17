@@ -15,7 +15,6 @@ import {
 import { ScriptTypeTabs } from '../features/keyStation/components/ScriptTypeTabs';
 import { keyStationSafetyNotes } from '../features/keyStation/keyStation';
 import {
-  KeyDerivationNetworkKind,
   keyDerivationAdvancedState,
   seedQrData,
 } from '../native/entropyStudio';
@@ -177,13 +176,6 @@ export function KeyStationResultScreen({
   const { derivation } = tab;
   const safetyNotes = keyStationSafetyNotes(tab);
   const derivationState = keyDerivationAdvancedState(tab.derivationSettings.advancedInput);
-  const resultPurpose = derivationState.purpose.valid
-    ? `${derivationState.purpose.value}${derivationState.purpose.hardened ? "'" : ''}`
-    : tab.derivationSettings.advancedInput.purpose;
-  // EntropyLab derives testnet only for coin type 1; every other valid coin
-  // type uses its mainnet address family.
-  const resultNetwork =
-    derivationState.networkKind === KeyDerivationNetworkKind.Testnet ? 'testnet' : 'mainnet';
   const seedQr =
     derivation.kind === 'bip39' && showingWalletData && showingPrivateRecoveryMaterial
       ? seedQrData(derivation.mnemonic)
@@ -195,7 +187,6 @@ export function KeyStationResultScreen({
         colors={colors}
         initialSection={accountSection}
         onBack={() => setShowingScriptType(false)}
-        network={resultNetwork}
         privateAccountMaterialInput={
           derivation.kind === 'bip39'
             ? {
@@ -211,7 +202,6 @@ export function KeyStationResultScreen({
               }
             : undefined
         }
-        purpose={resultPurpose}
         scriptType={tab.resultScriptType}
       />
     );

@@ -267,6 +267,7 @@ export const UPSTREAM_TEXT = {
     purpose: 'Purpose',
     purposeIndexHelp: 'Purpose index · Hardened · 0 to 2,147,483,647',
     scriptType: 'Script type',
+    scriptTypeLabel: 'Script type:',
     scriptTypes: {
       bip44: 'Legacy',
       bip49: 'Nested SegWit',

@@ -33,9 +33,7 @@ import {
 type Props = {
   readonly colors: DiceColors;
   readonly initialSection?: 'addresses' | 'account-private' | 'watch-only' | null;
-  readonly network: string;
   readonly onBack: () => void;
-  readonly purpose: string;
   readonly privateAccountMaterialInput?: {
     readonly accountPath: string;
     readonly masterFingerprint: string;
@@ -131,10 +129,8 @@ function AddressTable({
 export function ScriptTypePickerScreen({
   colors,
   initialSection,
-  network,
   onBack,
   privateAccountMaterialInput,
-  purpose,
   scriptType,
 }: Props) {
   const [privateMaterial, setPrivateMaterial] = useState<AccountPrivateMaterial | null>(null);
@@ -144,7 +140,6 @@ export function ScriptTypePickerScreen({
   const [showingBranchDescriptors, setShowingBranchDescriptors] = useState(false);
   const [showingAdvancedWatchOnlyExport, setShowingAdvancedWatchOnlyExport] = useState(false);
   const [showingAddresses, setShowingAddresses] = useState(false);
-  const [showingFirstAddressPopup, setShowingFirstAddressPopup] = useState(false);
   const [addressToCheck, setAddressToCheck] = useState('');
   const [addressCheck, setAddressCheck] = useState<AccountAddressCheck | null>(null);
   const [addressTableColumnWidths, setAddressTableColumnWidths] = useState<AddressTableColumnWidths>(
@@ -170,7 +165,6 @@ export function ScriptTypePickerScreen({
     setShowingBranchDescriptors(false);
     setShowingAdvancedWatchOnlyExport(false);
     setShowingAddresses(false);
-    setShowingFirstAddressPopup(false);
     setAddressToCheck('');
     setAddressCheck(null);
   }, [scriptType, privateAccountMaterialInput?.accountPath]);
@@ -263,15 +257,6 @@ export function ScriptTypePickerScreen({
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text
-          style={[styles.descriptionKicker, { color: colors.muted }]}
-          testID="key-station-script-type-kicker"
-        >
-          {UPSTREAM_UI_FALLBACK_COPY.keys.scriptTypeKicker(purpose, network)}
-        </Text>
-        <Text style={[styles.description, { color: colors.muted }]} testID="key-station-script-type-description">
-          {UPSTREAM_UI_LABELS.scriptBeginner[scriptType]}
-        </Text>
         {privateAccountMaterialInput ? (
           <View style={styles.privateMaterialSection}>
             {!initialSection ? (
@@ -560,43 +545,31 @@ export function ScriptTypePickerScreen({
                     {UPSTREAM_TEXT.result.addressesWifWarningTail}
                   </Text>
                 </KeyStationEdgeNote>
-                {privateMaterial.firstWatchOnlyAddress ? (
-                  <>
-                    <Pressable
-                      accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.result.address(
-                        watchOnlyBranchLabel(privateMaterial.firstWatchOnlyAddress.branch),
-                        privateMaterial.firstWatchOnlyAddress.index,
-                      )}
-                      accessibilityRole="button"
-                      onPress={() => setShowingFirstAddressPopup(true)}
-                      style={({ pressed }) => [styles.descriptorButton, { opacity: pressed ? 0.72 : 1 }]}
-                      testID="open-first-watch-only-address-popup"
-                    >
-                      <View style={styles.descriptorButtonContent}>
-                        <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
-                          {UPSTREAM_UI_FALLBACK_COPY.result.address(
-                            watchOnlyBranchLabel(privateMaterial.firstWatchOnlyAddress.branch),
-                            privateMaterial.firstWatchOnlyAddress.index,
-                          )}
-                        </Text>
-                        <Text accessibilityElementsHidden style={[styles.descriptorArrow, { color: colors.muted }]}>
-                          ›
-                        </Text>
-                      </View>
-                    </Pressable>
-                    {privateAccountMaterialInput.branches.map(branch => {
-                      const rows = privateMaterial.watchOnlyAddresses.filter(item => item.branch === branch);
-                      return rows.length ? (
-                        <AddressTable
-                          colors={colors}
-                          columnStyle={addressTableColumnStyle}
-                          key={branch}
-                          label={watchOnlyBranchLabel(branch)}
-                          measureColumn={measureAddressTableColumn}
-                          rows={rows}
-                        />
-                      ) : null;
-                    })}
+                <Text style={[styles.scriptTypeLabel, { color: colors.text }]}>
+                  {UPSTREAM_TEXT.keys.scriptTypeLabel}{' '}
+                  <Text style={styles.scriptTypeValue}>
+                    {UPSTREAM_TEXT.keys.scriptTypes[scriptType]}
+                  </Text>
+                </Text>
+                <Text
+                  style={[styles.scriptTypeDescription, { color: colors.muted }]}
+                  testID="key-station-script-type-description"
+                >
+                  {UPSTREAM_UI_LABELS.scriptBeginner[scriptType]}
+                </Text>
+                {privateAccountMaterialInput.branches.map(branch => {
+                  const rows = privateMaterial.watchOnlyAddresses.filter(item => item.branch === branch);
+                  return rows.length ? (
+                    <AddressTable
+                      colors={colors}
+                      columnStyle={addressTableColumnStyle}
+                      key={branch}
+                      label={watchOnlyBranchLabel(branch)}
+                      measureColumn={measureAddressTableColumn}
+                      rows={rows}
+                    />
+                  ) : null;
+                })}
                     <View style={styles.addressCheckSection}>
                       <Text style={[styles.privateMaterialTitle, { color: colors.text }]}>
                         {UPSTREAM_UI_FALLBACK_COPY.result.checkAnAddress}
@@ -644,8 +617,6 @@ export function ScriptTypePickerScreen({
                         </Text>
                       ) : null}
                     </View>
-                  </>
-                ) : null}
               </View>
             ) : null}
             <Modal
@@ -687,42 +658,6 @@ export function ScriptTypePickerScreen({
                 </View>
               </View>
             </Modal>
-            <Modal
-              animationType="fade"
-              onRequestClose={() => setShowingFirstAddressPopup(false)}
-              transparent
-              visible={showingFirstAddressPopup && privateMaterial?.firstWatchOnlyAddress !== undefined}
-            >
-              <View style={styles.modalBackdrop}>
-                <Pressable
-                  accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
-                  onPress={() => setShowingFirstAddressPopup(false)}
-                  style={styles.modalDismissArea}
-                  testID="close-first-watch-only-address-popup"
-                />
-                {privateMaterial?.firstWatchOnlyAddress ? (
-                  <View style={[styles.modalCard, { backgroundColor: colors.background }]}>
-                    <QrCode
-                      accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.result.address(
-                        watchOnlyBranchLabel(privateMaterial.firstWatchOnlyAddress.branch),
-                        privateMaterial.firstWatchOnlyAddress.index,
-                      )}
-                      border={2}
-                      data={privateMaterial.firstWatchOnlyAddress.address}
-                      ecc="M"
-                      size={qrWidth}
-                      testID="first-watch-only-address-qr-code"
-                    />
-                    <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
-                      {privateMaterial.firstWatchOnlyAddress.address}
-                    </Text>
-                    <Text selectable style={[styles.addressPath, { color: colors.muted }]}>
-                      {privateMaterial.firstWatchOnlyAddress.path}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            </Modal>
           </View>
         ) : null}
       </ScrollView>
@@ -734,7 +669,6 @@ const styles = StyleSheet.create({
   backButton: { paddingVertical: 6 },
   backButtonText: { fontSize: 14, fontWeight: '700' },
   addressesButton: { marginTop: 16 },
-  addressPath: { fontFamily: 'monospace', fontSize: 14, lineHeight: 21, marginBottom: 16 },
   addressIndexCell: { marginRight: 4 },
   addressCheckHelp: { fontSize: 12, lineHeight: 18, marginTop: 8 },
   addressCheckInput: { borderRadius: 6, borderWidth: 1, fontSize: 14, marginTop: 12, minHeight: 44, paddingHorizontal: 12 },
@@ -754,8 +688,6 @@ const styles = StyleSheet.create({
   addressValueCell: { marginRight: 8 },
   addressWifCell: {},
   content: { paddingBottom: 28, paddingHorizontal: 24, paddingTop: 22 },
-  description: { fontSize: 14, lineHeight: 21, marginTop: 4 },
-  descriptionKicker: { fontSize: 14, fontWeight: '700', lineHeight: 21, marginTop: 12 },
   descriptorArrow: { fontSize: 24, lineHeight: 24 },
   descriptorButton: { marginBottom: 16 },
   descriptorButtonContent: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
@@ -806,6 +738,9 @@ const styles = StyleSheet.create({
   qrImportNote: { fontSize: 12, lineHeight: 18, marginTop: 8, textAlign: 'center' },
   watchOnlyButton: { marginTop: 16 },
   screen: { flex: 1 },
+  scriptTypeDescription: { fontSize: 14, lineHeight: 21, marginTop: 0 },
+  scriptTypeLabel: { fontSize: 14, fontWeight: '600', lineHeight: 21, marginBottom: 4 },
+  scriptTypeValue: { fontWeight: '400' },
 });
 
 function nativeScriptType(scriptType: KeyStationScriptType): AccountScriptType {
