@@ -14,6 +14,7 @@ import type { NativeSelectOption } from '../components/NativeSelect';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
 import { diceColors } from '../features/dice/diceTheme';
 import type { KeyStationTab } from '../features/keyStation/keyStation';
+import { STUDIO_UI_TEXT } from '../features/studioUiCopy';
 import {
   formatCopy,
   UPSTREAM_TEXT,
@@ -42,6 +43,7 @@ const MAX_DISPLAYED_MATCHES = 100;
 
 type VanityMethodId = 'passphrase' | 'derivation';
 type VanityScriptId = 'p2pkh' | 'p2sh-p2wpkh' | 'p2wpkh' | 'p2tr' | 'sp';
+type VanityView = 'setup' | 'entry';
 type VanitySourceTab = KeyStationTab & {
   readonly derivation: Extract<
     KeyStationTab['derivation'],
@@ -385,6 +387,7 @@ export function VanityScreen({
   );
   const [totalFound, setTotalFound] = useState(0);
   const [updatingMatch, setUpdatingMatch] = useState<number | null>(null);
+  const [activeView, setActiveView] = useState<VanityView>('setup');
   const [workers, setWorkers] = useState('1');
 
   const sourceTabs = useMemo(() => tabs.filter(isVanitySource), [tabs]);
@@ -1008,6 +1011,8 @@ export function VanityScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {activeView === 'setup' ? (
+          <>
         <KeyStationIntroduction
           colors={colors}
           description={UPSTREAM_TEXT.vanity.intro.description}
@@ -1191,7 +1196,52 @@ export function VanityScreen({
               selectedValue={script}
             />
           </View>
+        </View>
 
+        <View style={styles.setupActionArea}>
+          <Pressable
+            accessibilityLabel={STUDIO_UI_TEXT.actions.start}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !selectedSource || isRunning }}
+            disabled={!selectedSource || isRunning}
+            onPress={() => setActiveView('entry')}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              {
+                backgroundColor: colors.accent,
+                opacity: !selectedSource || isRunning ? 0.45 : pressed ? 0.82 : 1,
+              },
+            ]}
+            testID="open-vanity-entry"
+          >
+            <Text style={[styles.buttonText, { color: colors.onAccent }]}>
+              {STUDIO_UI_TEXT.actions.start}
+            </Text>
+          </Pressable>
+        </View>
+          </>
+        ) : (
+          <>
+        <View style={[styles.entryHeader, { borderBottomColor: colors.border }]}>
+          <Pressable
+            accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isRunning }}
+            disabled={isRunning}
+            onPress={() => setActiveView('setup')}
+            style={({ pressed }) => [
+              styles.backButton,
+              { opacity: isRunning ? 0.45 : pressed ? 0.72 : 1 },
+            ]}
+            testID="close-vanity-entry"
+          >
+            <Text style={[styles.backButtonText, { color: colors.accent }]}>
+              {UPSTREAM_UI_FALLBACK_COPY.common.back}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.section}>
           <View style={styles.fieldGroup}>
             <Text style={[styles.fieldLabel, { color: colors.muted }]}>
               {UPSTREAM_TEXT.vanity.form.addressPrefix}
@@ -1609,6 +1659,8 @@ export function VanityScreen({
         <Text style={[styles.privacy, { color: colors.muted }]}>
           {UPSTREAM_TEXT.vanity.warnings.privacy}
         </Text>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -1710,6 +1762,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  backButton: {
+    alignSelf: 'flex-start',
+    minHeight: 36,
+    justifyContent: 'center',
+    paddingRight: 12,
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
   content: {
     paddingBottom: 24,
     paddingHorizontal: CONTENT_HORIZONTAL_PADDING,
@@ -1719,6 +1781,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     marginTop: 8,
+  },
+  entryHeader: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 4,
+    paddingBottom: 8,
   },
   estimate: {
     fontSize: 13,
@@ -1854,6 +1921,10 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
+  },
+  setupActionArea: {
+    marginBottom: 18,
+    marginTop: -2,
   },
   secondaryButton: {
     alignItems: 'center',
