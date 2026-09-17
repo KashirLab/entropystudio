@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SoftKeyboard } from '../../../components/SoftKeyboard';
 import type { DiceColors } from '../../dice/diceTheme';
+import { UPSTREAM_UI_FALLBACK_COPY } from '../../upstreamUiCopy';
 import type { NumberBaseFormat } from '../numberBases';
 
 const CONTENT_HORIZONTAL_PADDING = 24;
@@ -31,7 +32,7 @@ export function NumberBaseKeypad({
 }: Props) {
   const { width: windowWidth } = useWindowDimensions();
 
-  if (format === 'base64') {
+  if (format === 'base32' || format === 'base64') {
     return (
       <SoftKeyboard
         canDelete={canDelete}
@@ -42,6 +43,12 @@ export function NumberBaseKeypad({
         keyboardTestID="number-base-keypad"
         keyTestIDPrefix="number-base-key-"
         modeControl="enabled"
+        modeLabel={
+          format === 'base32'
+            ? UPSTREAM_UI_FALLBACK_COPY.keyboard.bech32ModeButton
+            : undefined
+        }
+        modes={format === 'base32' ? ['lower', 'number'] : undefined}
         modeTestID="number-base-keypad-mode"
         onDelete={onDelete}
         onInsert={onInsert}

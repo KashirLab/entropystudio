@@ -33,6 +33,8 @@ type Props = {
   readonly keyboardTestID: string;
   readonly keyTestIDPrefix: string;
   readonly modeControl: ModeControl;
+  readonly modeLabel?: string;
+  readonly modes?: readonly SoftKeyboardMode[];
   readonly modeTestID?: string;
   readonly onDelete: () => void;
   readonly onInsert: (character: string) => void;
@@ -51,6 +53,8 @@ export function SoftKeyboard({
   keyboardTestID,
   keyTestIDPrefix,
   modeControl,
+  modeLabel = UPSTREAM_UI_FALLBACK_COPY.keyboard.modeButton,
+  modes = ['lower', 'upper', 'number'],
   modeTestID,
   onDelete,
   onInsert,
@@ -77,7 +81,6 @@ export function SoftKeyboard({
   );
 
   function cycleMode() {
-    const modes: readonly KeyboardMode[] = ['lower', 'upper', 'number'];
     const nextIndex = (modes.indexOf(mode) + 1) % modes.length;
     setMode(modes[nextIndex]);
   }
@@ -149,7 +152,7 @@ export function SoftKeyboard({
             testID={modeTestID}
           >
             <Text style={[styles.modeLabel, { color: colors.text }]}>
-              {UPSTREAM_UI_FALLBACK_COPY.keyboard.modeButton}
+              {modeLabel}
             </Text>
           </Pressable>
         )}

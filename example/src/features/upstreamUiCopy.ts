@@ -699,6 +699,7 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     },
   },
   keyboard: {
+    bech32ModeButton: 'a1',
     modeButton: 'aA1',
     spaceButton: 'space',
   },

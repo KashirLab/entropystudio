@@ -65,6 +65,7 @@ describe('Upstream UI copy provenance', () => {
 
   test('excludes upstream accessibility-only copy', () => {
     expect(Object.keys(UPSTREAM_UI_FALLBACK_COPY.keyboard).sort()).toEqual([
+      'bech32ModeButton',
       'modeButton',
       'spaceButton',
     ]);
