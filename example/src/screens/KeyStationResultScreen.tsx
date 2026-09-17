@@ -30,6 +30,7 @@ import type {
   KeyStationSafetyNote,
   KeyStationScriptType,
   KeyStationTab,
+  KeyStationDerivation,
 } from '../features/keyStation/keyStation';
 import {
   formatCopy,
@@ -155,13 +156,18 @@ function keyStationSummaryTitle(tab: KeyStationTab): string {
       submethod = UPSTREAM_TEXT.seed.method[tab.input.method];
       break;
     case 'private-key':
-      submethod = UPSTREAM_TEXT.key[
-        tab.input.format === 'hex-key' ? 'hex' : tab.input.format
-      ];
+      submethod = UPSTREAM_TEXT.key[tab.input.format];
       break;
   }
 
   return UPSTREAM_UI_FALLBACK_COPY.keys.summaryMethod(method, submethod);
+}
+
+// Native navigation handles every BIP39 destination above. Keep the fallback
+// renderer typed as the complete persisted result union for the private-key
+// path it owns below.
+function fallbackResultDerivation(tab: KeyStationTab): KeyStationDerivation {
+  return tab.derivation;
 }
 
 export function KeyStationResultScreen({
@@ -418,6 +424,8 @@ export function KeyStationResultScreen({
     );
   }
 
+  const fallbackDerivation = fallbackResultDerivation(tab);
+
   if (showingScriptType) {
     return (
       <ScriptTypePickerScreen
@@ -425,7 +433,7 @@ export function KeyStationResultScreen({
         initialSection={accountSection}
         onBack={() => setShowingScriptType(false)}
         privateAccountMaterialInput={
-          derivation.kind === 'bip39'
+          fallbackDerivation.kind === 'bip39'
             ? {
                 accountPath: tab.derivationSettings.accountPath,
                 addressIndex: derivationState.addressWindow.start.value,
@@ -437,8 +445,8 @@ export function KeyStationResultScreen({
                   tab.derivationSettings.advancedHardening.address,
                 branchHardened: tab.derivationSettings.advancedHardening.branch,
                 masterFingerprint: tab.masterFingerprint,
-                mnemonic: derivation.mnemonic,
-                passphrase: derivation.passphrase,
+                mnemonic: fallbackDerivation.mnemonic,
+                passphrase: fallbackDerivation.passphrase,
               }
             : undefined
         }
@@ -473,7 +481,7 @@ export function KeyStationResultScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {showingWalletData && derivation.kind === 'bip39' ? (
+        {showingWalletData && fallbackDerivation.kind === 'bip39' ? (
           <View testID="wallet-data-screen">
             <Pressable
               accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
@@ -516,7 +524,7 @@ export function KeyStationResultScreen({
                       <SeedQrPanel
                         colors={colors}
                         data={seedQr}
-                        passphraseUsed={Boolean(derivation.passphrase)}
+                        passphraseUsed={Boolean(fallbackDerivation.passphrase)}
                       />
                     ) : undefined
                   }
@@ -526,12 +534,12 @@ export function KeyStationResultScreen({
                     UPSTREAM_UI_FALLBACK_COPY.result.masterSeedHex
                   }
                   mnemonicLabel={UPSTREAM_UI_FALLBACK_COPY.result.seedPhrase(
-                    derivation.mnemonic.trim().split(/\s+/).length,
+                    fallbackDerivation.mnemonic.trim().split(/\s+/).length,
                   )}
                   result={{
-                    entropy: derivation.entropy,
-                    masterSeed: derivation.masterSeed,
-                    mnemonic: derivation.mnemonic,
+                    entropy: fallbackDerivation.entropy,
+                    masterSeed: fallbackDerivation.masterSeed,
+                    mnemonic: fallbackDerivation.mnemonic,
                     rootXprv: tab.rootXprv,
                   }}
                   rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, {
@@ -573,7 +581,7 @@ export function KeyStationResultScreen({
               </View>
             ) : null}
           </View>
-        ) : derivation.kind === 'private-key' ? (
+        ) : fallbackDerivation.kind === 'private-key' ? (
           <>
             <View
               style={styles.privateKeySummary}
@@ -643,7 +651,7 @@ export function KeyStationResultScreen({
             </Pressable>
           </>
         ) : null}
-        {derivation.kind === 'bip39' && !showingWalletData ? (
+        {fallbackDerivation.kind === 'bip39' && !showingWalletData ? (
           <>
             <View style={styles.summary} testID="key-station-summary">
               <View style={styles.summaryHeader}>
@@ -711,7 +719,7 @@ export function KeyStationResultScreen({
               onOpen={openDerivationSection}
             />
           </>
-        ) : derivation.kind === 'private-key' &&
+        ) : fallbackDerivation.kind === 'private-key' &&
           showingPrivateRecoveryMaterial ? (
           <>
             <KeyStationEdgeNote
@@ -727,9 +735,9 @@ export function KeyStationResultScreen({
               colors={colors}
               entropyLabel={UPSTREAM_TEXT.result.hexPrivateKey}
               result={{
-                entropy: derivation.entropy,
-                wifCompressed: derivation.wifCompressed,
-                wifUncompressed: derivation.wifUncompressed,
+                entropy: fallbackDerivation.entropy,
+                wifCompressed: fallbackDerivation.wifCompressed,
+                wifUncompressed: fallbackDerivation.wifUncompressed,
               }}
               wifCompressedLabel={UPSTREAM_TEXT.result.wifCompressed}
               wifUncompressedLabel={UPSTREAM_TEXT.result.wifUncompressed}

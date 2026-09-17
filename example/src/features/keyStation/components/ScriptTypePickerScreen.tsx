@@ -396,7 +396,7 @@ export function ScriptTypePickerScreen({
                     </Text>
                   </>
                 ) : null}
-                <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>
+                <Text style={[styles.privateMaterialTitle, { color: colors.muted }]}>
                   {UPSTREAM_TEXT.result.slip132PrefixNote}
                 </Text>
                 {privateMaterial.multisigCosignerXpub ? (
