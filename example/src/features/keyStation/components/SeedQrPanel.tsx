@@ -140,13 +140,14 @@ export function SeedQrPanel({ colors, data, passphraseUsed }: Props) {
       {seedQrButton}
       {showingSeedQr ? (
         <>
-          <Text
-            style={[styles.note, { color: colors.muted }]}
-            testID="seed-qr-intro"
-          >
-            {UPSTREAM_TEXT.result.seedQrScan}
-            {passphraseUsed ? UPSTREAM_TEXT.result.seedQrPassphrase : ''}
-          </Text>
+          {passphraseUsed ? (
+            <Text
+              style={[styles.note, { color: colors.muted }]}
+              testID="seed-qr-passphrase-note"
+            >
+              {UPSTREAM_TEXT.result.seedQrPassphrase}
+            </Text>
+          ) : null}
           <Pressable
             accessibilityLabel={UPSTREAM_TEXT.result.seedQrNumeric}
             accessibilityRole="button"

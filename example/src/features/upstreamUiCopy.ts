@@ -401,7 +401,6 @@ export const UPSTREAM_TEXT = {
     seedQrNumeric: 'SeedQR. Numeric.',
     seedQrPassphrase:
       ' This QR is the seed only. Enter the passphrase on the signer after scanning.',
-    seedQrScan: 'SeedQR. Numeric.',
     seedQrUnsupported:
       'SeedQR is defined for 12 and 24 word phrases. Type this {n}-word seed on the signer.',
     safety: {
