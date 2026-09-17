@@ -36,21 +36,27 @@ export const UPSTREAM_TEXT = {
       directNext: 'Shuffle {set} (any suit) before the next draw.',
       hashedAgain: 'Shuffle the full 52-card deck again before the next draw.',
       hashedFirst: 'Shuffle a standard 52-card deck before the first draw.',
-      hashedNext: 'Deal the next card without replacement from the shuffled deck.',
-      hashedSecond: 'Deal the next card without replacement from the second shuffle.',
+      hashedNext:
+        'Deal the next card without replacement from the shuffled deck.',
+      hashedSecond:
+        'Deal the next card without replacement from the second shuffle.',
     },
     meta: {
       directComplete:
         'All {n} rank draws entered · checksum-valid {words}-word seed ready to derive',
-      directFinal: 'Final word · draw {draw} of {need} from {set} after shuffling',
+      directFinal:
+        'Final word · draw {draw} of {need} from {set} after shuffling',
       directWord: 'Word {word} of {words} · draw {draw} of 4 from {set}',
-      directWordShuffle: 'Word {word} of {words} · draw {draw} of 4 from {set} after shuffling',
+      directWordShuffle:
+        'Word {word} of {words} · draw {draw} of 4 from {set} after shuffling',
       extraCard: '{n} extra card highlighted',
       extraCards: '{n} extra cards highlighted',
-      hashedEmpty: '0 of {need} recommended cards · 0.0 bits estimated · Hashed card transcript',
+      hashedEmpty:
+        '0 of {need} recommended cards · 0.0 bits estimated · Hashed card transcript',
       hashedExtra: 'all {n} extra cards are included',
       hashedExtraOne: 'all {n} extra card is included',
-      hashedMissing: '{have} of {need} recommended cards · {bits} bits estimated · seed available for testing · {missing} more recommended',
+      hashedMissing:
+        '{have} of {need} recommended cards · {bits} bits estimated · seed available for testing · {missing} more recommended',
       hashedReady: '{n} cards · {bits} bits estimated · ready to derive',
       hashedReadyOne: '{n} card · {bits} bits estimated · ready to derive',
       invalidRank: '{n} invalid rank highlighted',
@@ -71,7 +77,8 @@ export const UPSTREAM_TEXT = {
     conversionArrow: '→',
     d16: 'D16',
     d8: 'D8',
-    directDiceNote: '(show how direct word selection produces each BIP39 index)',
+    directDiceNote:
+      '(show how direct word selection produces each BIP39 index)',
     dplusDescription:
       'D8 contributes 8 values and each hexadecimal D16 contributes 16 values, giving 8 × 16 × 16 = 2048 possible indices.',
     dplusTitle: 'D++ calculations',
@@ -108,10 +115,12 @@ export const UPSTREAM_TEXT = {
     dplus: {
       aCoinFlip: 'a coin flip',
       coinFlip: 'coin flip',
-      coinNote: ' The final D8 is interpreted as a coin flip: 1–4 is Heads, 5–8 is Tails. Or flip a real coin!',
+      coinNote:
+        ' The final D8 is interpreted as a coin flip: 1–4 is Heads, 5–8 is Tails. Or flip a real coin!',
       desc: 'Roll one D8 labeled 1–8 and two hexadecimal D16 dice labeled 0–F for each of the first {partialWords} words, then {final} to select the valid checksum final word.',
       helpOne: 'One final {die} roll selects the checksum word.',
-      helpTwo: 'One final {a} roll and one final {b} roll select the checksum word.{coin}',
+      helpTwo:
+        'One final {a} roll and one final {b} roll select the checksum word.{coin}',
       helpTwoSame: 'Two final {die} rolls select the checksum word.',
       range: {
         coin: ' (1–4 Heads, 5–8 Tails)',
@@ -135,10 +144,14 @@ export const UPSTREAM_TEXT = {
       wordProgress: 'Word {word} of {partial}',
     },
     help: {
-      bitbox: '{partialWords} lookup-table words fill one slot at a time, then choose a confirmed final checksum word. Use 1–4 for the first five rolls (if you get 5 or 6, roll again). The sixth roll is treated as the coin: 1–3 is Heads, 4–6 is Tails. Or flip a real coin!',
-      coldcard: 'The original dice digit string is hashed with SHA-256. This Base 10 [0-9] method matches COLDCARD and SeedSigner. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
-      coleman: 'Every rolled 6 becomes 0 before the complete digit string is hashed with SHA-256. This Dice [1-6] method matches the method used by Keystone. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
-      dplus: 'Enter the D8 face from 1–8, then both hexadecimal D16 faces from 0–F exactly as shown on the dice. For example, 100 selects abandon and 8FF selects zoo. {finalHelp}',
+      bitbox:
+        '{partialWords} lookup-table words fill one slot at a time, then choose a confirmed final checksum word. Use 1–4 for the first five rolls (if you get 5 or 6, roll again). The sixth roll is treated as the coin: 1–3 is Heads, 4–6 is Tails. Or flip a real coin!',
+      coldcard:
+        'The original dice digit string is hashed with SHA-256. This Base 10 [0-9] method matches COLDCARD and SeedSigner. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
+      coleman:
+        'Every rolled 6 becomes 0 before the complete digit string is hashed with SHA-256. This Dice [1-6] method matches the method used by Keystone. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
+      dplus:
+        'Enter the D8 face from 1–8, then both hexadecimal D16 faces from 0–F exactly as shown on the dice. For example, 100 selects abandon and 8FF selects zoo. {finalHelp}',
     },
     how: 'How to turn rolls into a {words}-word seed',
     label: {
@@ -151,7 +164,8 @@ export const UPSTREAM_TEXT = {
       extra: ' · all {n} extra roll(s) included',
       extraIgnored: ' · {n} extra input(s) ignored',
       invalid: ' · {n} invalid input(s) highlighted',
-      missing: '{have} of {n} recommended rolls · {bits} bits estimated · seed available for testing · {missing} more recommended',
+      missing:
+        '{have} of {n} recommended rolls · {bits} bits estimated · seed available for testing · {missing} more recommended',
       ready: '{have} roll(s) · {bits} bits estimated · ready to derive',
     },
     method: {
@@ -164,10 +178,12 @@ export const UPSTREAM_TEXT = {
     generic: 'Could not calculate',
     priv: {
       brainEmpty: 'Enter the brain-wallet recovery passphrase.',
-      brainTrimmedEmpty: 'Trimming boundary whitespace leaves an empty brain-wallet recovery passphrase.',
+      brainTrimmedEmpty:
+        'Trimming boundary whitespace leaves an empty brain-wallet recovery passphrase.',
       enter: 'Enter a private key.',
       hex: 'Enter exactly 64 hexadecimal characters (0–9 and a–f).',
-      miniFormat: 'Mini keys must start with S and contain 22 or 30 Bitcoin Base58 characters.',
+      miniFormat:
+        'Mini keys must start with S and contain 22 or 30 Bitcoin Base58 characters.',
       miniInvalid: 'Not a valid Casascius mini private key.',
       range: 'Private key is out of the secp256k1 range.',
       wif: 'Enter a valid {network} WIF private key ({hint}).',
@@ -193,12 +209,14 @@ export const UPSTREAM_TEXT = {
   },
   key: {
     brain: 'Brain wallet',
-    brainDesc: 'Unsafe. SHA-256 of your text, as a single key pair or a 24-word seed.',
+    brainDesc:
+      'Unsafe. SHA-256 of your text, as a single key pair or a 24-word seed.',
     brainWalletTrim: 'Trim leading and trailing whitespace',
     formatHeading: 'Private key format',
     hex: 'Private key hex',
     hexDesc: 'Raw 32-byte private key as 64 hexadecimal characters.',
-    inputHelp: 'Enter the value matching the selected format. Brain wallet text is hashed with SHA-256.',
+    inputHelp:
+      'Enter the value matching the selected format. Brain wallet text is hashed with SHA-256.',
     inputLabel: 'Private key or recovery passphrase',
     mini: 'Mini key',
     miniDesc: 'Casascius-style short key.',
@@ -271,7 +289,8 @@ export const UPSTREAM_TEXT = {
       'First receive index to derive · Unhardened · 0 to 2,147,483,647',
     startingAddressIndexReceiveAndChangeHelp:
       'First receive and change index to derive · Unhardened · 0 to 2,147,483,647',
-    addressBranchRangeReceiveAndChangeHelp: 'Derives Receive and Change branches · Max 2',
+    addressBranchRangeReceiveAndChangeHelp:
+      'Derives Receive and Change branches · Max 2',
     station: 'Key Station',
     stationIntroduction: {
       description:
@@ -288,10 +307,14 @@ export const UPSTREAM_TEXT = {
     seed: 'Seed phrase',
   },
   numberBases: {
-    mixedRemainder:
-      ' The final character is mixed-radix: it contributes only {n} bit(s) and must be one of {chars}.',
-    remainderBinary:
-      ' Enter {fullDigits} complete {shortLabel} characters; the controls and progress message then switch to {n} coin flip(s), using Heads (0) or Tails (1).',
+    mixedRemainderMany:
+      'The final character is mixed-radix: it contributes the remaining {n} entropy bits and must be one of {chars}.',
+    mixedRemainderOne:
+      'The final character is mixed-radix: it contributes the remaining {n} entropy bit and must be one of {chars}.',
+    remainderBinaryMany:
+      '{full} complete {label} characters are followed by {n} individual coin-flip entropy bits.',
+    remainderBinaryOne:
+      '{full} complete {label} characters are followed by {n} individual coin-flip entropy bit.',
     requirement: '{words} words require exactly {digits} {unit}.',
     setupRemainderBinary:
       ' Enter {fullDigits} complete {shortLabel} characters followed by {n} coin flip(s), using Heads (0) or Tails (1).',
@@ -299,24 +322,32 @@ export const UPSTREAM_TEXT = {
       ' The final character contributes {n} bit(s) and must be one of {chars}.',
   },
   note: {
-    bitboxSkippedMany: 'Skipped {n} faces of 5 or 6 on the first five dice of a word (reroll).',
-    bitboxSkippedOne: 'Skipped {n} face of 5 or 6 on the first five dice of a word (reroll).',
+    bitboxSkippedMany:
+      'Skipped {n} faces of 5 or 6 on the first five dice of a word (reroll).',
+    bitboxSkippedOne:
+      'Skipped {n} face of 5 or 6 on the first five dice of a word (reroll).',
   },
   passphrase: {
     autocomplete: 'Autocomplete BIP39 words',
     buildFromWords: 'Build passphrase from BIP39 words',
     incompleteOne: '{n} complete BIP39 word · finish the current word',
     incompleteMany: '{n} complete BIP39 words · finish the current word',
-    inconsistentOne: '{n} passphrase inconsistency highlighted · use complete lowercase English BIP39 words separated by single spaces',
-    inconsistentMany: '{n} passphrase inconsistencies highlighted · use complete lowercase English BIP39 words separated by single spaces',
+    inconsistentOne:
+      '{n} passphrase inconsistency highlighted · use complete lowercase English BIP39 words separated by single spaces',
+    inconsistentMany:
+      '{n} passphrase inconsistencies highlighted · use complete lowercase English BIP39 words separated by single spaces',
     label: 'Optional BIP39 passphrase',
     placeholder: 'Enter a BIP39 passphrase, or leave blank for none',
-    trailingSeparatorOne: '{n} complete BIP39 word · start the next word or remove the final space',
-    trailingSeparatorMany: '{n} complete BIP39 words · start the next word or remove the final space',
+    trailingSeparatorOne:
+      '{n} complete BIP39 word · start the next word or remove the final space',
+    trailingSeparatorMany:
+      '{n} complete BIP39 words · start the next word or remove the final space',
     wordsEnteredOne: '{n} lowercase BIP39 passphrase word entered',
     wordsEnteredMany: '{n} lowercase BIP39 passphrase words entered',
-    wordsHelp: 'Use complete lowercase English BIP39 words separated by single spaces.',
-    wordsNote: 'Use complete lowercase English BIP39 words separated by single spaces',
+    wordsHelp:
+      'Use complete lowercase English BIP39 words separated by single spaces.',
+    wordsNote:
+      'Use complete lowercase English BIP39 words separated by single spaces',
   },
   result: {
     privateAccountMaterial: 'Private account material',
@@ -326,16 +357,20 @@ export const UPSTREAM_TEXT = {
       'Keep these exports together only in secure offline backups.',
     privateAccountMaterialWarningTail:
       "An account extended public key combined with any non-hardened descendant private key, including a WIF shown in the address tables, can reconstruct that account's extended private key.",
-    genericDescriptorCompatibility: 'Generic {name} for descriptor compatibility',
+    genericDescriptorCompatibility:
+      'Generic {name} for descriptor compatibility',
     multisigCosigner: 'Multisig co-signer {prefix} · {label}',
-    addressCheckSearching: 'Not in the {n} shown addresses. Checking further indices',
+    addressCheckSearching:
+      'Not in the {n} shown addresses. Checking further indices',
     addressesWithWif: '{label} with WIF private keys',
-    slip132PrefixNote: 'Prefix swap only (same payload, new version bytes and checksum). Script lives in the descriptor, not the prefix. x = legacy, y = nested BIP49, z = native BIP84, Y = nested BIP48 nested-msig, Z = native BIP48 native-msig. Testnet: t / u / v / U / V. No Taproot SLIP prefix.',
+    slip132PrefixNote:
+      'Prefix swap only (same payload, new version bytes and checksum). Script lives in the descriptor, not the prefix. x = legacy, y = nested BIP49, z = native BIP84, Y = nested BIP48 nested-msig, Z = native BIP48 native-msig. Testnet: t / u / v / U / V. No Taproot SLIP prefix.',
     watchOnlyAccountWarningLead: 'Cannot spend:',
     watchOnlyAccountWarningTail:
-      'these exports can monitor every address and reveal this account\'s transaction history and balance. Treat them as privacy-sensitive.',
+      "these exports can monitor every address and reveal this account's transaction history and balance. Treat them as privacy-sensitive.",
     compactSeedQr: 'CompactSeedQR. Same seed, smaller binary code.',
-    compactSeedQrCompatible: 'Compatible with: SeedSigner, Krux, Jade, Passport.',
+    compactSeedQrCompatible:
+      'Compatible with: SeedSigner, Krux, Jade, Passport.',
     entropyHex: 'BIP39 entropy hex',
     hexPrivateKey: 'Hex private key',
     privateKey: 'Private key material',
@@ -360,11 +395,14 @@ export const UPSTREAM_TEXT = {
       'These values identify the wallet or enable watch-only use, but do not authorize spending. Treat them as privacy-sensitive because extended public keys and descriptors can reveal wallet addresses, balances, and transaction history.',
     safetyNotes: 'Safety notes',
     seedQr: 'SeedQR',
-    seedQrCompatible: 'Compatible with: SeedSigner, Krux, Jade, Passport, Coldcard Q.',
+    seedQrCompatible:
+      'Compatible with: SeedSigner, Krux, Jade, Passport, Coldcard Q.',
     seedQrNumeric: 'SeedQR. Numeric.',
-    seedQrPassphrase: ' This QR is the seed only. Enter the passphrase on the signer after scanning.',
+    seedQrPassphrase:
+      ' This QR is the seed only. Enter the passphrase on the signer after scanning.',
     seedQrScan: 'Scan into a camera signer. This is the seed.',
-    seedQrUnsupported: 'SeedQR is defined for 12 and 24 word phrases. Type this {n}-word seed on the signer.',
+    seedQrUnsupported:
+      'SeedQR is defined for 12 and 24 word phrases. Type this {n}-word seed on the signer.',
     safety: {
       cards: {
         countMany: '{n} cards ≈ {bits} bits.',
@@ -417,15 +455,18 @@ export const UPSTREAM_TEXT = {
           'Lab only. Strength is the entropy of this text, not the 24-word count.',
         brainHdUnsalted:
           'SHA-256(text) is unsalted and fast. Anyone who can guess the text recovers the wallet.',
-        brainRecoveryExact: 'Brain wallet recovery: SHA-256 used the passphrase exactly as entered.',
+        brainRecoveryExact:
+          'Brain wallet recovery: SHA-256 used the passphrase exactly as entered.',
         brainRecoveryTrimmed:
           'Brain wallet recovery: SHA-256 used the passphrase after trimming leading and trailing whitespace.',
         brainWarning:
           'Brain wallets are dangerous. Humans pick guessable phrases. Anyone who guesses the phrase takes the coins. Prefer dice or a hardware-verified seed.',
         hex: 'Decoded a 32-byte hex private key.',
         mini: 'Casascius mini private key decoded via SHA-256.',
-        wifCompressed: 'Decoded a compressed WIF private key (starts with K or L on mainnet).',
-        wifUncompressed: 'Decoded an uncompressed WIF private key (starts with 5 on mainnet).',
+        wifCompressed:
+          'Decoded a compressed WIF private key (starts with K or L on mainnet).',
+        wifUncompressed:
+          'Decoded an uncompressed WIF private key (starts with 5 on mainnet).',
       },
     },
     walletData: 'Wallet data',
@@ -443,33 +484,44 @@ export const UPSTREAM_TEXT = {
     lastWordLabel: 'Valid final word ({n} choices)',
     lastWordPlaceholder: 'Choose a confirmed final word',
     meta: {
-      checksumInvalid: '{progress} · BIP39 checksum invalid · final word number highlighted',
-      chooseFinal: '{progress} · choose the final checksum word · {n} valid choices',
-      extra: '{entered} entered · {words} required · {n} extra highlighted · remove to continue',
-      extraWords: '{entered} entered · {words} required BIP39 words · {n} extra highlighted · remove to continue',
-      invalidNumber: '{progress} · Word {n} number “{token}” is outside {min}–{max} · correct to continue',
-      invalidWord: '{progress} · Word {n} (“{word}”) is not on the BIP39 English list · correct to continue',
+      checksumInvalid:
+        '{progress} · BIP39 checksum invalid · final word number highlighted',
+      chooseFinal:
+        '{progress} · choose the final checksum word · {n} valid choices',
+      extra:
+        '{entered} entered · {words} required · {n} extra highlighted · remove to continue',
+      extraWords:
+        '{entered} entered · {words} required BIP39 words · {n} extra highlighted · remove to continue',
+      invalidNumber:
+        '{progress} · Word {n} number “{token}” is outside {min}–{max} · correct to continue',
+      invalidWord:
+        '{progress} · Word {n} (“{word}”) is not on the BIP39 English list · correct to continue',
       numberProgress: '{entered} of {words} BIP39 word numbers entered',
       ready: '{progress} · checksum valid · ready to derive',
       remaining: '{progress} · {remaining} remaining',
-      remainingRange: '{progress} · {remaining} remaining · valid range {min}–{max}',
+      remainingRange:
+        '{progress} · {remaining} remaining · valid range {min}–{max}',
     },
     method: {
       numbers: 'BIP39 word numbers',
-      numbersDesc: 'Enter each word\'s position in the standard English list, using 1 through 2048 by default.',
+      numbersDesc:
+        "Enter each word's position in the standard English list, using 1 through 2048 by default.",
       words: 'Direct word entry',
       wordsDesc: 'Type or paste the English BIP39 words themselves.',
     },
     nextWord: 'Next word',
     noFinalPrefix: 'No valid checksum word starts with “{prefix}”',
-    numbersHelp: 'Enter one {range} number for each word, separated by spaces. The corresponding BIP39 words appear below.',
+    numbersHelp:
+      'Enter one {range} number for each word, separated by spaces. The corresponding BIP39 words appear below.',
     numbersLabel: 'Your {words} BIP39 word numbers',
     numbersPlaceholder0: '0 1 2 …',
     numbersPlaceholder1: '1 2 3 …',
     range0: '0 through 2047',
     range1: '1 through 2048',
-    requirementNumbers: 'Enter exactly {words} BIP39 word numbers using {range}.',
-    requirementWords: 'Enter exactly {words} BIP39 words. Extended keys ignore this selection.',
+    requirementNumbers:
+      'Enter exactly {words} BIP39 word numbers using {range}.',
+    requirementWords:
+      'Enter exactly {words} BIP39 words. Extended keys ignore this selection.',
     zeroIndex: 'Use zero-indexed word numbers',
     zeroIndexNote: '(0–2047 instead of the default 1–2048)',
   },
@@ -490,7 +542,7 @@ export const UPSTREAM_TEXT = {
       passphrase:
         'A vanity passphrase is a BIP39 passphrase: the seed words alone no longer recover the wallet. After Update key, record the passphrase with the same care as the words.',
       mainnet:
-        'Matching is Bitcoin mainnet, at the key\'s first receive address (its own purpose, account, branch, and address index). Update key re-derives the key, so the Keys tab, its exports, and the Journal show the vanity wallet.',
+        "Matching is Bitcoin mainnet, at the key's first receive address (its own purpose, account, branch, and address index). Update key re-derives the key, so the Keys tab, its exports, and the Journal show the vanity wallet.",
       privacy:
         'Found passphrases remain in this page only and are never intentionally stored or sent. Memory clearing is best-effort because browsers may retain internal copies; close the page before reconnecting the computer.',
     },
@@ -500,7 +552,7 @@ export const UPSTREAM_TEXT = {
       startingPassphrase: 'Starting passphrase',
       placeholder: 'No passphrase — the key uses its seed words alone',
       noKeyYet:
-        'Derive a key on the Keys tab first — the grinder searches that key\'s passphrase or account index. A key with seed words supports both methods; a root-xprv key supports the derivation grind only.',
+        "Derive a key on the Keys tab first — the grinder searches that key's passphrase or account index. A key with seed words supports both methods; a root-xprv key supports the derivation grind only.",
     },
     form: {
       method: 'Method',
@@ -525,7 +577,7 @@ export const UPSTREAM_TEXT = {
       },
       help: {
         methodPassphrase:
-          'Each candidate is the starting passphrase followed by the counter characters, stretched into a seed (2,048 PBKDF2 rounds) and derived at the key\'s path. A match is a new passphrase for this key.',
+          "Each candidate is the starting passphrase followed by the counter characters, stretched into a seed (2,048 PBKDF2 rounds) and derived at the key's path. A match is a new passphrase for this key.",
         prefixP2wpkh:
           'Native SegWit P2WPKH prefix, starts with “bc1q”. Live-filtered to lowercase bech32 characters; each free character multiplies the work by ~32.',
         passphraseLength:
@@ -538,7 +590,7 @@ export const UPSTREAM_TEXT = {
         accountsToTry:
           'Account indexes to grind. After a run, Start account continues where the range ended.',
         workers:
-          'One per CPU core is fastest; defaults to this device\'s core count.',
+          "One per CPU core is fastest; defaults to this device's core count.",
       },
     },
     actions: {
@@ -557,7 +609,8 @@ export const UPSTREAM_TEXT = {
     },
   },
   sync: {
-    description: '(Keeps non-hashed methods synchronized. Hashed inputs update them one way and are never overwritten.)',
+    description:
+      '(Keeps non-hashed methods synchronized. Hashed inputs update them one way and are never overwritten.)',
     entropyUnknown: 'entropy unknown · only as strong as the text',
     shortfall: '{n} bits of entropy · under {min}',
     status: 'Key synced',
@@ -626,7 +679,8 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
   cards: {
     colemanNote: 'show and hash A♠ 2♣ instead of As 2c',
     deal24: 'deal all 52 unique cards, shuffle again, then deal 6 more',
-    dealN: (needed: number) => `deal ${needed} unique cards without putting them back`,
+    dealN: (needed: number) =>
+      `deal ${needed} unique cards without putting them back`,
     directHelp: (partialWords: number) =>
       `For each of the first ${partialWords} words, shuffle and draw from A–8 three times, then A–4 once. Each four-character group selects one word; spaces separate the groups. The shorter final group supplies the remaining entropy bits, and EntropyLab calculates the BIP39 checksum bits.`,
     directTranscript: 'Rank-only draw transcript',
@@ -637,7 +691,8 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
       `Cards use rank then suit, like AS, 10H, or TD. Ignored: ${ignored}`,
     hashedInputHelp: (deal: string) =>
       `Each valid card updates a deterministic test seed. For real security, ${deal}. SHA-256 hashes the ASCII transcript (As 2c Td).`,
-    checksumError: 'The direct card sequence did not produce a valid BIP39 checksum.',
+    checksumError:
+      'The direct card sequence did not produce a valid BIP39 checksum.',
     placeholders: {
       direct: 'A284 37A2 …',
       ianColeman: 'A♠ 2♣ T♥ T♦…',
@@ -667,7 +722,8 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     spaceButton: 'space',
   },
   keys: {
-    scriptTypeKicker: (purpose: string, network: string) => `Purpose ${purpose} · ${network}`,
+    scriptTypeKicker: (purpose: string, network: string) =>
+      `Purpose ${purpose} · ${network}`,
     advanced: (() => {
       const hardeningLabel = (hardened: boolean) =>
         hardened ? 'Hardened' : 'Unhardened';
@@ -795,7 +851,9 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
             case 'address-start':
               return 'Starting address index must be a whole number from 0 to 2,147,483,647.';
             case 'address-range':
-              return `Address range must be a whole number from 1 to ${formatKeyDerivationNumber(addressMaximum)}.`;
+              return `Address range must be a whole number from 1 to ${formatKeyDerivationNumber(
+                addressMaximum,
+              )}.`;
           }
         },
         genericAddressStartHelp: (hardened: boolean) =>
@@ -821,10 +879,13 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
       brain: {
         boundaryWhitespaceWillBeTrimmed: 'Boundary whitespace will be trimmed',
         empty: () => 'No text entered · brain wallets are unsafe',
-        entered: (convention: string) => `Text entered · ${convention} · brain wallets are unsafe`,
+        entered: (convention: string) =>
+          `Text entered · ${convention} · brain wallets are unsafe`,
         exactText: 'Exact text will be used',
-        exactTextWithBoundaryWhitespace: 'Exact text will be used, including boundary whitespace',
-        trimEnabledNoBoundaryWhitespace: 'Trim enabled; no boundary whitespace present',
+        exactTextWithBoundaryWhitespace:
+          'Exact text will be used, including boundary whitespace',
+        trimEnabledNoBoundaryWhitespace:
+          'Trim enabled; no boundary whitespace present',
         trimmedEmpty: () =>
           'Boundary whitespace trimming leaves an empty passphrase · enter non-whitespace text or turn trimming off',
       },
@@ -833,7 +894,11 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
           `${enteredCount} hexadecimal characters entered · ${requiredCount} required`,
         ready: (enteredCount: number, requiredCount: number) =>
           `${enteredCount} of ${requiredCount} hexadecimal characters entered · valid secp256k1 private key · ready to derive`,
-        remaining: (enteredCount: number, requiredCount: number, remainingCount: number) =>
+        remaining: (
+          enteredCount: number,
+          requiredCount: number,
+          remainingCount: number,
+        ) =>
           `${enteredCount} of ${requiredCount} hexadecimal characters entered · ${remainingCount} remaining`,
       },
       mini: {
@@ -843,17 +908,29 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
           `0 of ${minimumCount} or ${maximumCount} Mini-key characters entered · must start with S`,
         ready: (enteredCount: number, requiredCount: number) =>
           `${enteredCount} of ${requiredCount} Mini-key characters entered · checksum valid · ready to derive`,
-        remaining: (enteredCount: number, requiredCount: number, remainingCount: number) =>
+        remaining: (
+          enteredCount: number,
+          requiredCount: number,
+          remainingCount: number,
+        ) =>
           `${enteredCount} of ${requiredCount} Mini-key characters entered · ${remainingCount} remaining`,
       },
       wif: {
         excess: (enteredCount: number, requiredCount: number) =>
           `${enteredCount} WIF characters entered · ${requiredCount} required`,
-        prefix: (enteredCount: number, minimumCount: number, maximumCount: number) =>
+        prefix: (
+          enteredCount: number,
+          minimumCount: number,
+          maximumCount: number,
+        ) =>
           `${enteredCount} of ${minimumCount} or ${maximumCount} WIF characters entered · starts with 5, K, or L`,
         ready: (enteredCount: number, requiredCount: number) =>
           `${enteredCount} of ${requiredCount} WIF characters entered · Bitcoin mainnet checksum valid · ready to derive`,
-        remaining: (enteredCount: number, requiredCount: number, remainingCount: number) =>
+        remaining: (
+          enteredCount: number,
+          requiredCount: number,
+          remainingCount: number,
+        ) =>
           `${enteredCount} of ${requiredCount} WIF characters entered · ${remainingCount} remaining`,
       },
     },
@@ -866,7 +943,9 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     nativeSegwitBip48: 'Native SegWit · BIP48',
     bitcoinCore: (label: string) => `Bitcoin Core ${label}`,
     genericDescriptorCompatibility: (label: string) =>
-      formatCopy(UPSTREAM_TEXT.result.genericDescriptorCompatibility, { name: label }),
+      formatCopy(UPSTREAM_TEXT.result.genericDescriptorCompatibility, {
+        name: label,
+      }),
     multisigCosigner: (prefix: string, label: string) =>
       formatCopy(UPSTREAM_TEXT.result.multisigCosigner, { prefix, label }),
     address: (label: string, index: number) => `${label} address #${index}`,
@@ -889,13 +968,16 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     watchOnlyWalletDescriptor: 'Watch-only wallet descriptor',
     masterSeedHex: 'Master seed hex',
     seedPhrase: (wordCount: number) => `Your seed phrase · ${wordCount} words`,
-    spendingDescriptor: (branch: string) => `Spending ${branch.toLowerCase()} descriptor`,
-    watchOnlyDescriptor: (branch: string) => `Watch-only ${branch.toLowerCase()} descriptor`,
+    spendingDescriptor: (branch: string) =>
+      `Spending ${branch.toLowerCase()} descriptor`,
+    watchOnlyDescriptor: (branch: string) =>
+      `Watch-only ${branch.toLowerCase()} descriptor`,
     slip132: (label: string) => `SLIP-132 ${label}`,
   },
   seedPhrase: {
     autocomplete: 'Autocomplete BIP39 words',
-    placeholder: (wordCount: number) => `Enter exactly ${wordCount} BIP39 words`,
+    placeholder: (wordCount: number) =>
+      `Enter exactly ${wordCount} BIP39 words`,
     wordsHelp: (wordCount: number, partialWords: number) =>
       `Enter exactly ${wordCount} English BIP39 words. You can also paste an extended key here; the selected phrase length does not apply to extended keys. With ${partialWords} compatible diceware words, choose the final checksum word below.`,
     wordsLabel: (wordCount: number) => `Your ${wordCount}-word seed phrase`,
@@ -908,12 +990,14 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
         title: 'HD wallet with seed phrase',
       },
       scalar: {
-        description: 'The digest is the private key. One address, the original brain-wallet behaviour.',
+        description:
+          'The digest is the private key. One address, the original brain-wallet behaviour.',
         title: 'Single key pair',
       },
     },
     warning: {
-      acknowledgementDescription: 'Required once this session, in page memory only.',
+      acknowledgementDescription:
+        'Required once this session, in page memory only.',
       hdLines: [
         'The 24-word count is not the strength; the text is.',
         'A valid mnemonic does not mean it is the same wallet as hashing the text as a private-key scalar.',
@@ -963,7 +1047,7 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
         sp: 'Silent Payments BIP-352',
       },
       methodDerivationHelp:
-        'The passphrase stays as it is; each candidate is the next BIP32 account index at the key\'s path. A match is an account index holding the vanity address — Update key sets it on the key.',
+        "The passphrase stays as it is; each candidate is the next BIP32 account index at the key's path. A match is an account index holding the vanity address — Update key sets it on the key.",
       prefixPlaceholder: (prefix: string) => `${prefix}…`,
       prefixHelp: {
         silentPayment: (
@@ -971,7 +1055,9 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
           prefix: string,
           firstFree: readonly string[],
         ) =>
-          `${label} code, starts with “${prefix}”; the next character is one of ${firstFree.join(' ')} (the scan key's parity). Live-filtered to lowercase bech32 characters; each further free character multiplies the work by ~32.`,
+          `${label} code, starts with “${prefix}”; the next character is one of ${firstFree.join(
+            ' ',
+          )} (the scan key's parity). Live-filtered to lowercase bech32 characters; each further free character multiplies the work by ~32.`,
         bech32: (label: string, prefix: string) =>
           `${label} prefix, starts with “${prefix}”. Live-filtered to lowercase bech32 characters; each free character multiplies the work by ~32.`,
         base58: (label: string, prefix: string) =>
@@ -1074,16 +1160,18 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
               ? 'Stopped at first match'
               : 'Stopped'
             : 'Range complete'
-        }: ${done} candidates, ${found} match${
-          found === 1 ? '' : 'es'
-        }. Next ${derivation ? 'account' : 'counter'}: ${nextStart}.`,
+        }: ${done} candidates, ${found} match${found === 1 ? '' : 'es'}. Next ${
+          derivation ? 'account' : 'counter'
+        }: ${nextStart}.`,
       saved: (
         savedTo: string,
         accountIndex: number | null,
         sourceLabel: string,
       ) =>
         `Saved to key ${savedTo}: ${
-          accountIndex !== null ? `account ${accountIndex}` : 'the new passphrase'
+          accountIndex !== null
+            ? `account ${accountIndex}`
+            : 'the new passphrase'
         } is now on the key${
           sourceLabel !== savedTo
             ? ` — its master fingerprint and LifeHash changed from ${sourceLabel} to ${savedTo}`
@@ -1092,7 +1180,7 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     },
     errors: {
       keyRequired:
-        'Pick a Key Station key first — the grinder searches that key\'s passphrase or account index.',
+        "Pick a Key Station key first — the grinder searches that key's passphrase or account index.",
       counterLabels: {
         startAccount: 'The start account',
         accountRange: 'The account range',
@@ -1114,11 +1202,13 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
         prefix: string,
         firstFree: readonly string[],
       ) =>
-        `The character after “${prefix}” encodes the scan key's parity: every ${scriptLabel} code continues with one of ${firstFree.join(', ')}.`,
+        `The character after “${prefix}” encodes the scan key's parity: every ${scriptLabel} code continues with one of ${firstFree.join(
+          ', ',
+        )}.`,
       startingPassphraseTooLong: (length: number, maximum: number) =>
         `The starting passphrase is ${length} UTF-8 bytes, over the ${maximum}-byte vanity limit — shorten it on the Keys tab.`,
       mnemonicMissing:
-        'The passphrase grind needs the key\'s seed words — this key has no mnemonic.',
+        "The passphrase grind needs the key's seed words — this key has no mnemonic.",
       mnemonicTooLong: (length: number, maximum: number) =>
         `The mnemonic is ${length} UTF-8 bytes, over the ${maximum}-byte vanity limit.`,
       passphraseLength: (maximum: number) =>
@@ -1157,7 +1247,8 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
         `Key ${label} carries neither seed words nor a root xprv.`,
       watchOnly: (label: string) =>
         `Key ${label} is watch-only; the derivation grind needs private material.`,
-      wholeNumber: (label: string) => `${label} is a whole number (digits only).`,
+      wholeNumber: (label: string) =>
+        `${label} is a whole number (digits only).`,
       keyNoLongerInStation: (label: string) =>
         `Key ${label} is no longer in Key Station, so there is nothing to update.`,
       derivationAlreadyRunning:

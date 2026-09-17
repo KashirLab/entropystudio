@@ -343,7 +343,7 @@ fn number_base_config(
         NumberBaseFormat::Base4 => ("0123", false, 2),
         NumberBaseFormat::Base8 => ("01234567", false, 3),
         NumberBaseFormat::Hex => ("0123456789ABCDEF", false, 4),
-        NumberBaseFormat::Base32 => ("0123456789ABCDEFGHJKMNPQRSTVWXYZ", true, 5),
+        NumberBaseFormat::Base32 => ("qpzry9x8gf2tvdw0s3jn54khce6mua7l", false, 5),
         NumberBaseFormat::Base64 => (
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
             true,
@@ -391,15 +391,10 @@ fn normalize_character(character: char, format: NumberBaseFormat) -> char {
         return character;
     }
 
-    let normalized = character.to_ascii_uppercase();
     if matches!(format, NumberBaseFormat::Base32) {
-        match normalized {
-            'O' => '0',
-            'I' | 'L' => '1',
-            _ => normalized,
-        }
+        character.to_ascii_lowercase()
     } else {
-        normalized
+        character.to_ascii_uppercase()
     }
 }
 

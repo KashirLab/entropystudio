@@ -2,26 +2,16 @@ use super::*;
 
 #[test]
 fn number_base_input_analysis_and_entropy_are_owned_by_rust() {
-    let aliases = analyze_number_base_input(
-        format!("{}000", "O".repeat(25)),
-        NumberBaseFormat::Base32,
-        12,
-    )
-    .unwrap();
-    assert_eq!(aliases.digits, 28);
-    assert_eq!(aliases.full_digits, 25);
-    assert_eq!(aliases.final_characters, "01");
-    assert_eq!(aliases.remainder_bits, 3);
-    assert_eq!(aliases.digit_count, 28);
-    assert!(aliases.is_ready);
-    assert_eq!(aliases.preview_words, vec!["abandon".to_owned(); 11]);
+    let bech32 = analyze_number_base_input("q".repeat(26), NumberBaseFormat::Base32, 12).unwrap();
+    assert_eq!(bech32.digits, 26);
+    assert_eq!(bech32.full_digits, 25);
+    assert_eq!(bech32.final_characters, "qpzry9x8");
+    assert_eq!(bech32.remainder_bits, 3);
+    assert_eq!(bech32.digit_count, 26);
+    assert!(bech32.is_ready);
+    assert_eq!(bech32.preview_words, vec!["abandon".to_owned(); 11]);
     assert_eq!(
-        number_base_entropy(
-            format!("{}000", "O".repeat(25)),
-            NumberBaseFormat::Base32,
-            12,
-        )
-        .unwrap(),
+        number_base_entropy("q".repeat(26), NumberBaseFormat::Base32, 12).unwrap(),
         vec![0; 16]
     );
 
@@ -50,7 +40,14 @@ fn number_base_formats_and_zero_entropy_vectors_are_native_owned() {
             0,
             "0123456789ABCDEF",
         ),
-        (NumberBaseFormat::Base32, "0".repeat(28), 28, 25, 3, "01"),
+        (
+            NumberBaseFormat::Base32,
+            "q".repeat(26),
+            26,
+            25,
+            3,
+            "qpzry9x8",
+        ),
         (
             NumberBaseFormat::Base64,
             format!("{}00", "A".repeat(21)),

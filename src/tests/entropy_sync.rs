@@ -17,7 +17,7 @@ fn entropy_sync_emits_upstream_direct_representations() {
     assert!(!snapshot.entropy_below_minimum);
     assert_eq!(snapshot.minimum_entropy_bits, 128);
     assert_eq!(snapshot.hex, "0".repeat(32));
-    assert_eq!(snapshot.base32, format!("{}000", "0".repeat(25)));
+    assert_eq!(snapshot.base32, "q".repeat(26));
     assert_eq!(snapshot.base64, format!("{}00", "A".repeat(21)));
     assert_eq!(
         snapshot.seed_words,
@@ -94,7 +94,7 @@ fn entropy_sync_emits_only_complete_destination_symbols() {
     assert_eq!(snapshot.base4, "22");
     assert_eq!(snapshot.base8, "5");
     assert_eq!(snapshot.hex, "A");
-    assert_eq!(snapshot.base32, "N");
+    assert_eq!(snapshot.base32, "4");
     assert!(snapshot.base64.is_empty());
     assert!(snapshot.seed_words.is_empty());
 

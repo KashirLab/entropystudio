@@ -64,7 +64,10 @@ type Props = {
   readonly editInputRequest: KeyStationTab | null;
   readonly isActive: boolean;
   readonly isDarkMode: boolean;
-  readonly onDeriveKey: (derivation: KeyStationDerivation, input: KeyStationInput) => void;
+  readonly onDeriveKey: (
+    derivation: KeyStationDerivation,
+    input: KeyStationInput,
+  ) => void;
   readonly onSelectTool: (tool: EntropyTool) => void;
 };
 
@@ -78,7 +81,9 @@ const EMPTY_INPUT_VALUES: InputValues = {
 };
 
 function entropyHex(entropy: ArrayBuffer): string {
-  return Array.from(new Uint8Array(entropy), byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(entropy), byte =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 function numberBaseInputHelp(
@@ -87,15 +92,25 @@ function numberBaseInputHelp(
 ): string {
   const remainder = config.remainderBits
     ? config.binaryRemainder
-      ? formatCopy(UPSTREAM_TEXT.numberBases.remainderBinary, {
-          fullDigits: config.fullDigits,
-          n: config.remainderBits,
-          shortLabel: config.shortLabel,
-        })
-      : formatCopy(UPSTREAM_TEXT.numberBases.mixedRemainder, {
-          chars: [...config.finalCharacters].join(', '),
-          n: config.remainderBits,
-        })
+      ? formatCopy(
+          config.remainderBits === 1
+            ? UPSTREAM_TEXT.numberBases.remainderBinaryOne
+            : UPSTREAM_TEXT.numberBases.remainderBinaryMany,
+          {
+            full: config.fullDigits,
+            label: config.shortLabel,
+            n: config.remainderBits,
+          },
+        )
+      : formatCopy(
+          config.remainderBits === 1
+            ? UPSTREAM_TEXT.numberBases.mixedRemainderOne
+            : UPSTREAM_TEXT.numberBases.mixedRemainderMany,
+          {
+            chars: [...config.finalCharacters].join(', '),
+            n: config.remainderBits,
+          },
+        )
     : '';
 
   const labels = UPSTREAM_UI_LABELS.hexFormat[format];
@@ -143,13 +158,22 @@ function normalizedInputSelection(
   value: string,
   selection: InputSelection | null,
 ): InputSelection {
-  const start = Math.min(Math.max(selection?.start ?? value.length, 0), value.length);
+  const start = Math.min(
+    Math.max(selection?.start ?? value.length, 0),
+    value.length,
+  );
   const end = Math.min(Math.max(selection?.end ?? start, start), value.length);
   return { end, start };
 }
 
-function replaceInputSelection(value: string, selection: InputSelection, inserted: string): string {
-  return `${value.slice(0, selection.start)}${inserted}${value.slice(selection.end)}`;
+function replaceInputSelection(
+  value: string,
+  selection: InputSelection,
+  inserted: string,
+): string {
+  return `${value.slice(0, selection.start)}${inserted}${value.slice(
+    selection.end,
+  )}`;
 }
 
 export function NumberBasesScreen({
@@ -164,10 +188,16 @@ export function NumberBasesScreen({
   const [activeView, setActiveView] = useState<NumberBasesView>('setup');
   const [deriveError, setDeriveError] = useState<string | null>(null);
   const [format, setFormat] = useState<NumberBaseFormat>('bin');
-  const [inputValues, setInputValues] = useState<InputValues>(EMPTY_INPUT_VALUES);
-  const [inputSelection, setInputSelection] = useState<InputSelection | null>(null);
+  const [inputValues, setInputValues] =
+    useState<InputValues>(EMPTY_INPUT_VALUES);
+  const [inputSelection, setInputSelection] = useState<InputSelection | null>(
+    null,
+  );
   const [passphrase, setPassphrase] = useState('');
-  const passphraseOptions = useBip39PassphraseOptions(passphrase, autocompleteEnabled);
+  const passphraseOptions = useBip39PassphraseOptions(
+    passphrase,
+    autocompleteEnabled,
+  );
   const [wordCount, setWordCount] = useState<WordCount>(24);
   const entropySync = useEntropySync();
   const colors = diceColors(isDarkMode);
@@ -175,7 +205,8 @@ export function NumberBasesScreen({
   const analysis = analyzeNumberBaseInput(input, format, wordCount);
   const entropy = numberBaseEntropy(input, format, wordCount);
   const selectedInput = normalizedInputSelection(input, inputSelection);
-  const canDeleteInput = selectedInput.end > selectedInput.start || selectedInput.start > 0;
+  const canDeleteInput =
+    selectedInput.end > selectedInput.start || selectedInput.start > 0;
   const canInsertInputSpace =
     input.length > 0 &&
     !/\s$/u.test(input) &&
@@ -185,15 +216,25 @@ export function NumberBasesScreen({
     analysis.config.label,
     wordCount,
   );
-  const formatRequirement = numberBaseSetupRequirement(wordCount, analysis.config);
+  const formatRequirement = numberBaseSetupRequirement(
+    wordCount,
+    analysis.config,
+  );
   const hasLongSetupGuidance = format === 'base32' || format === 'base64';
   const supportsCalculations =
-    format === 'bin' || format === 'base4' || format === 'base8' || format === 'hex';
+    format === 'bin' ||
+    format === 'base4' ||
+    format === 'base8' ||
+    format === 'hex';
   const calculations = useMemo(
-    () => (supportsCalculations ? numberBaseCalculations(input, format, wordCount) : null),
+    () =>
+      supportsCalculations
+        ? numberBaseCalculations(input, format, wordCount)
+        : null,
     [format, input, supportsCalculations, wordCount],
   );
-  const canDeriveWithPassphrase = Boolean(entropy) && passphraseOptions.canDerive;
+  const canDeriveWithPassphrase =
+    Boolean(entropy) && passphraseOptions.canDerive;
   let mnemonic = '';
   let words = [...analysis.previewWords];
 
@@ -234,10 +275,15 @@ export function NumberBasesScreen({
       return undefined;
     }
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      setActiveView(view => (view === 'passphrase' || view === 'calculations' ? 'entry' : 'setup'));
-      return true;
-    });
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        setActiveView(view =>
+          view === 'passphrase' || view === 'calculations' ? 'entry' : 'setup',
+        );
+        return true;
+      },
+    );
     return () => subscription.remove();
   }, [activeView, isActive]);
 
@@ -271,7 +317,11 @@ export function NumberBasesScreen({
 
   function canInsertInputCharacter(character: string): boolean {
     const candidate = replaceInputSelection(input, selectedInput, character);
-    const candidateAnalysis = analyzeNumberBaseInput(candidate, format, wordCount);
+    const candidateAnalysis = analyzeNumberBaseInput(
+      candidate,
+      format,
+      wordCount,
+    );
     return (
       candidateAnalysis.invalidCharacterCount === 0 &&
       candidateAnalysis.excessDigitCount === 0 &&
@@ -296,8 +346,12 @@ export function NumberBasesScreen({
     }
 
     const start =
-      selectedInput.end > selectedInput.start ? selectedInput.start : selectedInput.start - 1;
-    const nextInput = `${input.slice(0, start)}${input.slice(selectedInput.end)}`;
+      selectedInput.end > selectedInput.start
+        ? selectedInput.start
+        : selectedInput.start - 1;
+    const nextInput = `${input.slice(0, start)}${input.slice(
+      selectedInput.end,
+    )}`;
     updateInput(nextInput);
     setInputSelection({ end: start, start });
   }
@@ -321,19 +375,22 @@ export function NumberBasesScreen({
       const derivedMnemonic = entropyToMnemonic(entropy);
       const masterSeed = mnemonicToSeed(derivedMnemonic, passphrase);
       setDeriveError(null);
-      onDeriveKey({
-        entropy: entropyHex(entropy),
-        kind: 'bip39',
-        masterSeed: entropyHex(masterSeed),
-        mnemonic: derivedMnemonic,
-        passphrase,
-      }, {
-        format,
-        inputValues,
-        kind: 'number-bases',
-        passphrase,
-        wordCount,
-      });
+      onDeriveKey(
+        {
+          entropy: entropyHex(entropy),
+          kind: 'bip39',
+          masterSeed: entropyHex(masterSeed),
+          mnemonic: derivedMnemonic,
+          passphrase,
+        },
+        {
+          format,
+          inputValues,
+          kind: 'number-bases',
+          passphrase,
+          wordCount,
+        },
+      );
     } catch {
       setDeriveError(UPSTREAM_TEXT.error.generic);
     }
@@ -353,16 +410,21 @@ export function NumberBasesScreen({
     >
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="number-bases-setup-view">
-            <KeyStationIntroduction colors={colors} />
-            <EntropyMethodList
+          <KeyStationIntroduction colors={colors} />
+          <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
             isActive={isActive}
             onSelect={onSelectTool}
-            />
+          />
 
-            <View style={styles.setupSettings} testID="number-bases-setup-settings">
-            <Text style={[styles.label, { color: colors.muted }]}>{UPSTREAM_TEXT.hex.heading}</Text>
+          <View
+            style={styles.setupSettings}
+            testID="number-bases-setup-settings"
+          >
+            <Text style={[styles.label, { color: colors.muted }]}>
+              {UPSTREAM_TEXT.hex.heading}
+            </Text>
             <View style={styles.formatRows}>
               {NUMBER_BASE_FORMATS.map(option => {
                 const selected = option === format;
@@ -384,7 +446,10 @@ export function NumberBasesScreen({
                   >
                     <Text
                       numberOfLines={1}
-                      style={[styles.formatLabel, { color: selected ? colors.text : colors.muted }]}
+                      style={[
+                        styles.formatLabel,
+                        { color: selected ? colors.text : colors.muted },
+                      ]}
                     >
                       {numberBaseFormatConfig(option, wordCount).label}
                     </Text>
@@ -393,7 +458,7 @@ export function NumberBasesScreen({
               })}
             </View>
             <Text style={[styles.formatDescription, { color: colors.muted }]}>
-              {UPSTREAM_UI_LABELS.hexFormat[format].desc}
+              {numberBaseInputHelp(format, analysis.config)}
             </Text>
             <Text
               style={[styles.formatRequirement, { color: colors.muted }]}
@@ -401,7 +466,7 @@ export function NumberBasesScreen({
             >
               {formatRequirement}
             </Text>
-            </View>
+          </View>
 
           <View
             style={[
@@ -427,7 +492,9 @@ export function NumberBasesScreen({
         </View>
       ) : activeView === 'entry' ? (
         <View style={styles.entryContent} testID="number-bases-entry-view">
-          <View style={[styles.entryHeader, { borderBottomColor: colors.border }]}>
+          <View
+            style={[styles.entryHeader, { borderBottomColor: colors.border }]}
+          >
             <Pressable
               accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
               accessibilityRole="button"
@@ -439,7 +506,10 @@ export function NumberBasesScreen({
                 {UPSTREAM_UI_FALLBACK_COPY.common.back}
               </Text>
             </Pressable>
-            <View style={styles.entryHeaderCopy} testID="number-bases-entry-header-copy">
+            <View
+              style={styles.entryHeaderCopy}
+              testID="number-bases-entry-header-copy"
+            >
               <MasterFingerprintHeader
                 colors={colors}
                 mnemonic={mnemonic}
@@ -481,7 +551,9 @@ export function NumberBasesScreen({
                 colors={colors}
                 disabled={!canDeleteInput}
                 onPress={deleteInputCharacter}
-                style={format === 'base32' ? styles.base32InputAction : undefined}
+                style={
+                  format === 'base32' ? styles.base32InputAction : undefined
+                }
                 testID="number-base-undo"
               />
             ) : null}
@@ -495,30 +567,48 @@ export function NumberBasesScreen({
               style={styles.inputHelpScroll}
               testID="number-base-help-scroll"
             >
-              <Text style={[styles.inputHelp, { color: colors.muted }]} testID="number-base-help">
+              <Text
+                style={[styles.inputHelp, { color: colors.muted }]}
+                testID="number-base-help"
+              >
                 {inputHelp}
               </Text>
             </ScrollView>
           ) : (
             <Text
-              style={[styles.inputHelp, styles.staticInputHelp, { color: colors.muted }]}
+              style={[
+                styles.inputHelp,
+                styles.staticInputHelp,
+                { color: colors.muted },
+              ]}
               testID="number-base-help"
             >
               {inputHelp}
             </Text>
           )}
-          <View style={[styles.inputSurface, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View
+            style={[
+              styles.inputSurface,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             <TextInput
               accessibilityLabel={inputLabel}
               autoCapitalize={format === 'base64' ? 'none' : 'characters'}
               autoComplete="off"
               autoCorrect={false}
               importantForAutofill="no"
-              keyboardType={format === 'bin' || format === 'base4' || format === 'base8' ? 'number-pad' : 'default'}
+              keyboardType={
+                format === 'bin' || format === 'base4' || format === 'base8'
+                  ? 'number-pad'
+                  : 'default'
+              }
               multiline
               numberOfLines={2}
               onChangeText={updateInput}
-              onSelectionChange={({ nativeEvent }) => setInputSelection(nativeEvent.selection)}
+              onSelectionChange={({ nativeEvent }) =>
+                setInputSelection(nativeEvent.selection)
+              }
               placeholder={formatCopy(UPSTREAM_TEXT.hex.placeholder, {
                 digits: analysis.config.digits,
                 unit: analysis.config.unit,
@@ -533,16 +623,28 @@ export function NumberBasesScreen({
               textContentType="none"
               value={input}
             />
-            <View style={[styles.progressTrack, { backgroundColor: colors.segment }]}>
+            <View
+              style={[
+                styles.progressTrack,
+                { backgroundColor: colors.segment },
+              ]}
+            >
               <View
                 style={[
                   styles.progressFill,
                   {
                     backgroundColor:
-                      analysis.invalidCharacterCount || analysis.finalInvalid || analysis.excessDigitCount
+                      analysis.invalidCharacterCount ||
+                      analysis.finalInvalid ||
+                      analysis.excessDigitCount
                         ? colors.error
                         : colors.accent,
-                    width: `${Math.min(analysis.digitCount / analysis.config.digits, 1) * 100}%`,
+                    width: `${
+                      Math.min(
+                        analysis.digitCount / analysis.config.digits,
+                        1,
+                      ) * 100
+                    }%`,
                   },
                 ]}
               />
@@ -552,7 +654,9 @@ export function NumberBasesScreen({
                 styles.progressText,
                 {
                   color:
-                    analysis.invalidCharacterCount || analysis.finalInvalid || analysis.excessDigitCount
+                    analysis.invalidCharacterCount ||
+                    analysis.finalInvalid ||
+                    analysis.excessDigitCount
                       ? colors.error
                       : colors.muted,
                 },
@@ -594,7 +698,10 @@ export function NumberBasesScreen({
                   <Text
                     adjustsFontSizeToFit
                     numberOfLines={1}
-                    style={[styles.calculationButtonText, { color: colors.accent }]}
+                    style={[
+                      styles.calculationButtonText,
+                      { color: colors.accent },
+                    ]}
                     testID="number-base-calculations-label"
                   >
                     {UPSTREAM_TEXT.calculations.show}
@@ -603,7 +710,10 @@ export function NumberBasesScreen({
                     adjustsFontSizeToFit
                     minimumFontScale={0.8}
                     numberOfLines={2}
-                    style={[styles.calculationButtonNote, { color: colors.muted }]}
+                    style={[
+                      styles.calculationButtonNote,
+                      { color: colors.muted },
+                    ]}
                     testID="number-base-calculations-note"
                   >
                     {UPSTREAM_TEXT.calculations.numberBaseNote}
@@ -630,7 +740,10 @@ export function NumberBasesScreen({
             </Pressable>
           </View>
           {deriveError ? (
-            <Text style={[styles.deriveError, { color: colors.error }]} testID="number-base-derive-error">
+            <Text
+              style={[styles.deriveError, { color: colors.error }]}
+              testID="number-base-derive-error"
+            >
               {deriveError}
             </Text>
           ) : null}
@@ -659,7 +772,6 @@ export function NumberBasesScreen({
           value={passphrase}
         />
       )}
-
     </SafeAreaView>
   );
 }
