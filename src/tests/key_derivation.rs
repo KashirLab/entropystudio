@@ -294,7 +294,7 @@ fn advanced_path_projection_uses_the_range_selected_hierarchy_level() {
     });
     assert_eq!(branch.display_kind, KeyDerivationPathDisplayKind::Branch);
     assert_eq!(branch.account_path, "m/84'/0'/7'/777'");
-    assert_eq!(branch.visible_path, "m/84'/0'/7'/777'/4'");
+    assert_eq!(branch.visible_path, "m/84'/0'/7'/777'/4'/{9-10}'");
 
     let account = key_derivation_project_advanced_path(KeyDerivationPathProjectionInput {
         account_path: branch.account_path,
@@ -302,7 +302,7 @@ fn advanced_path_projection_uses_the_range_selected_hierarchy_level() {
     });
     assert_eq!(account.display_kind, KeyDerivationPathDisplayKind::Account);
     assert_eq!(account.account_path, "m/84'/0'/7'/777'");
-    assert_eq!(account.visible_path, "m/84'/0'/7'/777'");
+    assert_eq!(account.visible_path, "m/84'/0'/7'/777'/{0-1}/{9-13}'");
 }
 
 #[test]
@@ -333,9 +333,9 @@ fn advanced_path_projection_rejects_invalid_drafts_without_replacing_the_visible
 }
 
 #[test]
-fn visible_path_parser_accepts_account_branch_and_exact_path_shapes() {
+fn visible_path_parser_accepts_bip88_range_templates_and_exact_path_shapes() {
     let account = key_derivation_visible_path_state(KeyDerivationVisiblePathInput {
-        path: " m/84H/0'/7' ".to_owned(),
+        path: " m/84H/0'/7'/{0-1}/{9-13} ".to_owned(),
         branch_start: "0".to_owned(),
         branch_range: "2".to_owned(),
         address_start: "9".to_owned(),
@@ -343,14 +343,22 @@ fn visible_path_parser_accepts_account_branch_and_exact_path_shapes() {
     });
     assert!(account.valid);
     assert_eq!(account.display_kind, KeyDerivationPathDisplayKind::Account);
-    assert_eq!(account.visible_path, "m/84'/0'/7'");
+    assert_eq!(account.visible_path, "m/84'/0'/7'/{0-1}/{9-13}");
     assert_eq!(account.account_path, "m/84'/0'/7'");
     assert_eq!(account.account_components.len(), 3);
-    assert!(account.branch.is_none());
-    assert!(account.address.is_none());
+    assert_eq!(
+        account.branch.as_ref().map(|component| component.index),
+        Some(0)
+    );
+    assert_eq!(
+        account.address.as_ref().map(|component| component.index),
+        Some(9)
+    );
+    assert_eq!(account.branch_window.range.value, 2);
+    assert_eq!(account.address_window.range.value, 5);
 
     let branch = key_derivation_visible_path_state(KeyDerivationVisiblePathInput {
-        path: "m/84'/0'/7'/4H".to_owned(),
+        path: "m/84'/0'/7'/4H/{9-10}".to_owned(),
         branch_start: "4".to_owned(),
         branch_range: "1".to_owned(),
         address_start: "9".to_owned(),
@@ -366,7 +374,7 @@ fn visible_path_parser_accepts_account_branch_and_exact_path_shapes() {
             hardened: true
         })
     );
-    assert!(branch.address.is_none());
+    assert_eq!(branch.address_window.range.value, 2);
 
     let exact = key_derivation_visible_path_state(KeyDerivationVisiblePathInput {
         path: "m/84H/0'/7'/4h/9H".to_owned(),
@@ -398,7 +406,7 @@ fn visible_path_parser_accepts_account_branch_and_exact_path_shapes() {
 #[test]
 fn visible_path_parser_preserves_extra_account_components_before_its_suffix() {
     let parsed = key_derivation_visible_path_state(KeyDerivationVisiblePathInput {
-        path: "m/84'/0'/7'/201/202h/4".to_owned(),
+        path: "m/84'/0'/7'/201/202h/4/{9-10}".to_owned(),
         branch_start: "4".to_owned(),
         branch_range: "1".to_owned(),
         address_start: "9".to_owned(),
@@ -462,7 +470,7 @@ fn visible_path_parser_reports_path_and_window_errors_in_upstream_order() {
     );
 
     let invalid_branch_range = key_derivation_visible_path_state(KeyDerivationVisiblePathInput {
-        path: "m/84'/0'/0'/0/0".to_owned(),
+        path: "m/84'/0'/0'/{0-2}/0".to_owned(),
         branch_start: "0".to_owned(),
         branch_range: "0".to_owned(),
         address_start: "0".to_owned(),
@@ -470,6 +478,6 @@ fn visible_path_parser_reports_path_and_window_errors_in_upstream_order() {
     });
     assert_eq!(
         invalid_branch_range.validation_kind,
-        KeyDerivationVisiblePathValidationKind::BranchRange
+        KeyDerivationVisiblePathValidationKind::Index
     );
 }

@@ -114,9 +114,9 @@ export function defaultKeyStationDerivationSettings(
   const purpose = KEY_STATION_SCRIPT_TYPES.find(({ id }) => id === scriptType)?.purpose ?? 84;
   const advancedInput: KeyDerivationAdvancedInput = {
     account: "0'",
-    addressRange: '1',
+    addressRange: '10',
     addressStart: '0',
-    branchRange: '1',
+    branchRange: '2',
     branchStart: '0',
     coinType: "0'",
     purpose: `${purpose}'`,
@@ -134,7 +134,7 @@ export function defaultKeyStationDerivationSettings(
     accountPath,
     advancedHardening,
     advancedInput,
-    visiblePath: `${accountPath}/${advancedInput.branchStart}/${advancedInput.addressStart}`,
+    visiblePath: `${accountPath}/{0-1}/{0-9}`,
   };
 }
 

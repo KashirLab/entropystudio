@@ -130,10 +130,10 @@ pub enum KeyDerivationPathHelpKind {
     Invalid,
 }
 
-/// Which portion of the derivation hierarchy is shown in the visible path.
+/// The range shape selected by a visible derivation path.
 ///
-/// When more than one branch is selected, the path stops at the account.
-/// When more than one address index is selected, it stops at the branch.
+/// Visible paths always contain both address suffixes. This enum describes
+/// whether those suffixes are exact indexes or BIP-88 range templates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
 pub enum KeyDerivationPathDisplayKind {
     Account,
@@ -243,6 +243,8 @@ pub struct KeyDerivationVisiblePathState {
     pub account_components: Vec<KeyDerivationPathComponent>,
     pub branch: Option<KeyDerivationPathComponent>,
     pub address: Option<KeyDerivationPathComponent>,
+    pub branch_window: KeyDerivationBranchWindowState,
+    pub address_window: KeyDerivationAddressWindowState,
 }
 
 /// Parses and validates regular Key Station advanced-entry drafts.
@@ -358,33 +360,17 @@ pub fn key_derivation_project_advanced_path(
         &advanced_state.branch_window,
         &advanced_state.address_window,
     );
-    let mut visible_components = account_components;
-
-    match display_kind {
-        KeyDerivationPathDisplayKind::Account => {}
-        KeyDerivationPathDisplayKind::Branch => {
-            visible_components.push(path_component_from_index(
-                &advanced_state.branch_window.start,
-            ));
-        }
-        KeyDerivationPathDisplayKind::Exact => {
-            visible_components.push(path_component_from_index(
-                &advanced_state.branch_window.start,
-            ));
-            visible_components.push(path_component_from_index(
-                &advanced_state.address_window.start,
-            ));
-        }
-        KeyDerivationPathDisplayKind::Invalid => {
-            unreachable!("validated windows have a path level")
-        }
-    }
+    let visible_path = format_visible_path(
+        &account_components,
+        &advanced_state.branch_window,
+        &advanced_state.address_window,
+    );
 
     KeyDerivationPathProjectionState {
         valid: true,
         advanced_state,
         account_path,
-        visible_path: format_path(&visible_components),
+        visible_path,
         display_kind,
     }
 }
@@ -397,55 +383,31 @@ pub fn key_derivation_visible_path_state(
 ) -> KeyDerivationVisiblePathState {
     // Upstream parses the user's visible path before checking the selected
     // windows, so retain that error precedence here.
-    let components = match parse_path_components(&input.path) {
-        Ok(components) => components,
-        Err(validation_kind) => return invalid_visible_path_state(validation_kind),
-    };
+    let (account_components, branch, branch_range, address, address_range) =
+        match parse_visible_path_components(&input.path) {
+            Ok(components) => components,
+            Err(validation_kind) => return invalid_visible_path_state(validation_kind),
+        };
     let (branch_window, address_window) = window_states(
-        &input.branch_start,
-        &input.branch_range,
-        &input.address_start,
-        &input.address_range,
+        &path_component_draft(&branch),
+        &branch_range.to_string(),
+        &path_component_draft(&address),
+        &address_range.to_string(),
     );
-    if let Some(validation_kind) =
-        visible_path_window_validation_kind(&branch_window, &address_window)
-    {
-        return invalid_visible_path_state(validation_kind);
-    }
 
     let display_kind = path_display_kind(&branch_window, &address_window);
-    let suffix_count = match display_kind {
-        KeyDerivationPathDisplayKind::Account => 0,
-        KeyDerivationPathDisplayKind::Branch => 1,
-        KeyDerivationPathDisplayKind::Exact => 2,
-        KeyDerivationPathDisplayKind::Invalid => {
-            unreachable!("validated windows have a path level")
-        }
-    };
-    if components.len() < 3 + suffix_count {
-        return invalid_visible_path_state(
-            KeyDerivationVisiblePathValidationKind::MissingComponents,
-        );
-    }
-
-    let account_end = components.len() - suffix_count;
-    if account_end < 3 {
-        return invalid_visible_path_state(KeyDerivationVisiblePathValidationKind::MissingAccount);
-    }
-
-    let account_components = components[..account_end].to_vec();
-    let branch = (suffix_count >= 1).then(|| components[account_end].clone());
-    let address = (suffix_count == 2).then(|| components[account_end + 1].clone());
 
     KeyDerivationVisiblePathState {
         valid: true,
         validation_kind: KeyDerivationVisiblePathValidationKind::Valid,
         display_kind,
-        visible_path: format_path(&components),
+        visible_path: format_visible_path(&account_components, &branch_window, &address_window),
         account_path: format_path(&account_components),
         account_components,
-        branch,
-        address,
+        branch: Some(branch),
+        address: Some(address),
+        branch_window,
+        address_window,
     }
 }
 
@@ -547,6 +509,132 @@ fn format_path(components: &[KeyDerivationPathComponent]) -> String {
     path
 }
 
+fn path_component_draft(component: &KeyDerivationPathComponent) -> String {
+    format!(
+        "{}{}",
+        component.index,
+        if component.hardened { "'" } else { "" }
+    )
+}
+
+fn format_visible_path(
+    account_components: &[KeyDerivationPathComponent],
+    branch_window: &KeyDerivationBranchWindowState,
+    address_window: &KeyDerivationAddressWindowState,
+) -> String {
+    format!(
+        "{}/{}/{}",
+        format_path(account_components),
+        format_path_window_component(
+            &branch_window.start,
+            branch_window.end,
+            branch_window.range.value
+        ),
+        format_path_window_component(
+            &address_window.start,
+            address_window.end,
+            address_window.range.value
+        ),
+    )
+}
+
+fn format_path_window_component(start: &KeyDerivationIndexState, end: u32, range: u32) -> String {
+    let value = if range > 1 {
+        format!("{{{}-{end}}}", start.value)
+    } else {
+        start.value.to_string()
+    };
+    format!("{value}{}", if start.hardened { "'" } else { "" })
+}
+
+fn parse_visible_path_components(
+    value: &str,
+) -> Result<
+    (
+        Vec<KeyDerivationPathComponent>,
+        KeyDerivationPathComponent,
+        u32,
+        KeyDerivationPathComponent,
+        u32,
+    ),
+    KeyDerivationVisiblePathValidationKind,
+> {
+    let raw = value.trim();
+    let Some(rest) = raw.strip_prefix("m/") else {
+        return Err(KeyDerivationVisiblePathValidationKind::Root);
+    };
+    let sections: Vec<&str> = rest.split('/').collect();
+    if sections.iter().any(|section| section.is_empty()) {
+        return Err(KeyDerivationVisiblePathValidationKind::Root);
+    }
+    if sections.len() < 5 {
+        return Err(KeyDerivationVisiblePathValidationKind::MissingComponents);
+    }
+    let account_path = format!("m/{}", sections[..sections.len() - 2].join("/"));
+    let account_components = parse_path_components(&account_path)?;
+    if account_components.len() < 3 {
+        return Err(KeyDerivationVisiblePathValidationKind::MissingAccount);
+    }
+    let (branch, branch_range) =
+        parse_path_window_component(sections[sections.len() - 2], MAX_ADDRESS_BRANCH_RANGE)?;
+    let (address, address_range) =
+        parse_path_window_component(sections[sections.len() - 1], MAX_ADDRESS_RANGE)?;
+    Ok((
+        account_components,
+        branch,
+        branch_range,
+        address,
+        address_range,
+    ))
+}
+
+fn parse_path_window_component(
+    raw: &str,
+    maximum_range: u32,
+) -> Result<(KeyDerivationPathComponent, u32), KeyDerivationVisiblePathValidationKind> {
+    let parsed_index = parse_component_raw(raw);
+    if parsed_index.valid {
+        return Ok((path_component_from_index(&parsed_index), 1));
+    }
+    let (body, hardened) = match raw.as_bytes().last() {
+        Some(b'h' | b'H' | b'\'') => (&raw[..raw.len() - 1], true),
+        _ => (raw, false),
+    };
+    let Some(range) = body
+        .strip_prefix('{')
+        .and_then(|value| value.strip_suffix('}'))
+    else {
+        return Err(KeyDerivationVisiblePathValidationKind::Index);
+    };
+    let Some((start_raw, end_raw)) = range.split_once('-') else {
+        return Err(KeyDerivationVisiblePathValidationKind::Index);
+    };
+    let parse_bound = |bound: &str| {
+        (!bound.is_empty() && bound.bytes().all(|byte| byte.is_ascii_digit()))
+            .then(|| bound.parse::<u32>().ok())
+            .flatten()
+    };
+    let (Some(start), Some(end)) = (parse_bound(start_raw), parse_bound(end_raw)) else {
+        return Err(KeyDerivationVisiblePathValidationKind::Index);
+    };
+    let Some(range) = end
+        .checked_sub(start)
+        .and_then(|difference| difference.checked_add(1))
+    else {
+        return Err(KeyDerivationVisiblePathValidationKind::Index);
+    };
+    if end > MAX_BIP32_CHILD_INDEX || range < 2 || range > maximum_range {
+        return Err(KeyDerivationVisiblePathValidationKind::Index);
+    }
+    Ok((
+        KeyDerivationPathComponent {
+            index: start,
+            hardened,
+        },
+        range,
+    ))
+}
+
 fn path_display_kind(
     branch_window: &KeyDerivationBranchWindowState,
     address_window: &KeyDerivationAddressWindowState,
@@ -563,25 +651,6 @@ fn path_display_kind(
     }
 }
 
-fn visible_path_window_validation_kind(
-    branch_window: &KeyDerivationBranchWindowState,
-    address_window: &KeyDerivationAddressWindowState,
-) -> Option<KeyDerivationVisiblePathValidationKind> {
-    if !branch_window.start.valid {
-        return Some(KeyDerivationVisiblePathValidationKind::BranchStart);
-    }
-    if !branch_window.range.valid {
-        return Some(KeyDerivationVisiblePathValidationKind::BranchRange);
-    }
-    if !address_window.start.valid {
-        return Some(KeyDerivationVisiblePathValidationKind::AddressStart);
-    }
-    if !address_window.range.valid {
-        return Some(KeyDerivationVisiblePathValidationKind::AddressRange);
-    }
-    None
-}
-
 fn invalid_visible_path_state(
     validation_kind: KeyDerivationVisiblePathValidationKind,
 ) -> KeyDerivationVisiblePathState {
@@ -594,6 +663,19 @@ fn invalid_visible_path_state(
         account_components: Vec::new(),
         branch: None,
         address: None,
+        branch_window: KeyDerivationBranchWindowState {
+            valid: false,
+            start: parse_component_raw(""),
+            range: parse_range("", 0),
+            end: 0,
+            branches: Vec::new(),
+        },
+        address_window: KeyDerivationAddressWindowState {
+            valid: false,
+            start: parse_component_raw(""),
+            range: parse_range("", 0),
+            end: 0,
+        },
     }
 }
 

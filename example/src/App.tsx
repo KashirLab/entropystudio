@@ -106,9 +106,11 @@ function advancedInputFromVisiblePath(
   return {
     ...advancedInput,
     account: pathComponentDraft(account),
+    addressRange: visiblePathState.addressWindow.range.displayValue,
     addressStart: visiblePathState.address
       ? pathComponentDraft(visiblePathState.address)
       : advancedInput.addressStart,
+    branchRange: visiblePathState.branchWindow.range.displayValue,
     branchStart: visiblePathState.branch
       ? pathComponentDraft(visiblePathState.branch)
       : advancedInput.branchStart,
