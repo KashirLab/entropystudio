@@ -317,7 +317,7 @@ export const UPSTREAM_TEXT = {
     wordsEnteredOne: '{n} lowercase BIP39 passphrase word entered',
     wordsEnteredMany: '{n} lowercase BIP39 passphrase words entered',
     wordsHelp: 'Use complete lowercase English BIP39 words separated by single spaces.',
-    wordsNote: 'lowercase words separated by single spaces',
+    wordsNote: 'Use complete lowercase English BIP39 words separated by single spaces',
   },
   result: {
     privateAccountMaterial: 'Private account material',
@@ -483,9 +483,9 @@ export const UPSTREAM_TEXT = {
     tabLabel: 'Vanity',
     intro: {
       kicker: 'Same key, same counter, same address',
-      title: 'Grind a vanity address',
+      title: 'Grind a vanity address from a key you already hold',
       description:
-        'Pick a Key Station key and turn one of its dials. Passphrase grind extends the key\'s BIP39 passphrase with counter characters (base-62 over a-zA-Z0-9 in odometer order: "aaa…", "aab…"); derivation grind keeps the passphrase and steps through account indexes. Every candidate is derived the standard way — PBKDF2 seed, BIP32 path — in a dedicated WebAssembly module, one Web Worker per CPU core, and its address of the selected type (including BIP-352 Silent Payment codes) is checked against your prefix. This invents no entropy: same key and counter always reproduce the same address, so every result replays by hand, and Update key writes the winning passphrase or account back to the key it came from.',
+        'Walks either the passphrase or the account number until the address matches your prefix. Same key and same counter always give the same address. Update key writes the match back. Generates no new entropy.',
     },
     warnings: {
       passphrase:
