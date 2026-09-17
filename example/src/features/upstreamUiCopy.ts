@@ -341,6 +341,7 @@ export const UPSTREAM_TEXT = {
       'Use complete lowercase English BIP39 words separated by single spaces',
   },
   result: {
+    accountPrivateKeyExports: 'Account private key exports',
     privateAccountMaterial: 'Recovery material',
     privateAccountMaterialIntro: 'These values can recreate or spend from the wallet.',
     privateAccountMaterialWarningLead:
@@ -371,6 +372,7 @@ export const UPSTREAM_TEXT = {
       'Reveal them only while this file is running offline on an air-gapped computer.',
     rootXprv: 'Root {name}',
     watchOnlyWalletData: 'Watch-only wallet data',
+    watchOnlyExports: 'Watch-only exports',
     watchOnlyWalletDescriptorImport:
       'Import this output descriptor into Sparrow or another wallet.',
     addressBranchDescriptors: 'Address branch descriptors',
@@ -381,6 +383,7 @@ export const UPSTREAM_TEXT = {
     address: 'Address',
     path: 'Path',
     wif: 'WIF',
+    walletIdentity: 'Wallet identity',
     watchOnlyWalletDataSafety:
       'These values identify the wallet or enable watch-only use, but do not authorize spending. Treat them as privacy-sensitive because extended public keys and descriptors can reveal wallet addresses, balances, and transaction history.',
     safetyNotes: 'Safety notes',

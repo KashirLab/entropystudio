@@ -561,6 +561,7 @@ function App() {
           />
           <KeyStationResultScreen
             colors={colors}
+            isDarkMode={isDarkMode}
             isActive={activeTab === 'method' && activeKeyStationTab !== null}
             onEditInput={() => (activeKeyStationTab ? editKeyStationInput(activeKeyStationTab) : undefined)}
             onReturnToStation={() => setActiveKeyStationTabId(null)}

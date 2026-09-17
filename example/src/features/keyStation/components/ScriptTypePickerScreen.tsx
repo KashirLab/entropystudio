@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native';
 
-import { NativeSelect, type NativeSelectOption } from '../../../components/NativeSelect';
 import type { DiceColors } from '../../dice/diceTheme';
 import { QrCode } from './SeedQrPanel';
 import {
@@ -20,7 +19,7 @@ import {
   UPSTREAM_UI_FALLBACK_COPY,
   UPSTREAM_UI_LABELS,
 } from '../../upstreamUiCopy';
-import { KEY_STATION_SCRIPT_TYPES, type KeyStationScriptType } from '../keyStation';
+import type { KeyStationScriptType } from '../keyStation';
 import {
   AccountScriptType,
   accountAddressCheck,
@@ -32,9 +31,9 @@ import {
 
 type Props = {
   readonly colors: DiceColors;
+  readonly initialSection?: 'addresses' | 'account-private' | 'watch-only' | null;
   readonly network: string;
   readonly onBack: () => void;
-  readonly onSetScriptType: (scriptType: KeyStationScriptType) => void;
   readonly purpose: string;
   readonly privateAccountMaterialInput?: {
     readonly accountPath: string;
@@ -49,12 +48,6 @@ type Props = {
   };
   readonly scriptType: KeyStationScriptType;
 };
-
-const SCRIPT_TYPE_OPTIONS: readonly NativeSelectOption<KeyStationScriptType>[] =
-  KEY_STATION_SCRIPT_TYPES.map(({ id }) => ({
-    label: UPSTREAM_TEXT.keys.scriptTypes[id],
-    value: id,
-  }));
 
 type AddressTableColumn = 'index' | 'path' | 'address';
 type AddressTableColumnWidths = Readonly<Record<AddressTableColumn, number>>;
@@ -133,12 +126,12 @@ function AddressTable({
   );
 }
 
-/** A focused, native-picker screen matching EntropyLab's Script type control. */
+/** Detail view for the account selected by the upstream-style script tabs. */
 export function ScriptTypePickerScreen({
   colors,
+  initialSection,
   network,
   onBack,
-  onSetScriptType,
   privateAccountMaterialInput,
   purpose,
   scriptType,
@@ -180,6 +173,29 @@ export function ScriptTypePickerScreen({
     setAddressToCheck('');
     setAddressCheck(null);
   }, [scriptType, privateAccountMaterialInput?.accountPath]);
+
+  useEffect(() => {
+    if (!initialSection || !privateAccountMaterialInput) {
+      return;
+    }
+    setPrivateMaterial(
+      accountPrivateMaterial(
+        privateAccountMaterialInput.mnemonic,
+        privateAccountMaterialInput.passphrase,
+        privateAccountMaterialInput.accountPath,
+        privateAccountMaterialInput.masterFingerprint,
+        nativeScriptType(scriptType),
+        [...privateAccountMaterialInput.branches],
+        privateAccountMaterialInput.addressIndex,
+        privateAccountMaterialInput.addressCount,
+        privateAccountMaterialInput.branchHardened,
+        privateAccountMaterialInput.addressHardened,
+      ),
+    );
+    setShowingAddresses(initialSection === 'addresses');
+    setShowingPrivateMaterial(initialSection === 'account-private');
+    setShowingWatchOnlyMaterial(initialSection === 'watch-only');
+  }, [initialSection, privateAccountMaterialInput, scriptType]);
 
   useEffect(() => {
     setAddressTableColumnWidths(EMPTY_ADDRESS_TABLE_COLUMN_WIDTHS);
@@ -246,15 +262,6 @@ export function ScriptTypePickerScreen({
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.label, { color: colors.muted }]}>{UPSTREAM_TEXT.keys.scriptType}</Text>
-        <NativeSelect
-          accessibilityLabel={UPSTREAM_TEXT.keys.scriptType}
-          controlTestID="key-station-script-type-picker"
-          colors={colors}
-          onValueChange={onSetScriptType}
-          options={SCRIPT_TYPE_OPTIONS}
-          selectedValue={scriptType}
-        />
         <Text
           style={[styles.descriptionKicker, { color: colors.muted }]}
           testID="key-station-script-type-kicker"
@@ -750,7 +757,6 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingHorizontal: 24,
   },
-  label: { fontSize: 13, fontWeight: '700', marginBottom: 8 },
   privateMaterialButton: {
     alignItems: 'flex-start',
     borderRadius: 6,

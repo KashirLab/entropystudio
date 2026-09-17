@@ -6,6 +6,11 @@ import { KeyStationLifeHash } from '../features/keyStation/components/KeyStation
 import { RecoveryMaterialPanel } from '../features/keyStation/components/RecoveryMaterialPanel';
 import { SeedQrPanel } from '../features/keyStation/components/SeedQrPanel';
 import { ScriptTypePickerScreen } from '../features/keyStation/components/ScriptTypePickerScreen';
+import {
+  KeyDerivationSectionList,
+  type KeyDerivationSection,
+} from '../features/keyStation/components/KeyDerivationSectionList';
+import { ScriptTypeTabs } from '../features/keyStation/components/ScriptTypeTabs';
 import { keyStationSafetyNotes } from '../features/keyStation/keyStation';
 import {
   KeyDerivationNetworkKind,
@@ -28,6 +33,7 @@ const CONTENT_HORIZONTAL_PADDING = 24;
 
 type Props = {
   readonly colors: DiceColors;
+  readonly isDarkMode: boolean;
   readonly isActive: boolean;
   readonly onEditInput: () => void;
   readonly onReturnToStation: () => void;
@@ -107,6 +113,7 @@ function SafetyNotes({ colors, notes, testIDPrefix }: SafetyNotesProps) {
 
 export function KeyStationResultScreen({
   colors,
+  isDarkMode,
   isActive,
   onEditInput,
   onReturnToStation,
@@ -117,12 +124,14 @@ export function KeyStationResultScreen({
   const [showingWatchOnlyWalletData, setShowingWatchOnlyWalletData] = useState(false);
   const [showingWalletData, setShowingWalletData] = useState(false);
   const [showingScriptType, setShowingScriptType] = useState(false);
+  const [accountSection, setAccountSection] = useState<KeyDerivationSection | null>(null);
 
   useEffect(() => {
     setShowingPrivateRecoveryMaterial(false);
     setShowingWatchOnlyWalletData(false);
     setShowingWalletData(false);
     setShowingScriptType(false);
+    setAccountSection(null);
   }, [tab?.id]);
 
   useEffect(() => {
@@ -176,8 +185,8 @@ export function KeyStationResultScreen({
     return (
       <ScriptTypePickerScreen
         colors={colors}
+        initialSection={accountSection}
         onBack={() => setShowingScriptType(false)}
-        onSetScriptType={onSetResultScriptType}
         network={resultNetwork}
         privateAccountMaterialInput={
           derivation.kind === 'bip39'
@@ -199,6 +208,17 @@ export function KeyStationResultScreen({
       />
     );
   }
+
+  const openDerivationSection = (section: KeyDerivationSection) => {
+    if (section === 'recovery' || section === 'identity') {
+      setShowingPrivateRecoveryMaterial(section === 'recovery');
+      setShowingWatchOnlyWalletData(section === 'identity');
+      setShowingWalletData(true);
+      return;
+    }
+    setAccountSection(section);
+    setShowingScriptType(true);
+  };
 
   return (
     <View
@@ -278,7 +298,7 @@ export function KeyStationResultScreen({
               </>
             ) : null}
             <Pressable
-              accessibilityLabel={UPSTREAM_TEXT.result.watchOnlyWalletData}
+              accessibilityLabel={UPSTREAM_TEXT.result.walletIdentity}
               accessibilityRole="button"
               accessibilityState={{ expanded: showingWatchOnlyWalletData }}
               onPress={() => setShowingWatchOnlyWalletData(value => !value)}
@@ -289,7 +309,7 @@ export function KeyStationResultScreen({
               testID="toggle-watch-only-wallet-data"
             >
               <Text style={[styles.walletDataSectionTitle, { color: colors.text }]}>
-                {UPSTREAM_TEXT.result.watchOnlyWalletData}
+                {UPSTREAM_TEXT.result.walletIdentity}
               </Text>
             </Pressable>
             {showingWatchOnlyWalletData ? (
@@ -345,9 +365,7 @@ export function KeyStationResultScreen({
               </Pressable>
             </View>
             <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="private-key-safety" />
-            <View style={styles.scriptTypeButtonSpacing}>
-              <ScriptTypeButton colors={colors} onPress={() => setShowingScriptType(true)} />
-            </View>
+            <ScriptTypeTabs colors={colors} onSelect={onSetResultScriptType} selected={tab.resultScriptType} />
             <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.privateKey}
               accessibilityRole="button"
@@ -403,26 +421,9 @@ export function KeyStationResultScreen({
                 </Pressable>
               </View>
             </View>
-            <Pressable
-              accessibilityLabel={UPSTREAM_TEXT.result.walletData}
-              accessibilityRole="button"
-              onPress={() => {
-                setShowingPrivateRecoveryMaterial(false);
-                setShowingWalletData(true);
-              }}
-              style={({ pressed }) => [
-                styles.walletDataButton,
-                { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
-              ]}
-              testID="open-wallet-data"
-            >
-              <Text style={[styles.walletDataButtonText, { color: colors.accent }]}>
-                {UPSTREAM_TEXT.result.walletData}
-              </Text>
-            </Pressable>
-            <View style={styles.scriptTypeButtonSpacing}>
-              <ScriptTypeButton colors={colors} onPress={() => setShowingScriptType(true)} />
-            </View>
+            <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="wallet-safety" />
+            <ScriptTypeTabs colors={colors} onSelect={onSetResultScriptType} selected={tab.resultScriptType} />
+            <KeyDerivationSectionList colors={colors} isDarkMode={isDarkMode} onOpen={openDerivationSection} />
           </>
         ) : derivation.kind === 'private-key' && showingPrivateRecoveryMaterial ? (
           <>
@@ -447,31 +448,6 @@ export function KeyStationResultScreen({
         ) : null}
       </ScrollView>
     </View>
-  );
-}
-
-function ScriptTypeButton({
-  colors,
-  onPress,
-}: {
-  readonly colors: DiceColors;
-  readonly onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityLabel={UPSTREAM_TEXT.keys.scriptType}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.walletDataButton,
-        { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
-      ]}
-      testID="open-key-station-script-type"
-    >
-      <Text style={[styles.walletDataButtonText, { color: colors.accent }]}>
-        {UPSTREAM_TEXT.keys.scriptType}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -539,9 +515,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  scriptTypeButtonSpacing: {
-    marginTop: 12,
-  },
   safetyNotes: {
     borderLeftWidth: 3,
     marginBottom: 20,
@@ -579,19 +552,6 @@ const styles = StyleSheet.create({
   summaryDetails: {
     flex: 1,
     minWidth: 0,
-  },
-  walletDataButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    borderRadius: 6,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 40,
-    paddingHorizontal: 12,
-  },
-  walletDataButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
   },
   walletDataIntro: {
     fontSize: 14,
