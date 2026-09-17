@@ -57,6 +57,19 @@ describe('Upstream UI copy provenance', () => {
     });
   });
 
+  test('keeps shell-owned introductions in the rendered upstream shell', () => {
+    const shellIntroductionText = [
+      UPSTREAM_TEXT.keys.stationIntroduction.heading,
+      UPSTREAM_TEXT.keys.stationIntroduction.description,
+      UPSTREAM_TEXT.vanity.intro.title,
+      UPSTREAM_TEXT.vanity.intro.description,
+    ];
+
+    shellIntroductionText.forEach(text => {
+      expect(upstreamShellHtml).toContain(text);
+    });
+  });
+
   test('excludes upstream accessibility-only copy', () => {
     expect(Object.keys(UPSTREAM_UI_FALLBACK_COPY.keyboard).sort()).toEqual([
       'modeButton',

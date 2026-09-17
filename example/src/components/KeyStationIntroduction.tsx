@@ -13,7 +13,6 @@ type Props = {
   readonly headingTestID?: string;
   readonly sheetHeight?: number;
   readonly testIDPrefix?: string;
-  readonly title?: string;
 };
 
 export function KeyStationIntroduction({
@@ -24,15 +23,11 @@ export function KeyStationIntroduction({
   headingTestID,
   sheetHeight = 280,
   testIDPrefix = 'key-station-introduction',
-  title = UPSTREAM_TEXT.keys.stationIntroduction.title,
 }: Props) {
   const [isDescriptionPopupVisible, setIsDescriptionPopupVisible] = useState(false);
 
   return (
     <View style={styles.container} testID={testIDPrefix}>
-      <Text style={[styles.title, { color: colors.accent }]}>
-        {title}
-      </Text>
       <Pressable
         accessibilityRole="button"
         onPress={() => setIsDescriptionPopupVisible(true)}
@@ -112,12 +107,5 @@ const styles = StyleSheet.create({
   },
   headingToggle: {
     alignSelf: 'flex-start',
-  },
-  title: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 17,
-    textTransform: 'uppercase',
   },
 });

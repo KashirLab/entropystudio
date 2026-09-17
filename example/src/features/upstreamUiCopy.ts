@@ -275,9 +275,8 @@ export const UPSTREAM_TEXT = {
     station: 'Key Station',
     stationIntroduction: {
       description:
-        'Turn entropy you bring — dice rolls, playing cards, a number in any base, a seed phrase, or a private key — into a BIP-39 seed, then derive its master fingerprint, extended public keys, and receive addresses. The dice methods match COLDCARD, SeedSigner, Keystone, and BitBox, so the same rolls reproduce the same seed on those signers. This does not invent entropy — it is a calculator, and nothing leaves this page.',
+        'You supply dice, cards, hex, a seed, or a key. EntropyLab derives the BIP-39 seed, master fingerprint, xpubs, and receive addresses. It does not generate entropy for you. Nothing leaves this page.',
       heading: 'Create. Derive. Verify.',
-      title: 'Your entropy enters the lab',
     },
     tabLabel: 'Keys',
   },
