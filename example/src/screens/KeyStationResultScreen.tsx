@@ -48,6 +48,8 @@ type SafetyNotesProps = {
   readonly testIDPrefix: string;
 };
 
+type AccountSection = Exclude<KeyDerivationSection, 'recovery' | 'identity'>;
+
 function SafetyNote({
   colors,
   note,
@@ -131,7 +133,7 @@ export function KeyStationResultScreen({
   const [showingWatchOnlyWalletData, setShowingWatchOnlyWalletData] = useState(false);
   const [showingWalletData, setShowingWalletData] = useState(false);
   const [showingScriptType, setShowingScriptType] = useState(false);
-  const [accountSection, setAccountSection] = useState<KeyDerivationSection | null>(null);
+  const [accountSection, setAccountSection] = useState<AccountSection | null>(null);
 
   useEffect(() => {
     setShowingPrivateRecoveryMaterial(false);
@@ -259,6 +261,9 @@ export function KeyStationResultScreen({
                   style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}
                   testID="private-recovery-material-safety"
                 >
+                  <Text style={styles.privateMaterialSafetyLead}>
+                    {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
+                  </Text>{' '}
                   {UPSTREAM_TEXT.result.privateRecoveryMaterialSafety}
                 </Text>
                 <RecoveryMaterialPanel
@@ -485,6 +490,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 16,
+  },
+  privateMaterialSafetyLead: {
+    fontWeight: '700',
   },
   screen: {
     flex: 1,
