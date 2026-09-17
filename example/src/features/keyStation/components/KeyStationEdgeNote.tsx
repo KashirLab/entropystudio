@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
   note: {
     borderLeftWidth: 3,
     marginBottom: 16,
-    marginTop: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },

@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   privateMaterialLabel: { fontSize: 12, fontWeight: '700', marginBottom: 8 },
-  privateMaterialSection: { marginTop: 22 },
+  privateMaterialSection: { marginTop: 0 },
   privateMaterialTitle: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
   privateMaterialValue: { fontFamily: 'monospace', fontSize: 14, lineHeight: 22, marginBottom: 16 },
   privateMaterialWarningLead: { fontWeight: '700' },
