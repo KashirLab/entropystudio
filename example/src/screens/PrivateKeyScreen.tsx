@@ -429,14 +429,6 @@ export function PrivateKeyScreen({
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="private-key-setup-view">
             <KeyStationIntroduction colors={colors} />
-            <View style={styles.header}>
-            <View style={styles.headerCopy}>
-              <Text style={[styles.subtitle, { color: colors.muted }]}>
-                {UPSTREAM_TEXT.key.inputHelp}
-              </Text>
-            </View>
-            </View>
-
             <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
@@ -622,12 +614,18 @@ export function PrivateKeyScreen({
                   {UPSTREAM_TEXT.key.inputLabel}
                 </Text>
               </View>
-              {format !== 'brain' && (
-                <Text
-                  style={[styles.inputHelp, { color: colors.muted }]}
-                  testID="private-key-input-help"
-                >
-                  {formatCopy.description}
+              <Text
+                style={[
+                  styles.progress,
+                  { color: inputState.canDerive ? colors.accent : inputHasError ? colors.error : colors.muted },
+                ]}
+                testID="private-key-progress"
+              >
+                {inputProgress}
+              </Text>
+              {inputError && (
+                <Text style={[styles.status, { color: colors.error }]} testID="private-key-status">
+                  {inputError}
                 </Text>
               )}
               <View style={[styles.inputSurface, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -653,21 +651,6 @@ export function PrivateKeyScreen({
                   value={input}
                 />
               </View>
-              <Text
-                style={[
-                  styles.progress,
-                  { color: inputState.canDerive ? colors.accent : inputHasError ? colors.error : colors.muted },
-                ]}
-                testID="private-key-progress"
-              >
-                {inputProgress}
-              </Text>
-              {inputError && (
-                <Text style={[styles.status, { color: colors.error }]} testID="private-key-status">
-                  {inputError}
-                </Text>
-              )}
-
               <PrivateKeyKeypad
                 canDelete={canDeleteInput}
                 canInsert={canInsertInputCharacter}

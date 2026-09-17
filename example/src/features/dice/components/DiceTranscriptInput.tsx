@@ -18,7 +18,6 @@ type Props = {
   readonly onChange: (rolls: string) => void;
   readonly onProgrammaticSelectionChange: (selection: DiceTranscriptSelection) => void;
   readonly onSelectionChange: (selection: DiceTranscriptSelection) => void;
-  readonly progress: number;
   readonly progressText: string;
   readonly rolls: string;
   readonly selection: DiceTranscriptSelection | null;
@@ -34,7 +33,6 @@ export function DiceTranscriptInput({
   onChange,
   onProgrammaticSelectionChange,
   onSelectionChange,
-  progress,
   progressText,
   rolls,
   selection,
@@ -77,6 +75,13 @@ export function DiceTranscriptInput({
           testID="remove-dice-roll"
         />
       </View>
+      <Text
+        numberOfLines={3}
+        style={[styles.progressText, { color: colors.muted }]}
+        testID="dice-progress"
+      >
+        {progressText}
+      </Text>
       <View
         style={[
           styles.surface,
@@ -107,21 +112,6 @@ export function DiceTranscriptInput({
           textContentType="none"
           value={displayRolls}
         />
-        <View style={[styles.progressTrack, { backgroundColor: colors.segment }]}>
-          <View
-            style={[
-              styles.progressFill,
-              { backgroundColor: colors.accent, width: `${progress * 100}%` },
-            ]}
-          />
-        </View>
-        <Text
-          numberOfLines={2}
-          style={[styles.progressText, { color: colors.muted }]}
-          testID="dice-progress"
-        >
-          {progressText}
-        </Text>
       </View>
     </>
   );
@@ -205,20 +195,10 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingRight: 12,
   },
-  progressFill: {
-    borderRadius: 2,
-    height: '100%',
-  },
   progressText: {
     fontSize: 13,
     lineHeight: 18,
-    marginTop: 9,
-  },
-  progressTrack: {
-    borderRadius: 2,
-    height: 4,
-    marginTop: 10,
-    overflow: 'hidden',
+    marginBottom: 10,
   },
   rollInput: {
     fontFamily: 'monospace',

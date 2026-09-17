@@ -267,16 +267,16 @@ export function hashedCardProgressCopy(state: HashedCardState): string {
     need: needed,
   });
   const entropy = formatCopy(UPSTREAM_TEXT.cards.meta.hashedBits, { bits });
-  if (count < needed) return `${progress} · ${entropy}`;
+  if (count < needed) return `${progress}\n${entropy}`;
   const extra = count - needed;
   return extra
-    ? `${progress} · ${entropy} · ${formatCopy(
+    ? `${progress}\n${entropy}\n${formatCopy(
         extra === 1
           ? UPSTREAM_TEXT.cards.meta.hashedExtraOne
           : UPSTREAM_TEXT.cards.meta.hashedExtra,
         { n: extra },
       )}`
-    : `${progress} · ${entropy}`;
+    : `${progress}\n${entropy}`;
 }
 
 export function directCardProgress(state: DirectCardState): number {
@@ -293,7 +293,7 @@ export function directCardProgressCopy(
     return `${formatCopy(UPSTREAM_TEXT.cards.meta.directEntered, {
       have: entered,
       need: needed,
-    })} · ${formatCopy(UPSTREAM_TEXT.cards.meta.directComplete, { words: wordCount })}`;
+    })}\n${formatCopy(UPSTREAM_TEXT.cards.meta.directComplete, { words: wordCount })}`;
   }
   if (state.extraCount > 0) {
     return formatCopy(
@@ -335,7 +335,7 @@ export function directCardProgressCopy(
   return `${formatCopy(UPSTREAM_TEXT.cards.meta.directEntered, {
     have: entered,
     need: needed,
-  })} · ${step}`;
+  })}\n${step}`;
 }
 
 export function cardInstruction(

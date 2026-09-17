@@ -157,12 +157,6 @@ export function SeedPhraseScreen({
     [input, seedMethod, wordCount, zeroIndexed],
   );
   const methodRequirement = seedPhraseMethodRequirement(seedMethod, wordCount, zeroIndexed);
-  const inputHelp =
-    seedMethod === 'words'
-      ? UPSTREAM_UI_FALLBACK_COPY.seedPhrase.wordsHelp(wordCount, wordCount - 1)
-      : formatCopy(UPSTREAM_TEXT.seed.numbersHelp, {
-          range: zeroIndexed ? UPSTREAM_TEXT.seed.range0 : UPSTREAM_TEXT.seed.range1,
-        });
   const canDeleteInput = selectedInput.end > selectedInput.start || selectedInput.start > 0;
   const activePhrase = analysis.phrase;
   const previewWords = analysis.words;
@@ -376,14 +370,6 @@ export function SeedPhraseScreen({
       {activeView === 'setup' ? (
         <View style={styles.setupContent} testID="seed-phrase-setup-view">
             <KeyStationIntroduction colors={colors} />
-            <View style={styles.header}>
-            <View style={styles.headerCopy}>
-              <Text style={[styles.subtitle, { color: colors.muted }]}>
-                {SEED_METHOD_COPY[seedMethod].description}
-              </Text>
-            </View>
-            </View>
-
             <EntropyMethodList
             activeTool={activeTool}
             colors={colors}
@@ -509,10 +495,16 @@ export function SeedPhraseScreen({
             </Text>
           </View>
           <Text
-            style={[styles.inputHelp, styles.staticInputHelp, { color: colors.muted }]}
-            testID="seed-phrase-help"
+            style={[
+              styles.status,
+              {
+                color:
+                  entropy || analysis.canDerive ? colors.accent : colors.muted,
+              },
+            ]}
+            testID={seedMethod === 'words' ? 'seed-phrase-status' : 'seed-number-status'}
           >
-            {inputHelp}
+            {seedPhraseStatusCopy(analysis, seedMethod, wordCount)}
           </Text>
           {seedMethod === 'numbers' && (
             <View style={styles.zeroIndexToggle}>
@@ -576,20 +568,6 @@ export function SeedPhraseScreen({
               textContentType="none"
               value={input}
             />
-            <Text
-              style={[
-                styles.status,
-                {
-                  color:
-                    entropy || analysis.canDerive ? colors.accent : colors.muted,
-                },
-              ]}
-              testID={seedMethod === 'words' ? 'seed-phrase-status' : 'seed-number-status'}
-            >
-              {seedMethod === 'words'
-                ? seedPhraseStatusCopy(analysis, seedMethod, wordCount)
-                : seedPhraseStatusCopy(analysis, seedMethod, wordCount)}
-            </Text>
           </View>
 
           <SeedPhraseKeypad

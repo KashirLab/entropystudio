@@ -150,10 +150,14 @@ export function diceProgressCopy(
   const estimatedBits = state.estimatedEntropyBits.toFixed(1);
 
   if (rollCount === 0) {
-    return formatCopy(UPSTREAM_TEXT.dice.meta.empty, {
+    const count = formatCopy(UPSTREAM_TEXT.dice.meta.empty, {
       method: HASHED_DICE_COPY[method].title,
       n: requiredRolls,
     });
+    const bits = formatCopy(UPSTREAM_TEXT.dice.meta.estimatedBits, {
+      bits: estimatedBits,
+    });
+    return `${count}\n${bits}`;
   }
 
   const count = formatCopy(
@@ -165,8 +169,8 @@ export function diceProgressCopy(
   const bits = formatCopy(UPSTREAM_TEXT.dice.meta.estimatedBits, {
     bits: estimatedBits,
   });
-  if (rollCount <= requiredRolls) return `${count} · ${bits}`;
-  return `${count} · ${bits} · ${formatCopy(UPSTREAM_TEXT.dice.meta.extra, {
+  if (rollCount <= requiredRolls) return `${count}\n${bits}`;
+  return `${count}\n${bits}\n${formatCopy(UPSTREAM_TEXT.dice.meta.extra, {
     extra: rollCount - requiredRolls,
     n: rollCount,
   })}`;
@@ -195,25 +199,25 @@ export function directDiceProgressCopy(
 
   if (method === 'bitbox') {
     const progress = state.canDerive
-      ? formatCopy(UPSTREAM_TEXT.seed.meta.ready, {
-          progress: formatCopy(UPSTREAM_TEXT.seed.count, {
-            entered: wordCount,
-            words: wordCount,
-          }),
-        })
+      ? `${formatCopy(UPSTREAM_TEXT.seed.count, {
+          entered: wordCount,
+          words: wordCount,
+        })}\n${UPSTREAM_TEXT.dice.dplus.ready}`
       : state.step === DirectDiceStep.BitboxFinalWord
-        ? UPSTREAM_TEXT.dice.bitbox.lastWord
+        ? `${formatCopy(UPSTREAM_TEXT.seedLength.words, {
+            n: state.words.length,
+          })}\n${UPSTREAM_TEXT.dice.bitbox.lastWord}`
         : state.step === DirectDiceStep.BitboxCoin
-          ? formatCopy(UPSTREAM_TEXT.dice.bitbox.coin, {
-              bits: state.words.length * 11,
-              have: state.words.length,
-              need: state.partialWords,
-            })
-          : formatCopy(UPSTREAM_TEXT.dice.bitbox.die, {
-              bits: state.words.length * 11,
-              have: state.words.length,
-              need: state.partialWords,
-            });
+          ? `${formatCopy(UPSTREAM_TEXT.dice.bitbox.wordProgress, {
+              partial: state.partialWords,
+              word: state.activeWord,
+            })}\n${UPSTREAM_TEXT.dice.bitbox.coin}`
+          : `${formatCopy(UPSTREAM_TEXT.dice.bitbox.wordProgress, {
+              partial: state.partialWords,
+              word: state.activeWord,
+            })}\n${formatCopy(UPSTREAM_TEXT.dice.bitbox.die, {
+              die: state.activeRoll,
+            })}`;
     const skipped = state.skippedCount
       ? ` ${formatCopy(
           state.skippedCount === 1
@@ -232,17 +236,17 @@ export function directDiceProgressCopy(
   const completeGroups = UPSTREAM_TEXT.dice.dplus.rolledWordsComplete;
   const progress =
     state.step === DirectDiceStep.D8D16WordD8
-      ? `${groups} · ${UPSTREAM_TEXT.dice.dplus.roll.d8}${UPSTREAM_TEXT.dice.dplus.range.d8}`
+      ? `${groups}\n${UPSTREAM_TEXT.dice.dplus.roll.d8}${UPSTREAM_TEXT.dice.dplus.range.d8}`
       : state.step === DirectDiceStep.D8D16WordD16First
-        ? `${groups} · ${UPSTREAM_TEXT.dice.dplus.roll.d16first}${UPSTREAM_TEXT.dice.dplus.range.d16}`
+        ? `${groups}\n${UPSTREAM_TEXT.dice.dplus.roll.d16first}${UPSTREAM_TEXT.dice.dplus.range.d16}`
         : state.step === DirectDiceStep.D8D16WordD16Second
-          ? `${groups} · ${UPSTREAM_TEXT.dice.dplus.roll.d16second}${UPSTREAM_TEXT.dice.dplus.range.d16}`
+          ? `${groups}\n${UPSTREAM_TEXT.dice.dplus.roll.d16second}${UPSTREAM_TEXT.dice.dplus.range.d16}`
           : state.step === DirectDiceStep.D8D16ChecksumD8
-            ? `${completeGroups} · ${UPSTREAM_TEXT.dice.dplus.roll.checksumD8}${UPSTREAM_TEXT.dice.dplus.range.d8}`
+            ? `${completeGroups}\n${UPSTREAM_TEXT.dice.dplus.roll.checksumD8}${UPSTREAM_TEXT.dice.dplus.range.d8}`
             : state.step === DirectDiceStep.D8D16ChecksumD16
-              ? `${completeGroups} · ${UPSTREAM_TEXT.dice.dplus.roll.checksumD16}${UPSTREAM_TEXT.dice.dplus.range.d16}`
+              ? `${completeGroups}\n${UPSTREAM_TEXT.dice.dplus.roll.checksumD16}${UPSTREAM_TEXT.dice.dplus.range.d16}`
               : state.step === DirectDiceStep.D8D16ChecksumCoin
-                ? `${completeGroups} · ${UPSTREAM_TEXT.dice.dplus.roll.checksumCoin}${UPSTREAM_TEXT.dice.dplus.range.coin}`
+                ? `${completeGroups}\n${UPSTREAM_TEXT.dice.dplus.roll.checksumCoin}${UPSTREAM_TEXT.dice.dplus.range.coin}`
                 : state.step === DirectDiceStep.D8D16Complete
                   ? formatCopy(UPSTREAM_TEXT.dice.dplus.ready, { words: wordCount })
                   : `${groups}${formatCopy(UPSTREAM_TEXT.dice.meta.invalid, {

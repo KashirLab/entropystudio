@@ -119,7 +119,6 @@ export function DiceRollsScreen({
     d8D16Copy,
     enabledFaces,
     method,
-    progress,
     progressText,
     result,
     restoreInput,
@@ -438,20 +437,12 @@ export function DiceRollsScreen({
             onChange={updateRolls}
             onProgrammaticSelectionChange={setProgrammaticTranscriptSelection}
             onSelectionChange={setTranscriptSelection}
-            progress={progress}
             progressText={progressText}
             rolls={rolls}
             selection={transcriptSelection}
             selectionRequestId={selectionRequestId}
             wordCount={wordCount}
           />
-
-          <Text
-            style={[styles.methodHelp, { color: colors.muted }]}
-            testID="dice-method-help"
-          >
-            {copy.inputHelp}
-          </Text>
 
           <View style={styles.rollArea}>
             <DiceGrid

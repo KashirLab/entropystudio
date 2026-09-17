@@ -121,7 +121,6 @@ export function CardsScreen({
     instruction,
     matchesIanColeman,
     method,
-    progress,
     progressText,
     result,
     restoreInput,
@@ -479,6 +478,13 @@ export function CardsScreen({
             </Pressable>
           </View>
 
+          <Text
+            numberOfLines={3}
+            style={[styles.progressText, { color: colors.muted }]}
+            testID="card-progress"
+          >
+            {progressText}
+          </Text>
           <View style={[styles.inputSurface, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <TextInput
               accessibilityLabel={copy.inputLabel}
@@ -504,14 +510,6 @@ export function CardsScreen({
               textContentType="none"
               value={displayedTranscript}
             />
-            <View style={[styles.progressTrack, { backgroundColor: colors.segment }]}>
-              <View
-                style={[styles.progressFill, { backgroundColor: colors.accent, width: `${progress * 100}%` }]}
-              />
-            </View>
-            <Text style={[styles.progressText, { color: colors.muted }]} testID="card-progress">
-              {progressText}
-            </Text>
           </View>
 
           <Text style={[styles.methodHelp, { color: colors.muted }]} testID="cards-method-help">
@@ -909,20 +907,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 10,
   },
-  progressFill: {
-    borderRadius: 2,
-    height: '100%',
-  },
   progressText: {
     fontSize: 13,
     lineHeight: 18,
-    marginTop: 9,
-  },
-  progressTrack: {
-    borderRadius: 2,
-    height: 4,
-    marginTop: 10,
-    overflow: 'hidden',
+    marginBottom: 10,
   },
   pressed: {
     opacity: 0.72,

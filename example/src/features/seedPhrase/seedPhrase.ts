@@ -143,19 +143,19 @@ export function seedPhraseStatusCopy(
 
   switch (state.status) {
     case SeedPhraseStatus.Extra:
-      return formatCopy(
+      return `${progress}\n${formatCopy(
         method === 'words'
           ? UPSTREAM_TEXT.seed.meta.extraWords
           : UPSTREAM_TEXT.seed.meta.extra,
         { entered: state.enteredCount, n: state.extraCount, words: wordCount },
-      );
+      )}`;
     case SeedPhraseStatus.ChooseFinal:
-      return formatCopy(UPSTREAM_TEXT.seed.meta.chooseFinal, {
+      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.chooseFinal, {
         n: state.finalCandidates.length,
         progress,
-      });
+      })}`;
     case SeedPhraseStatus.Ready:
-      return formatCopy(UPSTREAM_TEXT.seed.meta.ready, { progress });
+      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.ready, { progress })}`;
     case SeedPhraseStatus.FinalPrefix:
       return formatCopy(
         state.matchingFinalCandidates === 1
@@ -171,21 +171,21 @@ export function seedPhraseStatusCopy(
         prefix: finalWord,
       });
     case SeedPhraseStatus.InvalidWord:
-      return formatCopy(UPSTREAM_TEXT.seed.meta.invalidWord, {
+      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.invalidWord, {
         n: state.invalidPosition,
         progress,
         word: state.invalidToken,
-      });
+      })}`;
     case SeedPhraseStatus.InvalidNumber:
-      return formatCopy(UPSTREAM_TEXT.seed.meta.invalidNumber, {
+      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.invalidNumber, {
         max: state.maximumNumber,
         min: state.minimumNumber,
         n: state.invalidPosition,
         progress,
         token: state.invalidToken,
-      });
+      })}`;
     case SeedPhraseStatus.ChecksumInvalid:
-      return formatCopy(UPSTREAM_TEXT.seed.meta.checksumInvalid, { progress });
+      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.checksumInvalid, { progress })}`;
     case SeedPhraseStatus.Remaining:
       return method === 'words'
         ? formatCopy(UPSTREAM_TEXT.seed.meta.remaining, {

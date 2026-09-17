@@ -90,12 +90,13 @@ export const UPSTREAM_TEXT = {
   },
   dice: {
     bitbox: {
-      coin: 'BitBox diceware: {have} of {need} lookup-table words ({bits} encoded bits). Then choose the final checksum word.',
+      coin: '6th die (interpreted as a coin flip)',
       desc: 'Use five dice showing 1–4, then a coin (or 6th die: 1–3 heads, 4–6 tails). Build {partialWords} lookup-table words, then choose 1 of {candidates} valid final checksum words.',
-      die: 'BitBox diceware: {have} of {need} lookup-table words ({bits} encoded bits). Then choose the final checksum word.',
+      die: 'Die {die} of 5 (only faces 1–4 used)',
       heads: 'Heads',
       headsRange: '1–3',
-      lastWord: 'Then choose the final checksum word.',
+      lastWord: 'Choose final checksum word below',
+      wordProgress: 'Word {word} of {partial}',
       tails: 'Tails',
       tailsRange: '4–6',
       title: 'BitBox diceware / Direct word selection',
@@ -298,6 +299,7 @@ export const UPSTREAM_TEXT = {
     seed: 'Seed phrase',
   },
   numberBases: {
+    inputProgress: '{have} of {need} {unit}',
     mixedRemainderMany:
       'The final character is mixed-radix: it contributes the remaining {n} entropy bits and must be one of {chars}.',
     mixedRemainderOne:
@@ -307,6 +309,7 @@ export const UPSTREAM_TEXT = {
     remainderBinaryOne:
       '{full} complete {label} characters are followed by {n} individual coin-flip entropy bit.',
     requirement: '{words} words require exactly {digits} {unit}.',
+    seedWordsFilled: '{have} of {words} seed words filled',
     setupRemainderBinary:
       ' Enter {fullDigits} complete {shortLabel} characters followed by {n} coin flip(s), using Heads (0) or Tails (1).',
     setupRemainderMixed:
@@ -860,60 +863,60 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     progress: {
       brain: {
         boundaryWhitespaceWillBeTrimmed: 'Boundary whitespace will be trimmed',
-        empty: () => 'No text entered · brain wallets are unsafe',
+        empty: () => 'No text entered\nBrain wallets are unsafe',
         entered: (convention: string) =>
-          `Text entered · ${convention} · brain wallets are unsafe`,
+          `Text entered\n${convention}\nBrain wallets are unsafe`,
         exactText: 'Exact text will be used',
         exactTextWithBoundaryWhitespace:
           'Exact text will be used, including boundary whitespace',
         trimEnabledNoBoundaryWhitespace:
           'Trim enabled; no boundary whitespace present',
         trimmedEmpty: () =>
-          'Boundary whitespace trimming leaves an empty passphrase · enter non-whitespace text or turn trimming off',
+          'Boundary whitespace trimming leaves an empty passphrase\nEnter non-whitespace text or turn trimming off',
       },
       hex: {
         excess: (enteredCount: number, requiredCount: number) =>
-          `${enteredCount} hexadecimal characters entered · ${requiredCount} required`,
+          `${enteredCount} hexadecimal characters entered\n${requiredCount} required`,
         ready: (enteredCount: number, requiredCount: number) =>
-          `${enteredCount} of ${requiredCount} hexadecimal characters entered · valid secp256k1 private key · ready to derive`,
+          `${enteredCount} of ${requiredCount} hexadecimal characters entered\nValid secp256k1 private key · ready to derive`,
         remaining: (
           enteredCount: number,
           requiredCount: number,
           remainingCount: number,
         ) =>
-          `${enteredCount} of ${requiredCount} hexadecimal characters entered · ${remainingCount} remaining`,
+          `${enteredCount} of ${requiredCount} hexadecimal characters entered\n${remainingCount} remaining`,
       },
       mini: {
         excess: (enteredCount: number, maximumCount: number) =>
-          `${enteredCount} Mini-key characters entered · ${maximumCount} maximum`,
+          `${enteredCount} Mini-key characters entered\n${maximumCount} maximum`,
         prefix: (minimumCount: number, maximumCount: number) =>
-          `0 of ${minimumCount} or ${maximumCount} Mini-key characters entered · must start with S`,
+          `0 of ${minimumCount} or ${maximumCount} Mini-key characters entered\nMust start with S`,
         ready: (enteredCount: number, requiredCount: number) =>
-          `${enteredCount} of ${requiredCount} Mini-key characters entered · checksum valid · ready to derive`,
+          `${enteredCount} of ${requiredCount} Mini-key characters entered\nChecksum valid · ready to derive`,
         remaining: (
           enteredCount: number,
           requiredCount: number,
           remainingCount: number,
         ) =>
-          `${enteredCount} of ${requiredCount} Mini-key characters entered · ${remainingCount} remaining`,
+          `${enteredCount} of ${requiredCount} Mini-key characters entered\n${remainingCount} remaining`,
       },
       wif: {
         excess: (enteredCount: number, requiredCount: number) =>
-          `${enteredCount} WIF characters entered · ${requiredCount} required`,
+          `${enteredCount} WIF characters entered\n${requiredCount} required`,
         prefix: (
           enteredCount: number,
           minimumCount: number,
           maximumCount: number,
         ) =>
-          `${enteredCount} of ${minimumCount} or ${maximumCount} WIF characters entered · starts with 5, K, or L`,
+          `${enteredCount} of ${minimumCount} or ${maximumCount} WIF characters entered\nStarts with 5, K, or L`,
         ready: (enteredCount: number, requiredCount: number) =>
-          `${enteredCount} of ${requiredCount} WIF characters entered · Bitcoin mainnet checksum valid · ready to derive`,
+          `${enteredCount} of ${requiredCount} WIF characters entered\nBitcoin mainnet checksum valid · ready to derive`,
         remaining: (
           enteredCount: number,
           requiredCount: number,
           remainingCount: number,
         ) =>
-          `${enteredCount} of ${requiredCount} WIF characters entered · ${remainingCount} remaining`,
+          `${enteredCount} of ${requiredCount} WIF characters entered\n${remainingCount} remaining`,
       },
     },
   },

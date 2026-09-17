@@ -211,7 +211,6 @@ export function NumberBasesScreen({
     input.length > 0 &&
     !/\s$/u.test(input) &&
     analysis.digitCount < analysis.config.digits;
-  const inputHelp = numberBaseInputHelp(format, analysis.config);
   const inputLabel = UPSTREAM_UI_FALLBACK_COPY.numberBases.entropyLabel(
     analysis.config.label,
     wordCount,
@@ -221,6 +220,11 @@ export function NumberBasesScreen({
     analysis.config,
   );
   const hasLongSetupGuidance = format === 'base32' || format === 'base64';
+  const inputProgress = formatCopy(UPSTREAM_TEXT.numberBases.inputProgress, {
+    have: analysis.digitCount,
+    need: analysis.config.digits,
+    unit: analysis.config.unit,
+  });
   const supportsCalculations =
     format === 'bin' ||
     format === 'base4' ||
@@ -246,6 +250,10 @@ export function NumberBasesScreen({
       words = [];
     }
   }
+  const seedWordsFilled = formatCopy(
+    UPSTREAM_TEXT.numberBases.seedWordsFilled,
+    { have: words.length, words: wordCount },
+  );
 
   useRegisterCurrentEntropySyncRequest(isActive, {
     selectedFinalWord: '',
@@ -558,34 +566,17 @@ export function NumberBasesScreen({
               />
             ) : null}
           </View>
-          {format === 'base32' || format === 'base64' ? (
-            <ScrollView
-              contentContainerStyle={styles.inputHelpContent}
-              nestedScrollEnabled
-              overScrollMode="never"
-              showsVerticalScrollIndicator
-              style={styles.inputHelpScroll}
-              testID="number-base-help-scroll"
-            >
-              <Text
-                style={[styles.inputHelp, { color: colors.muted }]}
-                testID="number-base-help"
-              >
-                {inputHelp}
-              </Text>
-            </ScrollView>
-          ) : (
-            <Text
-              style={[
-                styles.inputHelp,
-                styles.staticInputHelp,
-                { color: colors.muted },
-              ]}
-              testID="number-base-help"
-            >
-              {inputHelp}
+          <View
+            style={styles.inputProgress}
+            testID="number-base-input-progress"
+          >
+            <Text style={[styles.inputProgressLine, { color: colors.muted }]}>
+              {inputProgress}
             </Text>
-          )}
+            <Text style={[styles.inputProgressLine, { color: colors.muted }]}>
+              {seedWordsFilled}
+            </Text>
+          </View>
           <View
             style={[
               styles.inputSurface,
@@ -900,20 +891,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  inputHelp: {
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  inputHelpContent: {
-    paddingRight: 4,
-  },
-  inputHelpScroll: {
-    flexGrow: 0,
-    flexShrink: 1,
-    marginBottom: 10,
-    maxHeight: 51,
-    minHeight: 0,
-  },
   input: {
     fontFamily: 'monospace',
     fontSize: 15,
@@ -929,6 +906,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 0,
     paddingRight: 12,
+  },
+  inputProgress: {
+    gap: 2,
+    marginBottom: 10,
+  },
+  inputProgressLine: {
+    fontSize: 12,
+    lineHeight: 17,
   },
   inputSurface: {
     borderRadius: 6,
