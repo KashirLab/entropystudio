@@ -63,14 +63,14 @@ export function RecoveryMaterialPanel({
           {wifCompressedLabel && result.wifCompressed ? (
             <>
               <Text
-                style={[styles.label, { color: colors.muted }]}
+                style={[styles.label, { color: colors.text }]}
                 testID="wif-compressed-label"
               >
                 {wifCompressedLabel}
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.text }]}
+                style={[styles.entropy, { color: colors.privateValue }]}
                 testID="wif-compressed-output"
               >
                 {result.wifCompressed}
@@ -80,14 +80,14 @@ export function RecoveryMaterialPanel({
           {wifUncompressedLabel && result.wifUncompressed ? (
             <>
               <Text
-                style={[styles.label, styles.wifUncompressedLabel, { color: colors.muted }]}
+                style={[styles.label, styles.wifUncompressedLabel, { color: colors.text }]}
                 testID="wif-uncompressed-label"
               >
                 {wifUncompressedLabel}
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.text }]}
+                style={[styles.entropy, { color: colors.privateValue }]}
                 testID="wif-uncompressed-output"
               >
                 {result.wifUncompressed}
@@ -97,14 +97,14 @@ export function RecoveryMaterialPanel({
           {mnemonicLabel && result.mnemonic ? (
             <>
               <Text
-                style={[styles.label, { color: colors.muted }]}
+                style={[styles.label, { color: colors.text }]}
                 testID="result-seed-phrase-label"
               >
                 {mnemonicLabel}
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.text }]}
+                style={[styles.entropy, { color: colors.privateValue }]}
                 testID="result-seed-phrase-output"
               >
                 {result.mnemonic}
@@ -119,7 +119,7 @@ export function RecoveryMaterialPanel({
                 (wifCompressedLabel && result.wifCompressed) ||
                 (wifUncompressedLabel && result.wifUncompressed)) &&
                 styles.entropyLabelAfterValue,
-              { color: colors.muted },
+              { color: colors.text },
             ]}
             testID="result-entropy-label"
           >
@@ -127,7 +127,7 @@ export function RecoveryMaterialPanel({
           </Text>
           <Text
             selectable
-            style={[styles.entropy, { color: colors.text }]}
+            style={[styles.entropy, { color: colors.privateValue }]}
             testID="entropy-output"
           >
             {result.entropy}
@@ -135,14 +135,14 @@ export function RecoveryMaterialPanel({
           {masterSeedLabel && result.masterSeed ? (
             <>
               <Text
-                style={[styles.label, styles.masterSeedLabel, { color: colors.muted }]}
+                style={[styles.label, styles.masterSeedLabel, { color: colors.text }]}
                 testID="master-seed-label"
               >
                 {masterSeedLabel}
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.text }]}
+                style={[styles.entropy, { color: colors.privateValue }]}
                 testID="master-seed-output"
               >
                 {result.masterSeed}
@@ -152,14 +152,14 @@ export function RecoveryMaterialPanel({
           {rootXprvLabel && result.rootXprv ? (
             <>
               <Text
-                style={[styles.label, styles.rootXprvLabel, { color: colors.muted }]}
+                style={[styles.label, styles.rootXprvLabel, { color: colors.text }]}
                 testID="root-xprv-label"
               >
                 {rootXprvLabel}
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.text }]}
+                style={[styles.entropy, { color: colors.privateValue }]}
                 testID="root-xprv-output"
               >
                 {result.rootXprv}
@@ -175,8 +175,8 @@ export function RecoveryMaterialPanel({
 const styles = StyleSheet.create({
   entropy: {
     fontFamily: 'monospace',
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
   },
   error: {
     fontSize: 15,
@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
   },
   entropyLabelAfterValue: { marginTop: 16 },
   label: {
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 10,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   masterSeedLabel: { marginTop: 16 },
   rootXprvLabel: { marginTop: 16 },

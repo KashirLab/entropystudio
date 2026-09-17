@@ -116,7 +116,7 @@ function AddressTable({
                 <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.text }]}>{item.index}</Text>
                 <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, columnStyle('path'), { color: colors.text }]}>{item.path}</Text>
                 <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, columnStyle('address'), { color: colors.text }]}>{item.address}</Text>
-                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.text }]}>{item.wif}</Text>
+                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.privateValue }]}>{item.wif}</Text>
               </View>
             ))}
           </View>
@@ -295,36 +295,36 @@ export function ScriptTypePickerScreen({
                 <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>
                   {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
                 </Text>
-                <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.bitcoinCore('xprv')}
                 </Text>
-                <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
+                <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
                   {privateMaterial.bitcoinCoreXprv}
                 </Text>
                 {privateMaterial.slip132Private ? (
                   <>
-                    <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.slip132(
                         privateMaterial.slip132PrivateLabel ?? '',
                       )}
                     </Text>
-                    <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
+                    <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
                       {privateMaterial.slip132Private}
                     </Text>
                   </>
                 ) : null}
-                <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.spendingDescriptor('Change')}
                 </Text>
-                <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
+                <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
                   {privateMaterial.spendingChangeDescriptor}
                 </Text>
                 {privateMaterial.slip132Private ? (
                   <View style={[styles.genericCompatibilitySection, { borderTopColor: colors.border }]}>
-                    <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.genericDescriptorCompatibility('xprv')}
                     </Text>
-                    <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
+                    <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
                       {privateMaterial.bitcoinCoreXprv}
                     </Text>
                   </View>
@@ -384,7 +384,7 @@ export function ScriptTypePickerScreen({
                   </Text>{' '}
                   {UPSTREAM_TEXT.result.watchOnlyAccountWarningTail}
                 </Text>
-                <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.bitcoinCore('xpub')}
                 </Text>
                 <Text selectable style={[styles.privateMaterialValue, { color: colors.text }]}>
@@ -392,7 +392,7 @@ export function ScriptTypePickerScreen({
                 </Text>
                 {privateMaterial.slip132Public ? (
                   <>
-                    <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.slip132(
                         privateMaterial.slip132PublicLabel ?? '',
                       )}
@@ -407,7 +407,7 @@ export function ScriptTypePickerScreen({
                 </Text>
                 {privateMaterial.multisigCosignerXpub ? (
                   <>
-                    <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.multisigCosigner(
                         'xpub',
                         UPSTREAM_UI_FALLBACK_COPY.result.nativeSegwitBip48,
@@ -426,7 +426,7 @@ export function ScriptTypePickerScreen({
                   testID="open-watch-only-descriptor-qr-popup"
                 >
                   <View style={styles.descriptorButtonContent}>
-                    <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.watchOnlyWalletDescriptor}
                     </Text>
                     <Text accessibilityElementsHidden style={[styles.descriptorArrow, { color: colors.muted }]}>
@@ -459,7 +459,7 @@ export function ScriptTypePickerScreen({
                     {showingBranchDescriptors
                       ? privateMaterial.watchOnlyBranchDescriptors.map(item => (
                           <View key={item.branch} style={styles.branchDescriptorRow}>
-                            <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                            <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                               {UPSTREAM_UI_FALLBACK_COPY.result.watchOnlyDescriptor(
                                 watchOnlyBranchLabel(item.branch),
                               )}
@@ -496,7 +496,7 @@ export function ScriptTypePickerScreen({
                     </Pressable>
                     {showingAdvancedWatchOnlyExport ? (
                       <View>
-                        <Text style={[styles.privateMaterialLabel, { color: colors.muted }]}>
+                        <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                           {UPSTREAM_UI_FALLBACK_COPY.result.genericDescriptorCompatibility('xpub')}
                         </Text>
                         <Text selectable style={[styles.branchDescriptorValue, { color: colors.text }]}>

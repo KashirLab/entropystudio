@@ -296,13 +296,13 @@ export function KeyStationResultScreen({
                 <Text style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}>
                   {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
                 </Text>
-                <Text style={[styles.watchOnlyLabel, { color: colors.muted }]}>
+                <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
                   {UPSTREAM_TEXT.fingerprint.master}
                 </Text>
                 <Text selectable style={[styles.watchOnlyValue, { color: colors.text }]} testID="watch-only-master-fingerprint">
                   {tab.masterFingerprint}
                 </Text>
-                <Text style={[styles.watchOnlyLabel, { color: colors.muted }]}>
+                <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
                   {formatCopy(UPSTREAM_TEXT.result.rootXprv, { name: 'xpub' })}
                 </Text>
                 <Text selectable style={[styles.watchOnlyValue, { color: colors.text }]} testID="watch-only-root-xpub">
@@ -551,14 +551,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   watchOnlyLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 10,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   watchOnlyValue: {
     fontFamily: 'monospace',
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
     marginBottom: 16,
   },
 });
