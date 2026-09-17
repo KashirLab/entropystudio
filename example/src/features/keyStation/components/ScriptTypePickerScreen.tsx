@@ -137,8 +137,6 @@ export function ScriptTypePickerScreen({
   const [showingPrivateMaterial, setShowingPrivateMaterial] = useState(false);
   const [showingWatchOnlyMaterial, setShowingWatchOnlyMaterial] = useState(false);
   const [showingWatchOnlyDescriptorQr, setShowingWatchOnlyDescriptorQr] = useState(false);
-  const [showingBranchDescriptors, setShowingBranchDescriptors] = useState(false);
-  const [showingAdvancedWatchOnlyExport, setShowingAdvancedWatchOnlyExport] = useState(false);
   const [showingAddresses, setShowingAddresses] = useState(false);
   const [addressToCheck, setAddressToCheck] = useState('');
   const [addressCheck, setAddressCheck] = useState<AccountAddressCheck | null>(null);
@@ -162,8 +160,6 @@ export function ScriptTypePickerScreen({
     setShowingPrivateMaterial(false);
     setShowingWatchOnlyMaterial(false);
     setShowingWatchOnlyDescriptorQr(false);
-    setShowingBranchDescriptors(false);
-    setShowingAdvancedWatchOnlyExport(false);
     setShowingAddresses(false);
     setAddressToCheck('');
     setAddressCheck(null);
@@ -421,76 +417,28 @@ export function ScriptTypePickerScreen({
                   </View>
                 </Pressable>
                 {privateMaterial.watchOnlyBranchDescriptors.length ? (
-                  <>
-                    <Pressable
-                      accessibilityLabel={UPSTREAM_TEXT.result.addressBranchDescriptors}
-                      accessibilityRole="button"
-                      accessibilityState={{ expanded: showingBranchDescriptors }}
-                      onPress={() => setShowingBranchDescriptors(value => !value)}
-                      style={({ pressed }) => [styles.branchDescriptorsHeader, { opacity: pressed ? 0.72 : 1 }]}
-                      testID="toggle-watch-only-branch-descriptors"
-                    >
-                      <View style={styles.branchDescriptorsHeaderContent}>
-                        <Text
-                          accessibilityElementsHidden
-                          style={[styles.branchDescriptorsIndicator, { color: showingBranchDescriptors ? colors.text : colors.muted }]}
-                        >
-                          {showingBranchDescriptors ? '▼' : '▶'}
-                        </Text>
-                        <Text style={[styles.branchDescriptorsTitle, { color: showingBranchDescriptors ? colors.text : colors.muted }]}>
-                          {UPSTREAM_TEXT.result.addressBranchDescriptors}
-                        </Text>
-                      </View>
-                    </Pressable>
-                    {showingBranchDescriptors
-                      ? privateMaterial.watchOnlyBranchDescriptors.map(item => (
-                          <View key={item.branch} style={styles.branchDescriptorRow}>
-                            <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
-                              {UPSTREAM_UI_FALLBACK_COPY.result.watchOnlyDescriptor(
-                                watchOnlyBranchLabel(item.branch),
-                              )}
-                            </Text>
-                            <Text selectable style={[styles.branchDescriptorValue, { color: colors.text }]}>
-                              {item.descriptor}
-                            </Text>
-                          </View>
-                        ))
-                      : null}
-                  </>
+                  privateMaterial.watchOnlyBranchDescriptors.map(item => (
+                    <View key={item.branch} style={styles.branchDescriptorRow}>
+                      <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
+                        {UPSTREAM_UI_FALLBACK_COPY.result.watchOnlyDescriptor(
+                          watchOnlyBranchLabel(item.branch),
+                        )}
+                      </Text>
+                      <Text selectable style={[styles.branchDescriptorValue, { color: colors.text }]}>
+                        {item.descriptor}
+                      </Text>
+                    </View>
+                  ))
                 ) : null}
                 {privateMaterial.advancedWatchOnlyExport ? (
-                  <>
-                    <Pressable
-                      accessibilityLabel={UPSTREAM_TEXT.result.advancedWatchOnlyExport}
-                      accessibilityRole="button"
-                      accessibilityState={{ expanded: showingAdvancedWatchOnlyExport }}
-                      onPress={() => setShowingAdvancedWatchOnlyExport(value => !value)}
-                      style={({ pressed }) => [styles.branchDescriptorsHeader, { opacity: pressed ? 0.72 : 1 }]}
-                      testID="toggle-advanced-watch-only-export"
-                    >
-                      <View style={styles.branchDescriptorsHeaderContent}>
-                        <Text
-                          accessibilityElementsHidden
-                          style={[styles.branchDescriptorsIndicator, { color: showingAdvancedWatchOnlyExport ? colors.text : colors.muted }]}
-                        >
-                          {showingAdvancedWatchOnlyExport ? '▼' : '▶'}
-                        </Text>
-                        <Text style={[styles.branchDescriptorsTitle, { color: showingAdvancedWatchOnlyExport ? colors.text : colors.muted }]}>
-                          {UPSTREAM_TEXT.result.advancedWatchOnlyExport}
-                        </Text>
-                      </View>
-                    </Pressable>
-                    {showingAdvancedWatchOnlyExport ? (
-                      <View>
-                        <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
-                          {UPSTREAM_UI_FALLBACK_COPY.result.genericDescriptorCompatibility('xpub')}
-                        </Text>
-                        <Text selectable style={[styles.branchDescriptorValue, { color: colors.text }]}>
-                          {privateMaterial.advancedWatchOnlyExport}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </>
+                  <View>
+                    <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
+                      {UPSTREAM_UI_FALLBACK_COPY.result.genericDescriptorCompatibility('xpub')}
+                    </Text>
+                    <Text selectable style={[styles.branchDescriptorValue, { color: colors.text }]}>
+                      {privateMaterial.advancedWatchOnlyExport}
+                    </Text>
+                  </View>
                 ) : null}
               </View>
             ) : null}
@@ -731,10 +679,6 @@ const styles = StyleSheet.create({
   modalCard: { alignItems: 'center', borderRadius: 8, maxWidth: '100%', padding: 12 },
   branchDescriptorValue: { fontFamily: 'monospace', fontSize: 12, lineHeight: 18, marginBottom: 12 },
   branchDescriptorRow: { alignSelf: 'stretch' },
-  branchDescriptorsHeader: { alignSelf: 'flex-start', justifyContent: 'center', marginTop: 16, minHeight: 36 },
-  branchDescriptorsHeaderContent: { alignItems: 'center', flexDirection: 'row', gap: 4 },
-  branchDescriptorsIndicator: { fontSize: 16, lineHeight: 20 },
-  branchDescriptorsTitle: { fontSize: 14, fontWeight: '700', lineHeight: 20 },
   qrImportNote: { fontSize: 12, lineHeight: 18, marginTop: 8, textAlign: 'center' },
   watchOnlyButton: { marginTop: 16 },
   screen: { flex: 1 },
