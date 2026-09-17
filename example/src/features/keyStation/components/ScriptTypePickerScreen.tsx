@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
   Modal,
@@ -34,6 +34,7 @@ type Props = {
   readonly colors: DiceColors;
   readonly initialSection?: 'addresses' | 'account-private' | 'watch-only' | null;
   readonly onBack: () => void;
+  readonly showNavigationHeader?: boolean;
   readonly privateAccountMaterialInput?: {
     readonly accountPath: string;
     readonly masterFingerprint: string;
@@ -58,6 +59,24 @@ const EMPTY_ADDRESS_TABLE_COLUMN_WIDTHS: AddressTableColumnWidths = {
 };
 
 const ADDRESS_TABLE_MONOSPACE_FONT = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
+
+function derivePrivateMaterial(
+  input: NonNullable<Props['privateAccountMaterialInput']>,
+  scriptType: KeyStationScriptType,
+): AccountPrivateMaterial {
+  return accountPrivateMaterial(
+    input.mnemonic,
+    input.passphrase,
+    input.accountPath,
+    input.masterFingerprint,
+    nativeScriptType(scriptType),
+    [...input.branches],
+    input.addressIndex,
+    input.addressCount,
+    input.branchHardened,
+    input.addressHardened,
+  );
+}
 
 function watchOnlyBranchLabel(branch: number): string {
   return UPSTREAM_UI_FALLBACK_COPY.keys.advanced.branchLabel({
@@ -131,13 +150,20 @@ export function ScriptTypePickerScreen({
   initialSection,
   onBack,
   privateAccountMaterialInput,
+  showNavigationHeader = true,
   scriptType,
 }: Props) {
-  const [privateMaterial, setPrivateMaterial] = useState<AccountPrivateMaterial | null>(null);
-  const [showingPrivateMaterial, setShowingPrivateMaterial] = useState(false);
-  const [showingWatchOnlyMaterial, setShowingWatchOnlyMaterial] = useState(false);
+  const destinationKey = `${scriptType}:${privateAccountMaterialInput?.accountPath ?? ''}:${initialSection ?? ''}`;
+  const initialDestinationKey = useRef(destinationKey);
+  const [privateMaterial, setPrivateMaterial] = useState<AccountPrivateMaterial | null>(() =>
+    initialSection && privateAccountMaterialInput
+      ? derivePrivateMaterial(privateAccountMaterialInput, scriptType)
+      : null,
+  );
+  const [showingPrivateMaterial, setShowingPrivateMaterial] = useState(initialSection === 'account-private');
+  const [showingWatchOnlyMaterial, setShowingWatchOnlyMaterial] = useState(initialSection === 'watch-only');
   const [showingWatchOnlyDescriptorQr, setShowingWatchOnlyDescriptorQr] = useState(false);
-  const [showingAddresses, setShowingAddresses] = useState(false);
+  const [showingAddresses, setShowingAddresses] = useState(initialSection === 'addresses');
   const [addressToCheck, setAddressToCheck] = useState('');
   const [addressCheck, setAddressCheck] = useState<AccountAddressCheck | null>(null);
   const [addressTableColumnWidths, setAddressTableColumnWidths] = useState<AddressTableColumnWidths>(
@@ -155,38 +181,24 @@ export function ScriptTypePickerScreen({
     addressTableColumnWidths[column] > 0 ? { width: addressTableColumnWidths[column] } : undefined;
 
   useEffect(() => {
+    if (initialDestinationKey.current === destinationKey) {
+      return;
+    }
+    initialDestinationKey.current = destinationKey;
     setAddressTableColumnWidths(EMPTY_ADDRESS_TABLE_COLUMN_WIDTHS);
-    setPrivateMaterial(null);
-    setShowingPrivateMaterial(false);
-    setShowingWatchOnlyMaterial(false);
+    setPrivateMaterial(
+      initialSection && privateAccountMaterialInput
+        ? derivePrivateMaterial(privateAccountMaterialInput, scriptType)
+        : null,
+    );
+    setShowingPrivateMaterial(initialSection === 'account-private');
+    setShowingWatchOnlyMaterial(initialSection === 'watch-only');
     setShowingWatchOnlyDescriptorQr(false);
     setShowingAddresses(false);
     setAddressToCheck('');
     setAddressCheck(null);
-  }, [scriptType, privateAccountMaterialInput?.accountPath]);
-
-  useEffect(() => {
-    if (!initialSection || !privateAccountMaterialInput) {
-      return;
-    }
-    setPrivateMaterial(
-      accountPrivateMaterial(
-        privateAccountMaterialInput.mnemonic,
-        privateAccountMaterialInput.passphrase,
-        privateAccountMaterialInput.accountPath,
-        privateAccountMaterialInput.masterFingerprint,
-        nativeScriptType(scriptType),
-        [...privateAccountMaterialInput.branches],
-        privateAccountMaterialInput.addressIndex,
-        privateAccountMaterialInput.addressCount,
-        privateAccountMaterialInput.branchHardened,
-        privateAccountMaterialInput.addressHardened,
-      ),
-    );
     setShowingAddresses(initialSection === 'addresses');
-    setShowingPrivateMaterial(initialSection === 'account-private');
-    setShowingWatchOnlyMaterial(initialSection === 'watch-only');
-  }, [initialSection, privateAccountMaterialInput, scriptType]);
+  }, [destinationKey, initialSection, privateAccountMaterialInput, scriptType]);
 
   useEffect(() => {
     setAddressTableColumnWidths(EMPTY_ADDRESS_TABLE_COLUMN_WIDTHS);
@@ -239,7 +251,7 @@ export function ScriptTypePickerScreen({
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]} testID="key-station-script-type-screen">
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      {showNavigationHeader ? <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Pressable
           accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
           accessibilityRole="button"
@@ -251,7 +263,7 @@ export function ScriptTypePickerScreen({
             {UPSTREAM_UI_FALLBACK_COPY.common.back}
           </Text>
         </Pressable>
-      </View>
+      </View> : null}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {privateAccountMaterialInput ? (
           <View style={styles.privateMaterialSection}>

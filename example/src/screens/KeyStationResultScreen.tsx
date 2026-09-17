@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  BackHandler,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import type { DiceColors } from '../features/dice/diceTheme';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
@@ -8,6 +15,7 @@ import { KeyStationEdgeNote } from '../features/keyStation/components/KeyStation
 import { RecoveryMaterialPanel } from '../features/keyStation/components/RecoveryMaterialPanel';
 import { SeedQrPanel } from '../features/keyStation/components/SeedQrPanel';
 import { ScriptTypePickerScreen } from '../features/keyStation/components/ScriptTypePickerScreen';
+import { NativeKeyDerivationNavigator } from '../features/keyStation/components/NativeKeyDerivationNavigator';
 import {
   KeyDerivationSectionList,
   type KeyDerivationSection,
@@ -83,10 +91,15 @@ function SafetyNote({
     >
       <Text accessible={false} style={[styles.safetyNotesCopy, { color }]}>
         {beforeArrow}
-        <Text style={[styles.safetyNotesCenteredArrow, { color }]} testID={`${noteTestID}-arrow`}>
+        <Text
+          style={[styles.safetyNotesCenteredArrow, { color }]}
+          testID={`${noteTestID}-arrow`}
+        >
           {arrow}
         </Text>
-        <Text style={[styles.safetyNotesCenteredArrowCopy, { color }]}>{afterArrow}</Text>
+        <Text style={[styles.safetyNotesCenteredArrowCopy, { color }]}>
+          {afterArrow}
+        </Text>
       </Text>
     </View>
   );
@@ -120,6 +133,37 @@ function SafetyNotes({ colors, notes, testIDPrefix }: SafetyNotesProps) {
   );
 }
 
+/** Mirrors upstream's key-summary method and selected-method line. */
+function keyStationSummaryTitle(tab: KeyStationTab): string {
+  const method = UPSTREAM_UI_LABELS.keyMode[tab.method];
+  let submethod: string;
+
+  switch (tab.input.kind) {
+    case 'dice':
+      submethod = UPSTREAM_TEXT.keys.summaryDiceMethod[tab.input.method];
+      break;
+    case 'cards':
+      submethod =
+        tab.input.method === 'direct'
+          ? UPSTREAM_TEXT.cards.direct.title
+          : UPSTREAM_TEXT.cards.hashed.title;
+      break;
+    case 'number-bases':
+      submethod = UPSTREAM_UI_LABELS.hexFormat[tab.input.format].label;
+      break;
+    case 'seed-phrase':
+      submethod = UPSTREAM_TEXT.seed.method[tab.input.method];
+      break;
+    case 'private-key':
+      submethod = UPSTREAM_TEXT.key[
+        tab.input.format === 'hex-key' ? 'hex' : tab.input.format
+      ];
+      break;
+  }
+
+  return UPSTREAM_UI_FALLBACK_COPY.keys.summaryMethod(method, submethod);
+}
+
 export function KeyStationResultScreen({
   colors,
   isDarkMode,
@@ -129,11 +173,15 @@ export function KeyStationResultScreen({
   onSetResultScriptType,
   tab,
 }: Props) {
-  const [showingPrivateRecoveryMaterial, setShowingPrivateRecoveryMaterial] = useState(false);
-  const [showingWatchOnlyWalletData, setShowingWatchOnlyWalletData] = useState(false);
+  const [showingPrivateRecoveryMaterial, setShowingPrivateRecoveryMaterial] =
+    useState(false);
+  const [showingWatchOnlyWalletData, setShowingWatchOnlyWalletData] =
+    useState(false);
   const [showingWalletData, setShowingWalletData] = useState(false);
   const [showingScriptType, setShowingScriptType] = useState(false);
-  const [accountSection, setAccountSection] = useState<AccountSection | null>(null);
+  const [accountSection, setAccountSection] = useState<AccountSection | null>(
+    null,
+  );
 
   useEffect(() => {
     setShowingPrivateRecoveryMaterial(false);
@@ -148,26 +196,36 @@ export function KeyStationResultScreen({
       return undefined;
     }
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (showingWalletData) {
-        setShowingPrivateRecoveryMaterial(false);
-        setShowingWatchOnlyWalletData(false);
-        setShowingWalletData(false);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (showingWalletData) {
+          setShowingPrivateRecoveryMaterial(false);
+          setShowingWatchOnlyWalletData(false);
+          setShowingWalletData(false);
+          return true;
+        }
+        if (showingPrivateRecoveryMaterial) {
+          setShowingPrivateRecoveryMaterial(false);
+          return true;
+        }
+        if (showingScriptType) {
+          setShowingScriptType(false);
+          return true;
+        }
+        onReturnToStation();
         return true;
-      }
-      if (showingPrivateRecoveryMaterial) {
-        setShowingPrivateRecoveryMaterial(false);
-        return true;
-      }
-      if (showingScriptType) {
-        setShowingScriptType(false);
-        return true;
-      }
-      onReturnToStation();
-      return true;
-    });
+      },
+    );
     return () => subscription.remove();
-  }, [isActive, onReturnToStation, showingPrivateRecoveryMaterial, showingScriptType, showingWalletData, showingWatchOnlyWalletData]);
+  }, [
+    isActive,
+    onReturnToStation,
+    showingPrivateRecoveryMaterial,
+    showingScriptType,
+    showingWalletData,
+    showingWatchOnlyWalletData,
+  ]);
 
   if (!tab) {
     return null;
@@ -175,11 +233,189 @@ export function KeyStationResultScreen({
 
   const { derivation } = tab;
   const safetyNotes = keyStationSafetyNotes(tab);
-  const derivationState = keyDerivationAdvancedState(tab.derivationSettings.advancedInput);
+  const derivationState = keyDerivationAdvancedState(
+    tab.derivationSettings.advancedInput,
+  );
   const seedQr =
-    derivation.kind === 'bip39' && showingWalletData && showingPrivateRecoveryMaterial
+    derivation.kind === 'bip39' &&
+    showingWalletData &&
+    showingPrivateRecoveryMaterial
       ? seedQrData(derivation.mnemonic)
       : null;
+
+  if (derivation.kind === 'bip39') {
+    const detailInput = {
+      accountPath: tab.derivationSettings.accountPath,
+      addressIndex: derivationState.addressWindow.start.value,
+      addressCount: derivationState.addressWindow.range.value,
+      branches: derivationState.branchWindow.branches.map(
+        branch => branch.index,
+      ),
+      addressHardened: tab.derivationSettings.advancedHardening.address,
+      branchHardened: tab.derivationSettings.advancedHardening.branch,
+      masterFingerprint: tab.masterFingerprint,
+      mnemonic: derivation.mnemonic,
+      passphrase: derivation.passphrase,
+    };
+    const accountDetail = (section: AccountSection) => (
+      <ScriptTypePickerScreen
+        colors={colors}
+        initialSection={section}
+        onBack={() => undefined}
+        privateAccountMaterialInput={detailInput}
+        scriptType={tab.resultScriptType}
+        showNavigationHeader={false}
+      />
+    );
+    const details = {
+      recovery: (
+        <ScrollView
+          contentContainerStyle={styles.content}
+          style={[styles.screen, { backgroundColor: colors.background }]}
+        >
+          <KeyStationEdgeNote colors={colors} kind="private">
+            <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+              <Text style={styles.privateMaterialSafetyLead}>
+                {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
+              </Text>{' '}
+              {UPSTREAM_TEXT.result.privateRecoveryMaterialSafety}
+            </Text>
+          </KeyStationEdgeNote>
+          <RecoveryMaterialPanel
+            afterMnemonic={
+              seedQrData(derivation.mnemonic) ? (
+                <SeedQrPanel
+                  colors={colors}
+                  data={seedQrData(derivation.mnemonic)!}
+                  passphraseUsed={Boolean(derivation.passphrase)}
+                />
+              ) : undefined
+            }
+            colors={colors}
+            entropyLabel={UPSTREAM_TEXT.result.entropyHex}
+            masterSeedLabel={UPSTREAM_UI_FALLBACK_COPY.result.masterSeedHex}
+            mnemonicLabel={UPSTREAM_UI_FALLBACK_COPY.result.seedPhrase(
+              derivation.mnemonic.trim().split(/\s+/).length,
+            )}
+            result={{
+              entropy: derivation.entropy,
+              masterSeed: derivation.masterSeed,
+              mnemonic: derivation.mnemonic,
+              rootXprv: tab.rootXprv,
+            }}
+            rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, {
+              name: 'xprv',
+            })}
+          />
+        </ScrollView>
+      ),
+      identity: (
+        <ScrollView
+          contentContainerStyle={styles.content}
+          style={[styles.screen, { backgroundColor: colors.background }]}
+        >
+          <KeyStationEdgeNote colors={colors} kind="public">
+            <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+              {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
+            </Text>
+          </KeyStationEdgeNote>
+          <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
+            {UPSTREAM_TEXT.fingerprint.master}
+          </Text>
+          <Text
+            selectable
+            style={[styles.watchOnlyValue, { color: colors.text }]}
+          >
+            {tab.masterFingerprint}
+          </Text>
+          <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
+            {formatCopy(UPSTREAM_TEXT.result.rootXprv, { name: 'xpub' })}
+          </Text>
+          <Text
+            selectable
+            style={[styles.watchOnlyValue, { color: colors.text }]}
+          >
+            {tab.rootXpub}
+          </Text>
+        </ScrollView>
+      ),
+      addresses: accountDetail('addresses'),
+      'account-private': accountDetail('account-private'),
+      'watch-only': accountDetail('watch-only'),
+    };
+    return (
+      <NativeKeyDerivationNavigator
+        colors={colors}
+        details={details}
+        isActive={isActive}
+        isDarkMode={isDarkMode}
+        onReturnToStation={onReturnToStation}
+        rootTitle={tab.masterFingerprint}
+      >
+        <View
+          style={[
+            styles.content,
+            styles.nativeOverviewContent,
+            { backgroundColor: colors.background },
+          ]}
+          testID="key-station-result-screen"
+        >
+          <Text
+            style={[styles.nativeOverviewTitle, { color: colors.text }]}
+            testID="key-station-method-title"
+          >
+            {keyStationSummaryTitle(tab)}
+          </Text>
+          <View style={styles.summary} testID="key-station-summary">
+            <View style={styles.summaryHeader}>
+              <KeyStationLifeHash
+                fingerprint={tab.masterFingerprint}
+                imageTestID="key-station-master-fingerprint-lifehash"
+              />
+              <View style={styles.summaryDetails}>
+                <Text
+                  style={[styles.meta, { color: colors.muted }]}
+                  testID="key-station-script-value"
+                >
+                  {UPSTREAM_TEXT.keys.scriptTypes[tab.scriptType]}
+                </Text>
+                <Text
+                  style={[styles.meta, styles.path, { color: colors.muted }]}
+                  testID="key-station-path-value"
+                >
+                  {tab.derivationPath}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityLabel={UPSTREAM_TEXT.keys.editInput}
+                accessibilityRole="button"
+                onPress={onEditInput}
+                style={({ pressed }) => [
+                  styles.editButton,
+                  { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
+                ]}
+                testID="key-station-edit-inputs"
+              >
+                <Text style={[styles.editButtonText, { color: colors.accent }]}>
+                  {UPSTREAM_TEXT.keys.editInput}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+          <SafetyNotes
+            colors={colors}
+            notes={safetyNotes}
+            testIDPrefix="wallet-safety"
+          />
+          <ScriptTypeTabs
+            colors={colors}
+            onSelect={onSetResultScriptType}
+            selected={tab.resultScriptType}
+          />
+        </View>
+      </NativeKeyDerivationNavigator>
+    );
+  }
 
   if (showingScriptType) {
     return (
@@ -193,8 +429,11 @@ export function KeyStationResultScreen({
                 accountPath: tab.derivationSettings.accountPath,
                 addressIndex: derivationState.addressWindow.start.value,
                 addressCount: derivationState.addressWindow.range.value,
-                branches: derivationState.branchWindow.branches.map(branch => branch.index),
-                addressHardened: tab.derivationSettings.advancedHardening.address,
+                branches: derivationState.branchWindow.branches.map(
+                  branch => branch.index,
+                ),
+                addressHardened:
+                  tab.derivationSettings.advancedHardening.address,
                 branchHardened: tab.derivationSettings.advancedHardening.branch,
                 masterFingerprint: tab.masterFingerprint,
                 mnemonic: derivation.mnemonic,
@@ -222,10 +461,17 @@ export function KeyStationResultScreen({
     <View
       importantForAccessibility={isActive ? 'auto' : 'no-hide-descendants'}
       pointerEvents={isActive ? 'auto' : 'none'}
-      style={[styles.screen, { backgroundColor: colors.background }, !isActive && styles.hidden]}
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+        !isActive && styles.hidden,
+      ]}
       testID="key-station-result-screen"
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {showingWalletData && derivation.kind === 'bip39' ? (
           <View testID="wallet-data-screen">
             <Pressable
@@ -243,12 +489,19 @@ export function KeyStationResultScreen({
                 {UPSTREAM_UI_FALLBACK_COPY.common.back}
               </Text>
             </Pressable>
-            <Text style={[styles.walletDataTitle, { color: colors.text }]} testID="wallet-data-title">
+            <Text
+              style={[styles.walletDataTitle, { color: colors.text }]}
+              testID="wallet-data-title"
+            >
               {UPSTREAM_TEXT.result.walletRecoveryDetails}
             </Text>
             {showingPrivateRecoveryMaterial ? (
               <>
-                <KeyStationEdgeNote colors={colors} kind="private" testID="private-recovery-material-safety">
+                <KeyStationEdgeNote
+                  colors={colors}
+                  kind="private"
+                  testID="private-recovery-material-safety"
+                >
                   <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
                     <Text style={styles.privateMaterialSafetyLead}>
                       {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
@@ -268,7 +521,9 @@ export function KeyStationResultScreen({
                   }
                   colors={colors}
                   entropyLabel={UPSTREAM_TEXT.result.entropyHex}
-                  masterSeedLabel={UPSTREAM_UI_FALLBACK_COPY.result.masterSeedHex}
+                  masterSeedLabel={
+                    UPSTREAM_UI_FALLBACK_COPY.result.masterSeedHex
+                  }
                   mnemonicLabel={UPSTREAM_UI_FALLBACK_COPY.result.seedPhrase(
                     derivation.mnemonic.trim().split(/\s+/).length,
                   )}
@@ -278,12 +533,18 @@ export function KeyStationResultScreen({
                     mnemonic: derivation.mnemonic,
                     rootXprv: tab.rootXprv,
                   }}
-                  rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, { name: 'xprv' })}
+                  rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, {
+                    name: 'xprv',
+                  })}
                 />
               </>
             ) : showingWatchOnlyWalletData ? (
               <View testID="watch-only-wallet-data">
-                <KeyStationEdgeNote colors={colors} kind="public" testID="watch-only-wallet-data-safety">
+                <KeyStationEdgeNote
+                  colors={colors}
+                  kind="public"
+                  testID="watch-only-wallet-data-safety"
+                >
                   <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
                     {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
                   </Text>
@@ -291,13 +552,21 @@ export function KeyStationResultScreen({
                 <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
                   {UPSTREAM_TEXT.fingerprint.master}
                 </Text>
-                <Text selectable style={[styles.watchOnlyValue, { color: colors.text }]} testID="watch-only-master-fingerprint">
+                <Text
+                  selectable
+                  style={[styles.watchOnlyValue, { color: colors.text }]}
+                  testID="watch-only-master-fingerprint"
+                >
                   {tab.masterFingerprint}
                 </Text>
                 <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
                   {formatCopy(UPSTREAM_TEXT.result.rootXprv, { name: 'xpub' })}
                 </Text>
-                <Text selectable style={[styles.watchOnlyValue, { color: colors.text }]} testID="watch-only-root-xpub">
+                <Text
+                  selectable
+                  style={[styles.watchOnlyValue, { color: colors.text }]}
+                  testID="watch-only-root-xpub"
+                >
                   {tab.rootXpub}
                 </Text>
               </View>
@@ -305,7 +574,10 @@ export function KeyStationResultScreen({
           </View>
         ) : derivation.kind === 'private-key' ? (
           <>
-            <View style={styles.privateKeySummary} testID="key-station-private-key-summary">
+            <View
+              style={styles.privateKeySummary}
+              testID="key-station-private-key-summary"
+            >
               <View style={styles.summaryDetails}>
                 <Text
                   style={[styles.privateKeyTitle, { color: colors.text }]}
@@ -313,10 +585,16 @@ export function KeyStationResultScreen({
                 >
                   {UPSTREAM_UI_LABELS.keyMode[tab.method]}
                 </Text>
-                <Text style={[styles.meta, { color: colors.muted }]} testID="key-station-script-value">
+                <Text
+                  style={[styles.meta, { color: colors.muted }]}
+                  testID="key-station-script-value"
+                >
                   {UPSTREAM_TEXT.keys.scriptTypes[tab.scriptType]}
                 </Text>
-                <Text style={[styles.meta, styles.path, { color: colors.muted }]} testID="key-station-path-value">
+                <Text
+                  style={[styles.meta, styles.path, { color: colors.muted }]}
+                  testID="key-station-path-value"
+                >
                   {tab.derivationPath}
                 </Text>
               </View>
@@ -335,8 +613,16 @@ export function KeyStationResultScreen({
                 </Text>
               </Pressable>
             </View>
-            <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="private-key-safety" />
-            <ScriptTypeTabs colors={colors} onSelect={onSetResultScriptType} selected={tab.resultScriptType} />
+            <SafetyNotes
+              colors={colors}
+              notes={safetyNotes}
+              testIDPrefix="private-key-safety"
+            />
+            <ScriptTypeTabs
+              colors={colors}
+              onSelect={onSetResultScriptType}
+              selected={tab.resultScriptType}
+            />
             <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.privateKey}
               accessibilityRole="button"
@@ -348,7 +634,9 @@ export function KeyStationResultScreen({
               ]}
               testID="toggle-private-key-material"
             >
-              <Text style={[styles.walletDataSectionTitle, { color: colors.text }]}>
+              <Text
+                style={[styles.walletDataSectionTitle, { color: colors.text }]}
+              >
                 {UPSTREAM_TEXT.result.privateKey}
               </Text>
             </Pressable>
@@ -363,16 +651,28 @@ export function KeyStationResultScreen({
                   imageTestID="key-station-master-fingerprint-lifehash"
                 />
                 <View style={styles.summaryDetails}>
-                  <Text style={[styles.fingerprint, { color: colors.text }]} testID="key-station-master-fingerprint-value">
+                  <Text
+                    style={[styles.fingerprint, { color: colors.text }]}
+                    testID="key-station-master-fingerprint-value"
+                  >
                     {tab.masterFingerprint}
                   </Text>
-                  <Text style={[styles.meta, { color: colors.muted }]} testID="key-station-method-value">
+                  <Text
+                    style={[styles.meta, { color: colors.muted }]}
+                    testID="key-station-method-value"
+                  >
                     {UPSTREAM_UI_LABELS.keyMode[tab.method]}
                   </Text>
-                  <Text style={[styles.meta, { color: colors.muted }]} testID="key-station-script-value">
+                  <Text
+                    style={[styles.meta, { color: colors.muted }]}
+                    testID="key-station-script-value"
+                  >
                     {UPSTREAM_TEXT.keys.scriptTypes[tab.scriptType]}
                   </Text>
-                  <Text style={[styles.meta, styles.path, { color: colors.muted }]} testID="key-station-path-value">
+                  <Text
+                    style={[styles.meta, styles.path, { color: colors.muted }]}
+                    testID="key-station-path-value"
+                  >
                     {tab.derivationPath}
                   </Text>
                 </View>
@@ -386,34 +686,53 @@ export function KeyStationResultScreen({
                   ]}
                   testID="key-station-edit-inputs"
                 >
-                  <Text style={[styles.editButtonText, { color: colors.accent }]}>
+                  <Text
+                    style={[styles.editButtonText, { color: colors.accent }]}
+                  >
                     {UPSTREAM_TEXT.keys.editInput}
                   </Text>
                 </Pressable>
               </View>
             </View>
-            <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="wallet-safety" />
-            <ScriptTypeTabs colors={colors} onSelect={onSetResultScriptType} selected={tab.resultScriptType} />
-            <KeyDerivationSectionList colors={colors} isDarkMode={isDarkMode} onOpen={openDerivationSection} />
+            <SafetyNotes
+              colors={colors}
+              notes={safetyNotes}
+              testIDPrefix="wallet-safety"
+            />
+            <ScriptTypeTabs
+              colors={colors}
+              onSelect={onSetResultScriptType}
+              selected={tab.resultScriptType}
+            />
+            <KeyDerivationSectionList
+              colors={colors}
+              isDarkMode={isDarkMode}
+              onOpen={openDerivationSection}
+            />
           </>
-        ) : derivation.kind === 'private-key' && showingPrivateRecoveryMaterial ? (
+        ) : derivation.kind === 'private-key' &&
+          showingPrivateRecoveryMaterial ? (
           <>
-            <KeyStationEdgeNote colors={colors} kind="private" testID="private-key-material-safety">
+            <KeyStationEdgeNote
+              colors={colors}
+              kind="private"
+              testID="private-key-material-safety"
+            >
               <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
                 {UPSTREAM_TEXT.result.privateKeyMaterialSafety}
               </Text>
             </KeyStationEdgeNote>
-          <RecoveryMaterialPanel
-            colors={colors}
-            entropyLabel={UPSTREAM_TEXT.result.hexPrivateKey}
-            result={{
-              entropy: derivation.entropy,
-              wifCompressed: derivation.wifCompressed,
-              wifUncompressed: derivation.wifUncompressed,
-            }}
-            wifCompressedLabel={UPSTREAM_TEXT.result.wifCompressed}
-            wifUncompressedLabel={UPSTREAM_TEXT.result.wifUncompressed}
-          />
+            <RecoveryMaterialPanel
+              colors={colors}
+              entropyLabel={UPSTREAM_TEXT.result.hexPrivateKey}
+              result={{
+                entropy: derivation.entropy,
+                wifCompressed: derivation.wifCompressed,
+                wifUncompressed: derivation.wifUncompressed,
+              }}
+              wifCompressedLabel={UPSTREAM_TEXT.result.wifCompressed}
+              wifUncompressedLabel={UPSTREAM_TEXT.result.wifUncompressed}
+            />
           </>
         ) : null}
       </ScrollView>
@@ -463,6 +782,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginTop: 2,
+  },
+  nativeOverviewContent: {
+    paddingTop: 0,
+  },
+  nativeOverviewTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 22,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   path: {
     fontFamily: 'monospace',

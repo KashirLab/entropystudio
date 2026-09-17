@@ -202,6 +202,10 @@ describe('Upstream UI copy provenance', () => {
         template:
           /purposeLabel = account\.imported \? account\.def\.bip : `Purpose \$\{hodlPathComponent\(account\.def\.purpose, account\.def\.purposeHardened !== false\)\}`[\s\S]*?\$\{hodlEscapeHtml\(purposeLabel\)\} \\xB7 \$\{hodlEscapeHtml\(hodlWalletResult\.network\)\}/,
       },
+      'keys.summaryMethod': {
+        source: upstreamAppJs,
+        template: /return method && submethod \? `\$\{method\}: \$\{submethod\}` : method;/,
+      },
       'numberBases.entropyLabel': {
         source: upstreamAppJs,
         template: /\$\{format\.label\} entropy for a \$\{config\.words\}-word seed/,

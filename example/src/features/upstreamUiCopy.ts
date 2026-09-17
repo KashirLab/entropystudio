@@ -268,6 +268,12 @@ export const UPSTREAM_TEXT = {
     purposeIndexHelp: 'Purpose index · Hardened · 0 to 2,147,483,647',
     scriptType: 'Script type',
     scriptTypeLabel: 'Script type:',
+    summaryDiceMethod: {
+      bitbox: 'BitBox diceware / Direct word selection',
+      coldcard: 'Base 10 [0-9] / Hashed rolls',
+      coleman: 'Dice [1-6] / Hashed rolls',
+      d8d16: 'D++ / Direct word selection',
+    },
     scriptTypes: {
       bip44: 'Legacy',
       bip49: 'Nested SegWit',
@@ -717,6 +723,8 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     spaceButton: 'space',
   },
   keys: {
+    summaryMethod: (method: string, submethod: string) =>
+      `${method}: ${submethod}`,
     scriptTypeKicker: (purpose: string, network: string) =>
       `Purpose ${purpose} · ${network}`,
     advanced: (() => {
