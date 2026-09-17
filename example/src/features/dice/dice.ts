@@ -170,11 +170,7 @@ export function diceProgressCopy(
   const bits = formatCopy(UPSTREAM_TEXT.dice.meta.estimatedBits, {
     bits: estimatedBits,
   });
-  if (rollCount <= requiredRolls) return `${count}\n${bits}`;
-  return `${count}\n${bits}\n${formatCopy(UPSTREAM_TEXT.dice.meta.extra, {
-    extra: rollCount - requiredRolls,
-    n: rollCount,
-  })}`;
+  return `${count}\n${bits}`;
 }
 
 export function directDiceProgress(state: DirectDiceState): number {
