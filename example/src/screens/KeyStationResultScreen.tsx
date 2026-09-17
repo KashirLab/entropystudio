@@ -4,6 +4,7 @@ import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'reac
 import type { DiceColors } from '../features/dice/diceTheme';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
 import { KeyStationLifeHash } from '../features/keyStation/components/KeyStationLifeHash';
+import { KeyStationEdgeNote } from '../features/keyStation/components/KeyStationEdgeNote';
 import { RecoveryMaterialPanel } from '../features/keyStation/components/RecoveryMaterialPanel';
 import { SeedQrPanel } from '../features/keyStation/components/SeedQrPanel';
 import { ScriptTypePickerScreen } from '../features/keyStation/components/ScriptTypePickerScreen';
@@ -257,15 +258,14 @@ export function KeyStationResultScreen({
             </Text>
             {showingPrivateRecoveryMaterial ? (
               <>
-                <Text
-                  style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}
-                  testID="private-recovery-material-safety"
-                >
-                  <Text style={styles.privateMaterialSafetyLead}>
-                    {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
-                  </Text>{' '}
-                  {UPSTREAM_TEXT.result.privateRecoveryMaterialSafety}
-                </Text>
+                <KeyStationEdgeNote colors={colors} kind="private" testID="private-recovery-material-safety">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    <Text style={styles.privateMaterialSafetyLead}>
+                      {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
+                    </Text>{' '}
+                    {UPSTREAM_TEXT.result.privateRecoveryMaterialSafety}
+                  </Text>
+                </KeyStationEdgeNote>
                 <RecoveryMaterialPanel
                   afterMnemonic={
                     seedQr ? (
@@ -293,9 +293,11 @@ export function KeyStationResultScreen({
               </>
             ) : showingWatchOnlyWalletData ? (
               <View testID="watch-only-wallet-data">
-                <Text style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}>
-                  {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
-                </Text>
+                <KeyStationEdgeNote colors={colors} kind="public" testID="watch-only-wallet-data-safety">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
+                  </Text>
+                </KeyStationEdgeNote>
                 <Text style={[styles.watchOnlyLabel, { color: colors.text }]}>
                   {UPSTREAM_TEXT.fingerprint.master}
                 </Text>
@@ -406,12 +408,11 @@ export function KeyStationResultScreen({
           </>
         ) : derivation.kind === 'private-key' && showingPrivateRecoveryMaterial ? (
           <>
-            <Text
-              style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}
-              testID="private-key-material-safety"
-            >
-              {UPSTREAM_TEXT.result.privateKeyMaterialSafety}
-            </Text>
+            <KeyStationEdgeNote colors={colors} kind="private" testID="private-key-material-safety">
+              <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                {UPSTREAM_TEXT.result.privateKeyMaterialSafety}
+              </Text>
+            </KeyStationEdgeNote>
           <RecoveryMaterialPanel
             colors={colors}
             entropyLabel={UPSTREAM_TEXT.result.hexPrivateKey}
@@ -486,10 +487,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 18,
   },
-  privateRecoveryMaterialSafety: {
+  edgeNoteCopy: {
     fontSize: 14,
     lineHeight: 21,
-    marginBottom: 16,
   },
   privateMaterialSafetyLead: {
     fontWeight: '700',

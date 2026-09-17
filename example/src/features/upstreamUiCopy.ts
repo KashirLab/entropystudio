@@ -343,11 +343,14 @@ export const UPSTREAM_TEXT = {
   result: {
     accountPrivateKeyExports: 'Account private key exports',
     privateAccountMaterial: 'Recovery material',
-    privateAccountMaterialIntro: 'These values can recreate or spend from the wallet.',
-    privateAccountMaterialWarningLead:
+    accountPrivateExportsWarningLead: 'These exports can spend from this account.',
+    accountPrivateExportsWarningSource:
+      'They are shown only for a seed or extended private-key source.',
+    accountPrivateExportsWarningBackup:
       'Keep these exports together only in secure offline backups.',
-    privateAccountMaterialWarningTail:
+    accountPrivateExportsWarningRisk:
       "An account extended public key combined with any non-hardened descendant private key, including a WIF shown in the address tables, can reconstruct that account's extended private key.",
+    privateAccountMaterialIntro: 'These values can recreate or spend from the wallet.',
     genericDescriptorCompatibility:
       'Generic {name} for descriptor compatibility',
     multisigCosigner: 'Multisig co-signer {prefix} · {label}',
@@ -380,6 +383,10 @@ export const UPSTREAM_TEXT = {
     addresses: 'Addresses',
     addressesVerification:
       'Verify the first selected address on another trusted wallet or signing device before accepting bitcoin.',
+    addressesWifWarningLead:
+      'When private data is visible, these tables also show the WIF private key for each address.',
+    addressesWifWarningTail:
+      'Anyone who sees or copies a WIF can spend what that address holds.',
     address: 'Address',
     path: 'Path',
     wif: 'WIF',

@@ -14,6 +14,7 @@ import {
 
 import type { DiceColors } from '../../dice/diceTheme';
 import { QrCode } from './SeedQrPanel';
+import { KeyStationEdgeNote } from './KeyStationEdgeNote';
 import {
   UPSTREAM_TEXT,
   UPSTREAM_UI_FALLBACK_COPY,
@@ -292,9 +293,16 @@ export function ScriptTypePickerScreen({
             ) : null}
             {showingPrivateMaterial && privateMaterial ? (
               <View testID="private-account-material">
-                <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>
-                  {UPSTREAM_TEXT.result.privateAccountMaterialIntro}
-                </Text>
+                <KeyStationEdgeNote colors={colors} kind="private" testID="private-account-material-note">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    <Text style={styles.privateMaterialWarningLead}>
+                      {UPSTREAM_TEXT.result.accountPrivateExportsWarningLead}
+                    </Text>{' '}
+                    {UPSTREAM_TEXT.result.accountPrivateExportsWarningSource}{' '}
+                    {UPSTREAM_TEXT.result.accountPrivateExportsWarningBackup}{' '}
+                    {UPSTREAM_TEXT.result.accountPrivateExportsWarningRisk}
+                  </Text>
+                </KeyStationEdgeNote>
                 <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.bitcoinCore('xprv')}
                 </Text>
@@ -329,12 +337,6 @@ export function ScriptTypePickerScreen({
                     </Text>
                   </View>
                 ) : null}
-                <Text style={[styles.privateMaterialWarning, { color: colors.muted }]}>
-                  <Text style={styles.privateMaterialWarningLead}>
-                    {UPSTREAM_TEXT.result.privateAccountMaterialWarningLead}
-                  </Text>{' '}
-                  {UPSTREAM_TEXT.result.privateAccountMaterialWarningTail}
-                </Text>
               </View>
             ) : null}
             {!initialSection ? (
@@ -375,15 +377,14 @@ export function ScriptTypePickerScreen({
             ) : null}
             {showingWatchOnlyMaterial && privateMaterial ? (
               <View testID="watch-only-account-data">
-                <Text
-                  style={[styles.privateMaterialIntro, { color: colors.muted }]}
-                  testID="watch-only-cannot-spend-warning"
-                >
-                  <Text style={styles.privateMaterialWarningLead}>
-                    {UPSTREAM_TEXT.result.watchOnlyAccountWarningLead}
-                  </Text>{' '}
-                  {UPSTREAM_TEXT.result.watchOnlyAccountWarningTail}
-                </Text>
+                <KeyStationEdgeNote colors={colors} kind="public" testID="watch-only-cannot-spend-warning">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    <Text style={styles.privateMaterialWarningLead}>
+                      {UPSTREAM_TEXT.result.watchOnlyAccountWarningLead}
+                    </Text>{' '}
+                    {UPSTREAM_TEXT.result.watchOnlyAccountWarningTail}
+                  </Text>
+                </KeyStationEdgeNote>
                 <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.bitcoinCore('xpub')}
                 </Text>
@@ -546,9 +547,19 @@ export function ScriptTypePickerScreen({
             ) : null}
             {showingAddresses && privateMaterial ? (
               <View>
-                <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>
-                  {UPSTREAM_TEXT.result.addressesVerification}
-                </Text>
+                <KeyStationEdgeNote colors={colors} kind="public" testID="addresses-verification-note">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    {UPSTREAM_TEXT.result.addressesVerification}
+                  </Text>
+                </KeyStationEdgeNote>
+                <KeyStationEdgeNote colors={colors} kind="private" testID="addresses-wif-warning">
+                  <Text style={[styles.edgeNoteCopy, { color: colors.text }]}>
+                    <Text style={styles.privateMaterialWarningLead}>
+                      {UPSTREAM_TEXT.result.addressesWifWarningLead}
+                    </Text>{' '}
+                    {UPSTREAM_TEXT.result.addressesWifWarningTail}
+                  </Text>
+                </KeyStationEdgeNote>
                 {privateMaterial.firstWatchOnlyAddress ? (
                   <>
                     <Pressable
@@ -755,6 +766,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
   },
+  edgeNoteCopy: { fontSize: 14, lineHeight: 21 },
   genericCompatibilitySection: { borderTopWidth: 1, marginTop: 4, paddingTop: 16 },
   header: {
     alignItems: 'center',
@@ -771,12 +783,10 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: 12,
   },
-  privateMaterialIntro: { fontSize: 14, lineHeight: 21, marginBottom: 16, marginTop: 16 },
   privateMaterialLabel: { fontSize: 12, fontWeight: '700', marginBottom: 8 },
   privateMaterialSection: { marginTop: 22 },
   privateMaterialTitle: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
   privateMaterialValue: { fontFamily: 'monospace', fontSize: 14, lineHeight: 22, marginBottom: 16 },
-  privateMaterialWarning: { fontSize: 14, lineHeight: 21, marginTop: 2 },
   privateMaterialWarningLead: { fontWeight: '700' },
   modalBackdrop: {
     alignItems: 'center',

@@ -9,7 +9,10 @@ export type DiceColors = {
   readonly muted: string;
   readonly onAccent: string;
   readonly placeholder: string;
+  readonly privateNoteBackground: string;
   readonly privateValue: string;
+  readonly publicNoteBackground: string;
+  readonly publicNotice: string;
   readonly segment: string;
   readonly surface: string;
   readonly text: string;
@@ -26,7 +29,11 @@ const lightColors: DiceColors = {
   muted: '#53645B',
   onAccent: '#FFFFFF',
   placeholder: '#7A8B80',
+  // Matches EntropyLab's faint `edge-note` tint for sensitive and public data.
+  privateNoteBackground: '#F1E2DF',
   privateValue: '#245D8F',
+  publicNoteBackground: '#E2EEE4',
+  publicNotice: '#167E32',
   segment: '#E8EEE8',
   surface: '#FFFFFF',
   text: '#17231B',
@@ -43,7 +50,10 @@ const darkColors: DiceColors = {
   muted: '#B1C5B8',
   onAccent: '#102019',
   placeholder: '#839A8C',
+  privateNoteBackground: '#321C1A',
   privateValue: '#6F9FCA',
+  publicNoteBackground: '#162B1D',
+  publicNotice: '#26B54C',
   segment: '#21382B',
   surface: '#182B21',
   text: '#E6F2E8',
