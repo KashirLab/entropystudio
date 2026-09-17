@@ -273,7 +273,8 @@ export function ScriptTypePickerScreen({
         </Text>
         {privateAccountMaterialInput ? (
           <View style={styles.privateMaterialSection}>
-            <Pressable
+            {!initialSection ? (
+              <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.privateAccountMaterial}
               accessibilityRole="button"
               accessibilityState={{ expanded: showingPrivateMaterial }}
@@ -287,7 +288,8 @@ export function ScriptTypePickerScreen({
               <Text style={[styles.privateMaterialTitle, { color: colors.text }]}>
                 {UPSTREAM_TEXT.result.privateAccountMaterial}
               </Text>
-            </Pressable>
+              </Pressable>
+            ) : null}
             {showingPrivateMaterial && privateMaterial ? (
               <View testID="private-account-material">
                 <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>
@@ -335,7 +337,8 @@ export function ScriptTypePickerScreen({
                 </Text>
               </View>
             ) : null}
-            <Pressable
+            {!initialSection ? (
+              <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.watchOnlyWalletData}
               accessibilityRole="button"
               accessibilityState={{ expanded: showingWatchOnlyMaterial }}
@@ -368,7 +371,8 @@ export function ScriptTypePickerScreen({
               <Text style={[styles.privateMaterialTitle, { color: colors.text }]}>
                 {UPSTREAM_TEXT.result.watchOnlyWalletData}
               </Text>
-            </Pressable>
+              </Pressable>
+            ) : null}
             {showingWatchOnlyMaterial && privateMaterial ? (
               <View testID="watch-only-account-data">
                 <Text
@@ -504,7 +508,8 @@ export function ScriptTypePickerScreen({
                 ) : null}
               </View>
             ) : null}
-            <Pressable
+            {!initialSection ? (
+              <Pressable
               accessibilityLabel={UPSTREAM_TEXT.result.addresses}
               accessibilityRole="button"
               accessibilityState={{ expanded: showingAddresses }}
@@ -537,7 +542,8 @@ export function ScriptTypePickerScreen({
               <Text style={[styles.privateMaterialTitle, { color: colors.text }]}>
                 {UPSTREAM_TEXT.result.addresses}
               </Text>
-            </Pressable>
+              </Pressable>
+            ) : null}
             {showingAddresses && privateMaterial ? (
               <View>
                 <Text style={[styles.privateMaterialIntro, { color: colors.muted }]}>

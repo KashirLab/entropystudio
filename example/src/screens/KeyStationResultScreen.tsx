@@ -147,16 +147,14 @@ export function KeyStationResultScreen({
     }
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (showingWalletData) {
+        setShowingPrivateRecoveryMaterial(false);
+        setShowingWatchOnlyWalletData(false);
+        setShowingWalletData(false);
+        return true;
+      }
       if (showingPrivateRecoveryMaterial) {
         setShowingPrivateRecoveryMaterial(false);
-        return true;
-      }
-      if (showingWatchOnlyWalletData) {
-        setShowingWatchOnlyWalletData(false);
-        return true;
-      }
-      if (showingWalletData) {
-        setShowingWalletData(false);
         return true;
       }
       if (showingScriptType) {
@@ -242,6 +240,7 @@ export function KeyStationResultScreen({
               accessibilityRole="button"
               onPress={() => {
                 setShowingPrivateRecoveryMaterial(false);
+                setShowingWatchOnlyWalletData(false);
                 setShowingWalletData(false);
               }}
               style={styles.backButton}
@@ -254,22 +253,6 @@ export function KeyStationResultScreen({
             <Text style={[styles.walletDataTitle, { color: colors.text }]} testID="wallet-data-title">
               {UPSTREAM_TEXT.result.walletRecoveryDetails}
             </Text>
-            <SafetyNotes colors={colors} notes={safetyNotes} testIDPrefix="wallet-data-safety" />
-            <Pressable
-              accessibilityLabel={UPSTREAM_TEXT.result.privateRecoveryMaterial}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: showingPrivateRecoveryMaterial }}
-              onPress={() => setShowingPrivateRecoveryMaterial(value => !value)}
-              style={({ pressed }) => [
-                styles.walletDataSectionButton,
-                { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
-              ]}
-              testID="toggle-private-recovery-material"
-            >
-              <Text style={[styles.walletDataSectionTitle, { color: colors.text }]}>
-                {UPSTREAM_TEXT.result.privateRecoveryMaterial}
-              </Text>
-            </Pressable>
             {showingPrivateRecoveryMaterial ? (
               <>
                 <Text
@@ -303,23 +286,7 @@ export function KeyStationResultScreen({
                   rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, { name: 'xprv' })}
                 />
               </>
-            ) : null}
-            <Pressable
-              accessibilityLabel={UPSTREAM_TEXT.result.walletIdentity}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: showingWatchOnlyWalletData }}
-              onPress={() => setShowingWatchOnlyWalletData(value => !value)}
-              style={({ pressed }) => [
-                styles.walletDataSectionButton,
-                { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
-              ]}
-              testID="toggle-watch-only-wallet-data"
-            >
-              <Text style={[styles.walletDataSectionTitle, { color: colors.text }]}>
-                {UPSTREAM_TEXT.result.walletIdentity}
-              </Text>
-            </Pressable>
-            {showingWatchOnlyWalletData ? (
+            ) : showingWatchOnlyWalletData ? (
               <View testID="watch-only-wallet-data">
                 <Text style={[styles.privateRecoveryMaterialSafety, { color: colors.muted }]}>
                   {UPSTREAM_TEXT.result.watchOnlyWalletDataSafety}
