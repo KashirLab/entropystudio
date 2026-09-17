@@ -20,10 +20,12 @@ const upstreamVanityJs = readFileSync(
   resolve(__dirname, '../../../entropylab/src/js/vanity.js'),
   'utf8',
 );
+const upstreamAddressQrJs = readOptionalSource('src/js/address-qr.js');
 const upstreamShellHtml = readOptionalSource('src/shell.html');
 const renderedUpstreamUiSources = [
   decodeJavaScriptEscapes(upstreamAppJs),
   decodeJavaScriptEscapes(upstreamVanityJs),
+  decodeJavaScriptEscapes(upstreamAddressQrJs),
   decodeJavaScriptEscapes(readOptionalSource('src/js/i18n-labels.js')),
   upstreamShellHtml,
   readOptionalSource('src/index.html'),

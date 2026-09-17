@@ -8,6 +8,7 @@ const typescript = require('typescript');
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const upstreamRoot = join(root, 'entropylab');
 const upstreamAppFile = join(upstreamRoot, 'src/js/app.js');
+const upstreamAddressQrFile = join(upstreamRoot, 'src/js/address-qr.js');
 const upstreamVanityFile = join(upstreamRoot, 'src/js/vanity.js');
 const upstreamShellFile = join(upstreamRoot, 'src/shell.html');
 const upstreamLocaleCatalogFile = join(upstreamRoot, 'src/locales/es.json');
@@ -18,6 +19,7 @@ const upstreamSourceKeys = readUpstreamSourceKeys();
 const upstreamSourceSet = new Set(upstreamSourceKeys);
 const upstreamRenderedSource = [
   readFileSync(upstreamAppFile, 'utf8'),
+  readFileSync(upstreamAddressQrFile, 'utf8'),
   readFileSync(upstreamVanityFile, 'utf8'),
   readFileSync(upstreamShellFile, 'utf8'),
   readFileSync(upstreamLabelsFile, 'utf8'),

@@ -16,6 +16,7 @@ import type { DiceColors } from '../../dice/diceTheme';
 import { QrCode } from './SeedQrPanel';
 import { KeyStationEdgeNote } from './KeyStationEdgeNote';
 import {
+  formatCopy,
   UPSTREAM_TEXT,
   UPSTREAM_UI_FALLBACK_COPY,
   UPSTREAM_UI_LABELS,
@@ -91,12 +92,14 @@ function AddressTable({
   columnStyle,
   label,
   measureColumn,
+  onOpenQr,
   rows,
 }: {
   readonly colors: DiceColors;
   readonly columnStyle: (column: AddressTableColumn) => { width: number } | undefined;
   readonly label: string;
   readonly measureColumn: (column: AddressTableColumn) => (event: LayoutChangeEvent) => void;
+  readonly onOpenQr: (address: AccountWatchOnlyAddress) => void;
   readonly rows: readonly AccountWatchOnlyAddress[];
 }) {
   return (
@@ -139,7 +142,33 @@ function AddressTable({
               <View key={item.index} style={[styles.addressTableRow, styles.addressTableDataRow, { borderTopColor: colors.border }]}>
                 <Text numberOfLines={1} onLayout={measureColumn('index')} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.text }]}>{item.index}</Text>
                 <Text numberOfLines={1} onLayout={measureColumn('path')} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, columnStyle('path'), { color: colors.text }]}>{item.path}</Text>
-                <Text numberOfLines={1} onLayout={measureColumn('address')} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, columnStyle('address'), { color: colors.text }]}>{item.address}</Text>
+                <View
+                  onLayout={measureColumn('address')}
+                  style={[
+                    styles.addressTableCell,
+                    styles.addressQrCell,
+                    styles.addressValueCell,
+                    columnStyle('address'),
+                  ]}
+                >
+                  <Text numberOfLines={1} selectable style={[styles.addressTableValue, { color: colors.text }]}>{item.address}</Text>
+                  <Pressable
+                    accessibilityLabel={formatCopy(UPSTREAM_TEXT.result.addressNumber, {
+                      n: item.index,
+                    })}
+                    accessibilityRole="button"
+                    onPress={() => onOpenQr(item)}
+                    style={({ pressed }) => [
+                      styles.addressQrButton,
+                      { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
+                    ]}
+                    testID={`open-address-qr-${item.branch}-${item.index}`}
+                  >
+                    <Text style={[styles.addressQrButtonText, { color: colors.muted }]}>
+                      {UPSTREAM_TEXT.common.qr}
+                    </Text>
+                  </Pressable>
+                </View>
                 <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.privateValue }]}>{item.wif}</Text>
               </View>
             ))}
@@ -170,6 +199,7 @@ export function ScriptTypePickerScreen({
   const [showingPrivateMaterial, setShowingPrivateMaterial] = useState(initialSection === 'account-private');
   const [showingWatchOnlyMaterial, setShowingWatchOnlyMaterial] = useState(initialSection === 'watch-only');
   const [showingWatchOnlyDescriptorQr, setShowingWatchOnlyDescriptorQr] = useState(false);
+  const [addressQr, setAddressQr] = useState<AccountWatchOnlyAddress | null>(null);
   const [showingAddresses, setShowingAddresses] = useState(initialSection === 'addresses');
   const [addressToCheck, setAddressToCheck] = useState('');
   const [addressCheck, setAddressCheck] = useState<AccountAddressCheck | null>(null);
@@ -201,6 +231,7 @@ export function ScriptTypePickerScreen({
     setShowingPrivateMaterial(initialSection === 'account-private');
     setShowingWatchOnlyMaterial(initialSection === 'watch-only');
     setShowingWatchOnlyDescriptorQr(false);
+    setAddressQr(null);
     setShowingAddresses(false);
     setAddressToCheck('');
     setAddressCheck(null);
@@ -533,6 +564,7 @@ export function ScriptTypePickerScreen({
                       key={branch}
                       label={watchOnlyBranchLabel(branch)}
                       measureColumn={measureAddressTableColumn}
+                      onOpenQr={setAddressQr}
                       rows={rows}
                     />
                   ) : null;
@@ -625,6 +657,43 @@ export function ScriptTypePickerScreen({
                 </View>
               </View>
             </Modal>
+            <Modal
+              animationType="fade"
+              onRequestClose={() => setAddressQr(null)}
+              transparent
+              visible={addressQr !== null}
+            >
+              <View style={styles.modalBackdrop}>
+                <Pressable
+                  accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
+                  onPress={() => setAddressQr(null)}
+                  style={styles.modalDismissArea}
+                  testID="close-address-qr-popup"
+                />
+                {addressQr ? (
+                  <View style={[styles.modalCard, { backgroundColor: colors.background }]}>
+                    <Text style={[styles.addressQrPopupTitle, { color: colors.text }]}>
+                      {formatCopy(UPSTREAM_TEXT.result.addressNumber, {
+                        n: addressQr.index,
+                      })}
+                    </Text>
+                    <QrCode
+                      accessibilityLabel={formatCopy(UPSTREAM_TEXT.result.addressNumber, {
+                        n: addressQr.index,
+                      })}
+                      border={4}
+                      data={addressQr.address}
+                      ecc="M"
+                      size={qrWidth}
+                      testID="address-qr-code"
+                    />
+                    <Text selectable style={[styles.addressQrPopupValue, { color: colors.text }]}>
+                      {addressQr.address}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </Modal>
           </View>
         ) : null}
       </ScrollView>
@@ -641,6 +710,11 @@ const styles = StyleSheet.create({
   addressCheckInput: { borderRadius: 6, borderWidth: 1, fontSize: 14, marginTop: 12, minHeight: 44, paddingHorizontal: 12 },
   addressCheckSection: { marginTop: 20 },
   addressCheckStatus: { fontSize: 12, lineHeight: 18, marginTop: 8 },
+  addressQrButton: { borderRadius: 6, borderWidth: 1, marginLeft: 6, paddingHorizontal: 6, paddingVertical: 1 },
+  addressQrButtonText: { fontSize: 10, letterSpacing: 0.5 },
+  addressQrCell: { alignItems: 'center', flexDirection: 'row' },
+  addressQrPopupTitle: { fontSize: 15, fontWeight: '600', marginBottom: 12 },
+  addressQrPopupValue: { fontFamily: ADDRESS_TABLE_MONOSPACE_FONT, fontSize: 12, lineHeight: 18, marginTop: 12, textAlign: 'center' },
   addressPathCell: { marginRight: 4 },
   addressTable: { borderRadius: 9, borderWidth: 1, marginTop: 6, overflow: 'hidden' },
   addressTableCell: { alignSelf: 'flex-start', flexShrink: 0, fontSize: 12, lineHeight: 18, paddingVertical: 4 },

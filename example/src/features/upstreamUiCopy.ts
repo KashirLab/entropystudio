@@ -87,6 +87,7 @@ export const UPSTREAM_TEXT = {
   common: {
     cancel: 'Cancel',
     done: 'Done',
+    qr: 'QR',
   },
   dice: {
     bitbox: {
@@ -348,6 +349,7 @@ export const UPSTREAM_TEXT = {
       'Use complete lowercase English BIP39 words separated by single spaces',
   },
   result: {
+    addressNumber: 'Address #{n}',
     accountPrivateKeyExports: 'Account private key exports',
     privateAccountMaterial: 'Recovery material',
     accountPrivateExportsWarningLead: 'These exports can spend from this account.',
