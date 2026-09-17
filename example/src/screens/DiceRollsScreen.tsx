@@ -189,9 +189,13 @@ export function DiceRollsScreen({
   }, [activeView, isActive]);
 
   useEffect(() => {
+    if (!editInputRequest) {
+      handledEditInputRequest.current = null;
+      return;
+    }
+
     if (
       !isActive ||
-      !editInputRequest ||
       editInputRequest.method !== 'dice' ||
       handledEditInputRequest.current === editInputRequest.id ||
       editInputRequest.input.kind !== 'dice'

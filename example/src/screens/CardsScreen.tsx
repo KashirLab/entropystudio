@@ -189,9 +189,13 @@ export function CardsScreen({
   }, [activeView, isActive]);
 
   useEffect(() => {
+    if (!editInputRequest) {
+      handledEditInputRequest.current = null;
+      return;
+    }
+
     if (
       !isActive ||
-      !editInputRequest ||
       editInputRequest.method !== 'cards' ||
       handledEditInputRequest.current === editInputRequest.id ||
       editInputRequest.input.kind !== 'cards'

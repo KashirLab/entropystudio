@@ -389,7 +389,8 @@ export function KeyStationResultScreen({
               <Pressable
                 accessibilityLabel={UPSTREAM_TEXT.keys.editInput}
                 accessibilityRole="button"
-                onPress={onEditInput}
+                hitSlop={8}
+                onPressIn={onEditInput}
                 style={({ pressed }) => [
                   styles.editButton,
                   { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
