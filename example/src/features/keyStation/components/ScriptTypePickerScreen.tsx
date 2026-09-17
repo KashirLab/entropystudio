@@ -59,6 +59,7 @@ const EMPTY_ADDRESS_TABLE_COLUMN_WIDTHS: AddressTableColumnWidths = {
 };
 
 const ADDRESS_TABLE_MONOSPACE_FONT = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
+const ADDRESS_TABLE_MAX_HEIGHT = 156;
 
 function derivePrivateMaterial(
   input: NonNullable<Props['privateAccountMaterialInput']>,
@@ -121,23 +122,29 @@ function AddressTable({
             </View>
           ))}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator>
-          <View style={styles.addressTableContent}>
-            <View style={[styles.addressTableRow, styles.addressTableHeader]}>
-              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.muted }]}>#</Text>
-              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressPathCell, columnStyle('path'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.path}</Text>
-              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressValueCell, columnStyle('address'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.address}</Text>
-              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressWifCell, { color: colors.muted }]}>{UPSTREAM_TEXT.result.wif}</Text>
-            </View>
+        <ScrollView
+          nestedScrollEnabled
+          showsVerticalScrollIndicator
+          style={styles.addressTableVerticalScroller}
+        >
+          <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator>
+            <View style={styles.addressTableContent}>
+              <View style={[styles.addressTableRow, styles.addressTableHeader, { backgroundColor: colors.background }]}>
+                <Text numberOfLines={1} onLayout={measureColumn('index')} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.muted }]}>#</Text>
+                <Text numberOfLines={1} onLayout={measureColumn('path')} style={[styles.addressTableCell, styles.addressPathCell, columnStyle('path'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.path}</Text>
+                <Text numberOfLines={1} onLayout={measureColumn('address')} style={[styles.addressTableCell, styles.addressValueCell, columnStyle('address'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.address}</Text>
+                <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressWifCell, { color: colors.muted }]}>{UPSTREAM_TEXT.result.wif}</Text>
+              </View>
             {rows.map(item => (
               <View key={item.index} style={[styles.addressTableRow, styles.addressTableDataRow, { borderTopColor: colors.border }]}>
-                <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.text }]}>{item.index}</Text>
-                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, columnStyle('path'), { color: colors.text }]}>{item.path}</Text>
-                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, columnStyle('address'), { color: colors.text }]}>{item.address}</Text>
+                <Text numberOfLines={1} onLayout={measureColumn('index')} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.text }]}>{item.index}</Text>
+                <Text numberOfLines={1} onLayout={measureColumn('path')} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, columnStyle('path'), { color: colors.text }]}>{item.path}</Text>
+                <Text numberOfLines={1} onLayout={measureColumn('address')} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, columnStyle('address'), { color: colors.text }]}>{item.address}</Text>
                 <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.privateValue }]}>{item.wif}</Text>
               </View>
             ))}
-          </View>
+            </View>
+          </ScrollView>
         </ScrollView>
       </View>
     </>
@@ -645,6 +652,7 @@ const styles = StyleSheet.create({
   addressTableRow: { flexDirection: 'row' },
   addressTableTitle: { fontSize: 14, fontWeight: '700', lineHeight: 20, marginTop: 20, marginBottom: 6 },
   addressTableValue: { fontFamily: ADDRESS_TABLE_MONOSPACE_FONT, fontVariant: ['tabular-nums'] },
+  addressTableVerticalScroller: { maxHeight: ADDRESS_TABLE_MAX_HEIGHT },
   addressValueCell: { marginRight: 8 },
   addressWifCell: {},
   content: { paddingBottom: 28, paddingHorizontal: 24, paddingTop: 22 },
