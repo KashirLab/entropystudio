@@ -21,7 +21,13 @@ const upstreamVanityJs = readFileSync(
   'utf8',
 );
 const upstreamShellHtml = readOptionalSource('src/shell.html');
-const renderedUpstreamUiText = renderedUpstreamText();
+const renderedUpstreamUiSources = [
+  decodeJavaScriptEscapes(upstreamAppJs),
+  decodeJavaScriptEscapes(upstreamVanityJs),
+  decodeJavaScriptEscapes(readOptionalSource('src/js/i18n-labels.js')),
+  upstreamShellHtml,
+  readOptionalSource('src/index.html'),
+].join('\n');
 
 describe('Upstream UI copy provenance', () => {
   test('limits Studio-authored navigation copy to approved actions', () => {
@@ -41,7 +47,7 @@ describe('Upstream UI copy provenance', () => {
       text: UPSTREAM_TEXT,
     });
 
-    expect(copiedText.filter(text => !renderedUpstreamUiText.has(text))).toEqual([]);
+    expect(copiedText.filter(text => !renderedUpstreamUiSources.includes(text))).toEqual([]);
   });
 
   test('keeps shell-owned introductions in the rendered upstream shell', () => {
@@ -600,36 +606,6 @@ function readOptionalSource(path) {
   return existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : '';
 }
 
-function renderedUpstreamText() {
-  const text = new Set(
-    upstreamShellHtml
-      .match(/(?<=>)[^<]+(?=<)/g)
-      ?.map(value => value.trim())
-      .filter(Boolean),
-  );
-
-  collectSourceStringLiterals(upstreamAppJs, text);
-  collectSourceStringLiterals(upstreamVanityJs, text);
-  collectStrings(UPSTREAM_UI_LABELS).forEach(value => text.add(value));
-  return text;
-}
-
-function collectSourceStringLiterals(sourceText, text) {
-  const source = typescript.createSourceFile(
-    'upstream-ui.js',
-    sourceText,
-    typescript.ScriptTarget.Latest,
-    true,
-  );
-  function visit(node) {
-    if (typescript.isStringLiteral(node) || typescript.isNoSubstitutionTemplateLiteral(node)) {
-      text.add(node.text);
-    }
-    typescript.forEachChild(node, visit);
-  }
-
-  visit(source);
-}
 
 function collectStrings(value) {
   if (typeof value === 'string') {
