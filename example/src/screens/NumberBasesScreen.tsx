@@ -383,7 +383,6 @@ export function NumberBasesScreen({
                     testID={`number-base-format-${option}`}
                   >
                     <Text
-                      adjustsFontSizeToFit
                       numberOfLines={1}
                       style={[styles.formatLabel, { color: selected ? colors.text : colors.muted }]}
                     >
