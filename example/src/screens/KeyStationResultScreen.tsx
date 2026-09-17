@@ -409,11 +409,13 @@ export function KeyStationResultScreen({
               </Pressable>
             </View>
           </View>
-          <SafetyNotes
-            colors={colors}
-            notes={safetyNotes}
-            testIDPrefix="wallet-safety"
-          />
+          <View style={styles.nativeSafetyNotes}>
+            <SafetyNotes
+              colors={colors}
+              notes={safetyNotes}
+              testIDPrefix="wallet-safety"
+            />
+          </View>
           <ScriptTypeTabs
             colors={colors}
             onSelect={onSetResultScriptType}
@@ -794,6 +796,9 @@ const styles = StyleSheet.create({
   },
   nativeOverviewContent: {
     paddingTop: 0,
+  },
+  nativeSafetyNotes: {
+    marginBottom: 16,
   },
   nativeOverviewTitle: {
     fontSize: 17,
