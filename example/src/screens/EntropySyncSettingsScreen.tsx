@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
-import { BackHandler, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Host, List, ListItem } from '@expo/ui';
 
 import { WordCountSelector } from '../features/dice/components/WordCountSelector';
 import { diceColors } from '../features/dice/diceTheme';
 import { EntropySyncControl, useEntropySync } from '../features/entropySync';
 import { UPSTREAM_TEXT, UPSTREAM_UI_FALLBACK_COPY } from '../features/upstreamUiCopy';
+import { NativeSettingsNavigator } from '../components/NativeSettingsNavigator';
 
 const CONTENT_HORIZONTAL_PADDING = 24;
 
@@ -27,23 +26,6 @@ export function EntropySyncSettingsScreen({
 }: Props) {
   const colors = diceColors(isDarkMode);
   const entropySync = useEntropySync();
-  const [activeSettings, setActiveSettings] = useState<'list' | 'keys'>('list');
-
-  useEffect(() => {
-    if (!isActive) {
-      return undefined;
-    }
-
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (activeSettings === 'keys') {
-        setActiveSettings('list');
-      } else {
-        onReturnToMethod();
-      }
-      return true;
-    });
-    return () => subscription.remove();
-  }, [activeSettings, isActive, onReturnToMethod]);
 
   return (
     <SafeAreaView
@@ -57,43 +39,19 @@ export function EntropySyncSettingsScreen({
       ]}
       testID="entropy-sync-settings-safe-area"
     >
-      <View
-        style={[
-          styles.content,
-          activeSettings === 'list' && styles.settingsListContent,
-        ]}
-        testID="entropy-sync-settings-screen"
+      <NativeSettingsNavigator
+        backgroundColor={colors.background}
+        isActive={isActive}
+        isDarkMode={isDarkMode}
+        label={UPSTREAM_TEXT.keys.tabLabel}
+        onReturnToMethod={onReturnToMethod}
+        rowBackgroundColor={colors.segment}
+        seedColor={colors.accent}
       >
-        {activeSettings === 'list' ? (
-          <Host
-            colorScheme={isDarkMode ? 'dark' : 'light'}
-            seedColor={colors.accent}
-            style={styles.nativeListHost}
-            useViewportSizeMeasurement
-          >
-            <List testID="settings-list">
-              <ListItem
-                onPress={() => setActiveSettings('keys')}
-                testID="open-keys-settings"
-                trailing="›"
-              >
-                {UPSTREAM_TEXT.keys.tabLabel}
-              </ListItem>
-            </List>
-          </Host>
-        ) : (
-          <>
-            <Pressable
-              accessibilityLabel={UPSTREAM_UI_FALLBACK_COPY.common.back}
-              accessibilityRole="button"
-              onPress={() => setActiveSettings('list')}
-              style={styles.backButton}
-              testID="close-keys-settings"
-            >
-              <Text style={[styles.backButtonText, { color: colors.accent }]}>
-                {UPSTREAM_UI_FALLBACK_COPY.common.back}
-              </Text>
-            </Pressable>
+        <View
+          style={[styles.content, { backgroundColor: colors.background }]}
+          testID="entropy-sync-settings-screen"
+        >
             <WordCountSelector
               colors={colors}
               label={UPSTREAM_TEXT.seedLength.label}
@@ -127,9 +85,8 @@ export function EntropySyncSettingsScreen({
               snapshot={entropySync.snapshot}
               testID="entropy-sync-settings"
             />
-          </>
-        )}
-      </View>
+        </View>
+      </NativeSettingsNavigator>
     </SafeAreaView>
   );
 }
@@ -142,16 +99,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 16,
     paddingTop: 14,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    minHeight: 36,
-    paddingRight: 12,
-  },
-  backButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
   },
   autocompleteCopy: {
     flex: 1,
@@ -169,14 +116,7 @@ const styles = StyleSheet.create({
   hidden: {
     display: 'none',
   },
-  nativeListHost: {
-    flex: 1,
-  },
   screen: {
     flex: 1,
-  },
-  settingsListContent: {
-    paddingHorizontal: 0,
-    paddingTop: 0,
   },
 });
