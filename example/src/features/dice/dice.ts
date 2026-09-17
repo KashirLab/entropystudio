@@ -156,25 +156,19 @@ export function diceProgressCopy(
     });
   }
 
-  if (rollCount < requiredRolls) {
-    return formatCopy(UPSTREAM_TEXT.dice.meta.missing, {
-      bits: estimatedBits,
-      have: rollCount,
-      missing: requiredRolls - rollCount,
-      n: requiredRolls,
-    });
-  }
-
-  const ready = formatCopy(UPSTREAM_TEXT.dice.meta.ready, {
+  const count = formatCopy(
+    rollCount < requiredRolls
+      ? UPSTREAM_TEXT.dice.meta.missing
+      : UPSTREAM_TEXT.dice.meta.entered,
+    { have: rollCount, n: requiredRolls },
+  );
+  const bits = formatCopy(UPSTREAM_TEXT.dice.meta.estimatedBits, {
     bits: estimatedBits,
-    have: rollCount,
   });
-  if (rollCount === requiredRolls) {
-    return ready;
-  }
-
-  return `${ready}${formatCopy(UPSTREAM_TEXT.dice.meta.extra, {
-    n: rollCount - requiredRolls,
+  if (rollCount <= requiredRolls) return `${count} · ${bits}`;
+  return `${count} · ${bits} · ${formatCopy(UPSTREAM_TEXT.dice.meta.extra, {
+    extra: rollCount - requiredRolls,
+    n: rollCount,
   })}`;
 }
 
@@ -208,16 +202,17 @@ export function directDiceProgressCopy(
           }),
         })
       : state.step === DirectDiceStep.BitboxFinalWord
-        ? formatCopy(UPSTREAM_TEXT.dice.bitbox.lastWord, { n: state.words.length })
+        ? UPSTREAM_TEXT.dice.bitbox.lastWord
         : state.step === DirectDiceStep.BitboxCoin
           ? formatCopy(UPSTREAM_TEXT.dice.bitbox.coin, {
-              partial: state.partialWords,
-              word: state.activeWord,
+              bits: state.words.length * 11,
+              have: state.words.length,
+              need: state.partialWords,
             })
           : formatCopy(UPSTREAM_TEXT.dice.bitbox.die, {
-              die: state.activeRoll,
-              partial: state.partialWords,
-              word: state.activeWord,
+              bits: state.words.length * 11,
+              have: state.words.length,
+              need: state.partialWords,
             });
     const skipped = state.skippedCount
       ? ` ${formatCopy(

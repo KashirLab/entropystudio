@@ -1011,7 +1011,6 @@ export function VanityScreen({
           headingTestID="vanity-screen-title"
           sheetHeight={460}
           testIDPrefix="vanity-introduction"
-          title={UPSTREAM_TEXT.vanity.intro.kicker}
         />
 
         <View style={[styles.messages, { borderColor: colors.border }]}>

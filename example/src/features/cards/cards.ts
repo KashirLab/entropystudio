@@ -262,33 +262,21 @@ export function hashedCardProgressCopy(state: HashedCardState): string {
   const { cardCount: count, requiredCards: needed } = state;
   const bits = state.entropyBits.toFixed(1);
 
-  if (count === 0) {
-    return formatCopy(UPSTREAM_TEXT.cards.meta.hashedEmpty, { need: needed });
-  }
-  if (count < needed) {
-    return formatCopy(UPSTREAM_TEXT.cards.meta.hashedMissing, {
-      bits,
-      have: count,
-      missing: needed - count,
-      need: needed,
-    });
-  }
-
-  const ready = formatCopy(
-    count === 1
-      ? UPSTREAM_TEXT.cards.meta.hashedReadyOne
-      : UPSTREAM_TEXT.cards.meta.hashedReady,
-    { bits, n: count },
-  );
-  if (count === needed) {
-    return ready;
-  }
-  return `${ready} ${formatCopy(
-    count - needed === 1
-      ? UPSTREAM_TEXT.cards.meta.hashedExtraOne
-      : UPSTREAM_TEXT.cards.meta.hashedExtra,
-    { n: count - needed },
-  )}`;
+  const progress = formatCopy(UPSTREAM_TEXT.cards.meta.hashedEmpty, {
+    have: count,
+    need: needed,
+  });
+  const entropy = formatCopy(UPSTREAM_TEXT.cards.meta.hashedBits, { bits });
+  if (count < needed) return `${progress} · ${entropy}`;
+  const extra = count - needed;
+  return extra
+    ? `${progress} · ${entropy} · ${formatCopy(
+        extra === 1
+          ? UPSTREAM_TEXT.cards.meta.hashedExtraOne
+          : UPSTREAM_TEXT.cards.meta.hashedExtra,
+        { n: extra },
+      )}`
+    : `${progress} · ${entropy}`;
 }
 
 export function directCardProgress(state: DirectCardState): number {
@@ -302,7 +290,10 @@ export function directCardProgressCopy(
   const entered = state.enteredDraws;
   const needed = state.requiredDraws;
   if (state.complete) {
-    return formatCopy(UPSTREAM_TEXT.cards.meta.directComplete, { n: entered, words: wordCount });
+    return `${formatCopy(UPSTREAM_TEXT.cards.meta.directEntered, {
+      have: entered,
+      need: needed,
+    })} · ${formatCopy(UPSTREAM_TEXT.cards.meta.directComplete, { words: wordCount })}`;
   }
   if (state.extraCount > 0) {
     return formatCopy(
@@ -337,12 +328,14 @@ export function directCardProgressCopy(
         )
       : state.step === DirectCardStep.Final
         ? formatCopy(UPSTREAM_TEXT.cards.meta.directFinal, {
-            draw: state.activeDraw,
-            need: state.finalDraws,
-            set,
+            word: wordCount,
+            words: wordCount,
           })
         : UPSTREAM_UI_FALLBACK_COPY.cards.checksumError;
-  return `${entered} of ${needed} rank draws entered · ${step}`;
+  return `${formatCopy(UPSTREAM_TEXT.cards.meta.directEntered, {
+    have: entered,
+    need: needed,
+  })} · ${step}`;
 }
 
 export function cardInstruction(

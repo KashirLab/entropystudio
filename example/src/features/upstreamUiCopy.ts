@@ -30,10 +30,10 @@ export const UPSTREAM_TEXT = {
     },
     hashedRequirement:
       '{words} words need {bits} bits. Deal {first} unique cards from one shuffled deck.',
-    how: 'How to turn cards into a {words}-word seed',
+    how: 'Card options',
     instruct: {
       directFirst: 'Shuffle {set} (any suit) before the first draw.',
-      directNext: 'Shuffle {set} (any suit) before the next draw.',
+      directNext: 'Shuffle {set} (any suit), then draw',
       hashedAgain: 'Shuffle the full 52-card deck again before the next draw.',
       hashedFirst: 'Shuffle a standard 52-card deck before the first draw.',
       hashedNext:
@@ -42,23 +42,20 @@ export const UPSTREAM_TEXT = {
         'Deal the next card without replacement from the second shuffle.',
     },
     meta: {
-      directComplete:
-        'All {n} rank draws entered · checksum-valid {words}-word seed ready to derive',
-      directFinal:
-        'Final word · draw {draw} of {need} from {set} after shuffling',
-      directWord: 'Word {word} of {words} · draw {draw} of 4 from {set}',
-      directWordShuffle:
-        'Word {word} of {words} · draw {draw} of 4 from {set} after shuffling',
+      directEntered: '{have} of {need} rank draws entered',
+      directComplete: 'checksum-valid {words}-word seed ready to derive',
+      directFinal: 'Word {word} of {words}',
+      directWord: 'Word {word} of {words}',
+      directWordShuffle: 'Word {word} of {words}',
       extraCard: '{n} extra card highlighted',
       extraCards: '{n} extra cards highlighted',
-      hashedEmpty:
-        '0 of {need} recommended cards · 0.0 bits estimated · Hashed card transcript',
-      hashedExtra: 'all {n} extra cards are included',
-      hashedExtraOne: 'all {n} extra card is included',
-      hashedMissing:
-        '{have} of {need} recommended cards · {bits} bits estimated · seed available for testing · {missing} more recommended',
-      hashedReady: '{n} cards · {bits} bits estimated · ready to derive',
-      hashedReadyOne: '{n} card · {bits} bits estimated · ready to derive',
+      hashedEmpty: '{have} of {need} recommended cards',
+      hashedBits: '{bits} bits estimated',
+      hashedExtra: 'All {n} extra cards are included',
+      hashedExtraOne: 'All {n} extra card is included',
+      hashedMissing: '{have} of {need} recommended cards',
+      hashedReady: '{have} of {need} recommended cards',
+      hashedReadyOne: '{have} of {need} recommended cards',
       invalidRank: '{n} invalid rank highlighted',
       invalidRanks: '{n} invalid ranks highlighted',
     },
@@ -77,14 +74,13 @@ export const UPSTREAM_TEXT = {
     conversionArrow: '→',
     d16: 'D16',
     d8: 'D8',
-    directDiceNote:
-      '(show how direct word selection produces each BIP39 index)',
+    directDiceNote: 'show how direct word selection produces each BIP39 index',
     dplusDescription:
       'D8 contributes 8 values and each hexadecimal D16 contributes 16 values, giving 8 × 16 × 16 = 2048 possible indices.',
     dplusTitle: 'D++ calculations',
     numberBaseDescription:
       'Each 11-bit group is interpreted as a big-endian binary integer. Multiply each bit by its bit weight, then sum the contributions to get the zero-based BIP39 index. The corresponding word number is the index plus 1.',
-    numberBaseNote: '(show how each BIP39 word number is calculated)',
+    numberBaseNote: 'show how each BIP39 word number is calculated',
     show: 'Show calculations',
     wordNumber: 'word number',
   },
@@ -94,12 +90,12 @@ export const UPSTREAM_TEXT = {
   },
   dice: {
     bitbox: {
-      coin: 'Word {word} of {partial} · 6th die (interpreted as a coin flip)',
+      coin: 'BitBox diceware: {have} of {need} lookup-table words ({bits} encoded bits). Then choose the final checksum word.',
       desc: 'Use five dice showing 1–4, then a coin (or 6th die: 1–3 heads, 4–6 tails). Build {partialWords} lookup-table words, then choose 1 of {candidates} valid final checksum words.',
-      die: 'Word {word} of {partial} · die {die} of 5 (faces 1–4)',
+      die: 'BitBox diceware: {have} of {need} lookup-table words ({bits} encoded bits). Then choose the final checksum word.',
       heads: 'Heads',
       headsRange: '1–3',
-      lastWord: '{n} words · choose the final checksum word',
+      lastWord: 'Then choose the final checksum word.',
       tails: 'Tails',
       tailsRange: '4–6',
       title: 'BitBox diceware / Direct word selection',
@@ -127,12 +123,12 @@ export const UPSTREAM_TEXT = {
         d16: ' (0–F)',
         d8: ' (1–8)',
       },
-      ready: '{words} of {words} seed words · checksum valid · ready to derive',
+      ready: 'Checksum valid · ready to derive',
       rolledWordsComplete: 'All lookup-table words are complete.',
       roll: {
-        checksumCoin: 'final D8 as a coin flip',
-        checksumD16: 'final D16 checksum roll',
-        checksumD8: 'final D8 checksum roll',
+        checksumCoin: 'a coin flip',
+        checksumD16: 'D16',
+        checksumD8: 'D8',
         d16first: 'first D16 roll',
         d16second: 'second D16 roll',
         d8: 'D8 roll',
@@ -144,29 +140,26 @@ export const UPSTREAM_TEXT = {
       wordProgress: 'Word {word} of {partial}',
     },
     help: {
-      bitbox:
-        '{partialWords} lookup-table words fill one slot at a time, then choose a confirmed final checksum word. Use 1–4 for the first five rolls (if you get 5 or 6, roll again). The sixth roll is treated as the coin: 1–3 is Heads, 4–6 is Tails. Or flip a real coin!',
-      coldcard:
-        'The original dice digit string is hashed with SHA-256. This Base 10 [0-9] method matches COLDCARD and SeedSigner. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
-      coleman:
-        'Every rolled 6 becomes 0 before the complete digit string is hashed with SHA-256. This Dice [1-6] method matches the method used by Keystone. Any nonempty count produces a phrase, but use at least {hashRolls} fair rolls before relying on it.',
-      dplus:
-        'Enter the D8 face from 1–8, then both hexadecimal D16 faces from 0–F exactly as shown on the dice. For example, 100 selects abandon and 8FF selects zoo. {finalHelp}',
+      bitbox: 'Use five dice showing 1–4, then a coin (or 6th die: 1–3 heads, 4–6 tails). Build {partialWords} lookup-table words, then choose 1 of {candidates} valid final checksum words.',
+      coldcard: 'SHA-256 of the original dice digit string, matching the method used by COLDCARD and SeedSigner. The first {bits} bits become the selected {words}-word seed; {hashRolls} rolls are recommended, and every entered roll is included.',
+      coleman: 'Convert each 6 to 0 and SHA-256 the complete mapped digit string, matching the method used by Keystone. Use the first {bits} bits; {hashRolls} rolls are recommended, and every entered roll is included.',
+      dplus: 'Roll one D8 labeled 1–8 and two hexadecimal D16 dice labeled 0–F for each of the first {partialWords} words, then {final} to select the valid checksum final word.',
     },
-    how: 'How to turn rolls into a {words}-word seed',
+    how: 'Dice roll options',
     label: {
-      bitbox: 'Dice rolls (1–4, then a 6th die interpreted as a coin flip)',
-      dplus: 'D++ rolls (D8, D16, D16; then {final})',
-      hashed: 'Dice rolls (faces 1–6 only)',
+      bitbox: 'Dice rolls (each word five D6 and a sixth D6 as a coin flip)',
+      dplus: 'D++ rolls (each word D8 and two D16 hexadice; then {final} for checksum)',
+      hashed: 'Dice rolls (D6)',
     },
     meta: {
-      empty: '0 of {n} recommended rolls · 0.0 bits estimated · {method}',
-      extra: ' · all {n} extra roll(s) included',
+      empty: '{have} of {n} recommended rolls',
+      entered: '{have} rolls',
+      estimatedBits: '{bits} bits estimated',
+      extra: 'All {n} rolls, including {extra} beyond the recommendation, are included in the hash.',
       extraIgnored: ' · {n} extra input(s) ignored',
       invalid: ' · {n} invalid input(s) highlighted',
-      missing:
-        '{have} of {n} recommended rolls · {bits} bits estimated · seed available for testing · {missing} more recommended',
-      ready: '{have} roll(s) · {bits} bits estimated · ready to derive',
+      missing: '{have} of {n} recommended rolls',
+      ready: 'Checksum valid · ready to derive',
     },
     method: {
       coldcard: 'Hashed rolls / Base 10 [0-9]',
@@ -196,7 +189,7 @@ export const UPSTREAM_TEXT = {
   },
   hex: {
     format: {
-      base32: 'Crockford Base32',
+      base32: 'Base32 (Bech32)',
       base4: 'Base 4',
       base8: 'Octal (Base 8)',
       bin: 'Binary (Base 2)',
@@ -215,8 +208,7 @@ export const UPSTREAM_TEXT = {
     formatHeading: 'Private key format',
     hex: 'Private key hex',
     hexDesc: 'Raw 32-byte private key as 64 hexadecimal characters.',
-    inputHelp:
-      'Enter the value matching the selected format. Brain wallet text is hashed with SHA-256.',
+    inputHelp: 'Private key or recovery passphrase',
     inputLabel: 'Private key or recovery passphrase',
     mini: 'Mini key',
     miniDesc: 'Casascius-style short key.',
@@ -238,11 +230,10 @@ export const UPSTREAM_TEXT = {
       underPointOneSeconds: 'under 0.1 seconds',
     },
     addressBranchRange: 'Address branch range',
-    addressBranchRangeHelp: 'Derives Receive branch · Max 2',
+    addressBranchRangeHelp: 'Derives Receive and Change branches · Max 2',
     addressRange: 'Address range',
-    addressRangeHelp: 'Derives 1 receive address · Max 10,000',
-    addressRangeReceiveAndChangeHelp:
-      'Derives 5 receive and 5 change addresses · Max 10,000',
+    addressRangeHelp: 'Address range',
+    addressRangeReceiveAndChangeHelp: 'Address range',
     account: 'Account',
     branchLabels: {
       receive: 'Receive',
@@ -286,7 +277,7 @@ export const UPSTREAM_TEXT = {
       'First address branch to derive · 0 is Receive · 1 is Change · Unhardened · 0 to 2,147,483,647',
     startingAddressIndex: 'Starting address index',
     startingAddressIndexHelp:
-      'First receive index to derive · Unhardened · 0 to 2,147,483,647',
+      'First receive and change index to derive · Unhardened · 0 to 2,147,483,647',
     startingAddressIndexReceiveAndChangeHelp:
       'First receive and change index to derive · Unhardened · 0 to 2,147,483,647',
     addressBranchRangeReceiveAndChangeHelp:
@@ -332,11 +323,9 @@ export const UPSTREAM_TEXT = {
     buildFromWords: 'Build passphrase from BIP39 words',
     incompleteOne: '{n} complete BIP39 word · finish the current word',
     incompleteMany: '{n} complete BIP39 words · finish the current word',
-    inconsistentOne:
-      '{n} passphrase inconsistency highlighted · use complete lowercase English BIP39 words separated by single spaces',
-    inconsistentMany:
-      '{n} passphrase inconsistencies highlighted · use complete lowercase English BIP39 words separated by single spaces',
-    label: 'Optional BIP39 passphrase',
+    inconsistentOne: '{n} passphrase inconsistency highlighted',
+    inconsistentMany: '{n} passphrase inconsistencies highlighted',
+    label: 'Passphrase (optional)',
     placeholder: 'Enter a BIP39 passphrase, or leave blank for none',
     trailingSeparatorOne:
       '{n} complete BIP39 word · start the next word or remove the final space',
@@ -344,15 +333,13 @@ export const UPSTREAM_TEXT = {
       '{n} complete BIP39 words · start the next word or remove the final space',
     wordsEnteredOne: '{n} lowercase BIP39 passphrase word entered',
     wordsEnteredMany: '{n} lowercase BIP39 passphrase words entered',
-    wordsHelp:
-      'Use complete lowercase English BIP39 words separated by single spaces.',
+    wordsHelp: 'Use complete lowercase English BIP39 words separated by single spaces',
     wordsNote:
       'Use complete lowercase English BIP39 words separated by single spaces',
   },
   result: {
-    privateAccountMaterial: 'Private account material',
-    privateAccountMaterialIntro:
-      'These exports can spend from this account. They are shown only for a seed or extended private-key source.',
+    privateAccountMaterial: 'Recovery material',
+    privateAccountMaterialIntro: 'These values can recreate or spend from the wallet.',
     privateAccountMaterialWarningLead:
       'Keep these exports together only in secure offline backups.',
     privateAccountMaterialWarningTail:
@@ -373,18 +360,18 @@ export const UPSTREAM_TEXT = {
       'Compatible with: SeedSigner, Krux, Jade, Passport.',
     entropyHex: 'BIP39 entropy hex',
     hexPrivateKey: 'Hex private key',
-    privateKey: 'Private key material',
+    privateKey: 'Root private key',
     privateKeyMaterialSafety:
-      'These values can spend the bitcoin held by the addresses below. Reveal them only while this file is running offline on an air-gapped computer.',
-    privateRecoveryMaterial: 'Private recovery material',
+      'Reveal them only while this file is running offline on an air-gapped computer.',
+    privateRecoveryMaterial: 'Recovery material',
     privateRecoveryMaterialSafety:
-      'These values can recreate or spend from the wallet. Reveal them only while this file is running offline on an air-gapped computer.',
+      'Reveal them only while this file is running offline on an air-gapped computer.',
     rootXprv: 'Root {name}',
     watchOnlyWalletData: 'Watch-only wallet data',
     watchOnlyWalletDescriptorImport:
       'Import this output descriptor into Sparrow or another wallet.',
     addressBranchDescriptors: 'Address branch descriptors',
-    advancedWatchOnlyExport: 'Advanced watch-only export',
+    advancedWatchOnlyExport: 'Watch-only wallet data',
     addresses: 'Addresses',
     addressesVerification:
       'Verify the first selected address on another trusted wallet or signing device before accepting bitcoin.',
@@ -400,7 +387,7 @@ export const UPSTREAM_TEXT = {
     seedQrNumeric: 'SeedQR. Numeric.',
     seedQrPassphrase:
       ' This QR is the seed only. Enter the passphrase on the signer after scanning.',
-    seedQrScan: 'Scan into a camera signer. This is the seed.',
+    seedQrScan: 'SeedQR. Numeric.',
     seedQrUnsupported:
       'SeedQR is defined for 12 and 24 word phrases. Type this {n}-word seed on the signer.',
     safety: {
@@ -469,8 +456,8 @@ export const UPSTREAM_TEXT = {
           'Decoded an uncompressed WIF private key (starts with 5 on mainnet).',
       },
     },
-    walletData: 'Wallet data',
-    walletRecoveryDetails: 'Wallet recovery details',
+    walletData: 'Watch-only wallet data',
+    walletRecoveryDetails: 'Recovery material',
     wifCompressed: 'WIF compressed',
     wifUncompressed: 'WIF uncompressed',
   },
@@ -480,27 +467,22 @@ export const UPSTREAM_TEXT = {
       singular: '{n} valid checksum word starts with “{prefix}”',
       plural: '{n} valid checksum words start with “{prefix}”',
     },
-    how: 'How to enter a seed phrase',
+    how: 'Seed phrase format',
     lastWordLabel: 'Valid final word ({n} choices)',
     lastWordPlaceholder: 'Choose a confirmed final word',
     meta: {
-      checksumInvalid:
-        '{progress} · BIP39 checksum invalid · final word number highlighted',
-      chooseFinal:
-        '{progress} · choose the final checksum word · {n} valid choices',
-      extra:
-        '{entered} entered · {words} required · {n} extra highlighted · remove to continue',
-      extraWords:
-        '{entered} entered · {words} required BIP39 words · {n} extra highlighted · remove to continue',
+      checksumInvalid: 'BIP39 checksum invalid · final word number highlighted',
+      chooseFinal: 'Choose a confirmed final word',
+      extra: '{n} extra word highlighted · remove it to continue',
+      extraWords: '{n} extra words highlighted · remove them to continue',
       invalidNumber:
-        '{progress} · Word {n} number “{token}” is outside {min}–{max} · correct to continue',
+        'Word {n} number “{token}” is outside {min}–{max} · correct to continue',
       invalidWord:
-        '{progress} · Word {n} (“{word}”) is not on the BIP39 English list · correct to continue',
+        'Word {n} (“{word}”) is not on the BIP39 English list · correct to continue',
       numberProgress: '{entered} of {words} BIP39 word numbers entered',
-      ready: '{progress} · checksum valid · ready to derive',
-      remaining: '{progress} · {remaining} remaining',
-      remainingRange:
-        '{progress} · {remaining} remaining · valid range {min}–{max}',
+      ready: 'Checksum valid · ready to derive',
+      remaining: '{entered} of {words} BIP39 words entered',
+      remainingRange: '{entered} of {words} BIP39 word numbers entered',
     },
     method: {
       numbers: 'BIP39 word numbers',
@@ -511,8 +493,7 @@ export const UPSTREAM_TEXT = {
     },
     nextWord: 'Next word',
     noFinalPrefix: 'No valid checksum word starts with “{prefix}”',
-    numbersHelp:
-      'Enter one {range} number for each word, separated by spaces. The corresponding BIP39 words appear below.',
+    numbersHelp: 'Enter exactly {words} BIP39 word numbers using {range}.',
     numbersLabel: 'Your {words} BIP39 word numbers',
     numbersPlaceholder0: '0 1 2 …',
     numbersPlaceholder1: '1 2 3 …',
@@ -523,7 +504,7 @@ export const UPSTREAM_TEXT = {
     requirementWords:
       'Enter exactly {words} BIP39 words. Extended keys ignore this selection.',
     zeroIndex: 'Use zero-indexed word numbers',
-    zeroIndexNote: '(0–2047 instead of the default 1–2048)',
+    zeroIndexNote: '0–2047 instead of the default 1–2048',
   },
   seedLength: {
     entropy: '{words} words use {bits} bits of BIP39 entropy.',
@@ -557,7 +538,7 @@ export const UPSTREAM_TEXT = {
     form: {
       method: 'Method',
       addressType: 'Address type',
-      addressPrefix: 'Address prefix',
+      addressPrefix: 'Vanity Formula',
       passphraseLength: 'Passphrase length',
       startCounter: 'Start counter',
       rangeSize: 'Range size',
@@ -569,17 +550,17 @@ export const UPSTREAM_TEXT = {
         derivation: 'Derivation grind',
       },
       scriptOptions: {
-        p2pkh: 'Legacy P2PKH · 1…',
-        p2shP2wpkh: 'Nested SegWit P2SH-P2WPKH · 3…',
-        p2wpkh: 'Native SegWit P2WPKH · bc1q…',
-        p2tr: 'Taproot P2TR · bc1p…',
-        sp: 'Silent Payments BIP-352 · sp1qq…',
+        p2pkh: 'Legacy',
+        p2shP2wpkh: 'Nested SegWit',
+        p2wpkh: 'Native SegWit',
+        p2tr: 'Taproot',
+        sp: 'Silent Payments',
       },
       help: {
         methodPassphrase:
           "Each candidate is the starting passphrase followed by the counter characters, stretched into a seed (2,048 PBKDF2 rounds) and derived at the key's path. A match is a new passphrase for this key.",
         prefixP2wpkh:
-          'Native SegWit P2WPKH prefix, starts with “bc1q”. Live-filtered to lowercase bech32 characters; each free character multiplies the work by ~32.',
+          'Live-filtered to lowercase bech32 characters; each free character multiplies the work by ~32.',
         passphraseLength:
           'Counter characters a-zA-Z0-9 appended after the starting passphrase. 62^10 counters fill the 64-bit counter; longer passphrases grind their low range.',
         startCounter: 'First counter tried. Counter 0 is "aaa…".',
@@ -610,7 +591,7 @@ export const UPSTREAM_TEXT = {
   },
   sync: {
     description:
-      '(Keeps non-hashed methods synchronized. Hashed inputs update them one way and are never overwritten.)',
+      'Keeps non-hashed methods synchronized. Hashed inputs update them one way and are never overwritten.',
     entropyUnknown: 'entropy unknown · only as strong as the text',
     shortfall: '{n} bits of entropy · under {min}',
     status: 'Key synced',
