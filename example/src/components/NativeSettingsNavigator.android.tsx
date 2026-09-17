@@ -11,6 +11,8 @@ type Props = {
   readonly onReturnToMethod: () => void;
   readonly rowBackgroundColor: ColorValue;
   readonly seedColor: ColorValue;
+  readonly vanityChildren: React.ReactElement;
+  readonly vanityLabel: string;
 };
 
 /** Compose-native list row; Android has no Expo UI navigation-stack component. */
@@ -23,24 +25,27 @@ export function NativeSettingsNavigator({
   onReturnToMethod,
   rowBackgroundColor,
   seedColor,
+  vanityChildren,
+  vanityLabel,
 }: Props) {
-  const [showKeys, setShowKeys] = useState(false);
+  const [activeDestination, setActiveDestination] = useState<'keys' | 'vanity' | null>(null);
 
   useEffect(() => {
     if (!isActive) return undefined;
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (showKeys) {
-        setShowKeys(false);
+      if (activeDestination) {
+        setActiveDestination(null);
       } else {
         onReturnToMethod();
       }
       return true;
     });
     return () => subscription.remove();
-  }, [isActive, onReturnToMethod, showKeys]);
+  }, [activeDestination, isActive, onReturnToMethod]);
 
-  if (showKeys) return children;
+  if (activeDestination === 'keys') return children;
+  if (activeDestination === 'vanity') return vanityChildren;
 
   return (
     <Host
@@ -52,11 +57,19 @@ export function NativeSettingsNavigator({
       <List testID="settings-list">
         <ListItem
           colors={{ containerColor: rowBackgroundColor }}
-          onPress={() => setShowKeys(true)}
+          onPress={() => setActiveDestination('keys')}
           testID="open-keys-settings"
           trailing="›"
         >
           {label}
+        </ListItem>
+        <ListItem
+          colors={{ containerColor: rowBackgroundColor }}
+          onPress={() => setActiveDestination('vanity')}
+          testID="open-vanity-settings"
+          trailing="›"
+        >
+          {vanityLabel}
         </ListItem>
       </List>
     </Host>

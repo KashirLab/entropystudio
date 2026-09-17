@@ -28,6 +28,8 @@ type Props = {
   readonly onReturnToMethod: () => void;
   readonly rowBackgroundColor: ColorValue;
   readonly seedColor: ColorValue;
+  readonly vanityChildren: React.ReactElement;
+  readonly vanityLabel: string;
 };
 
 /** A SwiftUI navigation stack with an RN-hosted settings detail screen. */
@@ -40,6 +42,8 @@ export function NativeSettingsNavigator({
   onReturnToMethod,
   rowBackgroundColor,
   seedColor,
+  vanityChildren,
+  vanityLabel,
 }: Props) {
   const [path, setPath] = useState<string[]>([]);
 
@@ -81,10 +85,22 @@ export function NativeSettingsNavigator({
           >
             <Text>{label}</Text>
           </NavigationLink>
+          <NavigationLink
+            modifiers={[listRowBackground(rowBackgroundColor)]}
+            testID="open-vanity-settings"
+            value="vanity"
+          >
+            <Text>{vanityLabel}</Text>
+          </NavigationLink>
         </List>
         <NavigationDestination value="keys">
           <Group modifiers={[navigationTitle(label), background(backgroundColor)]}>
             <RNHostView>{children}</RNHostView>
+          </Group>
+        </NavigationDestination>
+        <NavigationDestination value="vanity">
+          <Group modifiers={[navigationTitle(vanityLabel), background(backgroundColor)]}>
+            <RNHostView>{vanityChildren}</RNHostView>
           </Group>
         </NavigationDestination>
       </NavigationStack>

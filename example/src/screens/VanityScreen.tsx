@@ -42,7 +42,7 @@ const CONTENT_HORIZONTAL_PADDING = 24;
 const MAX_DISPLAYED_MATCHES = 100;
 
 type VanityMethodId = 'passphrase' | 'derivation';
-type VanityScriptId = 'p2pkh' | 'p2sh-p2wpkh' | 'p2wpkh' | 'p2tr' | 'sp';
+export type VanityScriptId = 'p2pkh' | 'p2sh-p2wpkh' | 'p2wpkh' | 'p2tr' | 'sp';
 type VanityView = 'setup' | 'entry';
 type VanitySourceTab = KeyStationTab & {
   readonly derivation: Extract<
@@ -78,6 +78,7 @@ type Props = {
     source: KeyStationTab,
     passphrase: string,
   ) => string | null;
+  readonly script: VanityScriptId;
   readonly tabs: readonly KeyStationTab[];
 };
 
@@ -92,7 +93,7 @@ const METHOD_OPTIONS: readonly NativeSelectOption<VanityMethodId>[] = [
   },
 ];
 
-const SCRIPT_OPTIONS: readonly NativeSelectOption<VanityScriptId>[] = [
+export const VANITY_SCRIPT_OPTIONS: readonly NativeSelectOption<VanityScriptId>[] = [
   {
     label: UPSTREAM_TEXT.vanity.form.scriptOptions.p2pkh,
     value: 'p2pkh',
@@ -343,6 +344,7 @@ export function VanityScreen({
   isDarkMode,
   onApplyAccount,
   onApplyPassphrase,
+  script,
   tabs,
 }: Props) {
   const colors = diceColors(isDarkMode);
@@ -379,7 +381,6 @@ export function VanityScreen({
   const [savedMatches, setSavedMatches] = useState<
     Readonly<Record<number, string>>
   >({});
-  const [script, setScript] = useState<VanityScriptId>('p2wpkh');
   const [selectedSourceId, setSelectedSourceId] = useState<number | null>(null);
   const [stopOnFirst, setStopOnFirst] = useState(false);
   const [status, setStatus] = useState<string>(
@@ -781,17 +782,6 @@ export function VanityScreen({
   stopRunRef.current = stopRun;
   selectMethodRef.current = selectMethod;
 
-  function selectScript(nextScript: VanityScriptId) {
-    if (nextScript === script) {
-      return;
-    }
-    clearResults();
-    setPrefix(current =>
-      vanityFilterPrefix(current, vanityNativeScript(nextScript)),
-    );
-    setScript(nextScript);
-  }
-
   function startRun() {
     if (
       !selectedSource ||
@@ -1182,20 +1172,6 @@ export function VanityScreen({
             </Text>
           </View>
 
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.fieldLabel, { color: colors.muted }]}>
-              {UPSTREAM_TEXT.vanity.form.addressType}
-            </Text>
-            <NativeSelect
-              accessibilityLabel={UPSTREAM_TEXT.vanity.form.addressType}
-              colors={colors}
-              controlTestID="vanity-script"
-              disabled={isRunning}
-              onValueChange={selectScript}
-              options={SCRIPT_OPTIONS}
-              selectedValue={script}
-            />
-          </View>
         </View>
 
         <View style={styles.setupActionArea}>

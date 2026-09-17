@@ -43,6 +43,7 @@ import { EntropySyncSettingsScreen } from './screens/EntropySyncSettingsScreen';
 import { KeyStationResultScreen } from './screens/KeyStationResultScreen';
 import { SeedPhraseScreen } from './screens/SeedPhraseScreen';
 import { VanityScreen } from './screens/VanityScreen';
+import type { VanityScriptId } from './screens/VanityScreen';
 
 function pathComponentDraft({ index, hardened }: KeyDerivationPathComponent): string {
   return `${index}${hardened ? "'" : ''}`;
@@ -211,6 +212,7 @@ function App() {
   const [keyStationTabs, setKeyStationTabs] = useState<readonly KeyStationTab[]>([]);
   const [editInputRequest, setEditInputRequest] = useState<KeyStationTab | null>(null);
   const [seedPhraseAutocompleteEnabled, setSeedPhraseAutocompleteEnabled] = useState(true);
+  const [vanityScript, setVanityScript] = useState<VanityScriptId>('p2wpkh');
   const [keyStationScriptType, setKeyStationScriptType] = useState<KeyStationScriptType>(
     DEFAULT_KEY_STATION_SCRIPT_TYPE,
   );
@@ -576,7 +578,9 @@ function App() {
           isActive={activeTab === 'settings'}
           isDarkMode={isDarkMode}
           onSetAutocompleteEnabled={setSeedPhraseAutocompleteEnabled}
+          onSetVanityScript={setVanityScript}
           onReturnToMethod={() => setActiveTab('method')}
+          vanityScript={vanityScript}
         />
       </TabScene>
     );
@@ -590,6 +594,7 @@ function App() {
           isDarkMode={isDarkMode}
           onApplyAccount={applyVanityAccount}
           onApplyPassphrase={applyVanityPassphrase}
+          script={vanityScript}
           tabs={keyStationTabs}
         />
       </TabScene>
