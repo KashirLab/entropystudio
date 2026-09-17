@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
+import { ProgressValueText } from '../components/ProgressValueText';
 import {
   CARD_METHODS,
   CARD_RANKS,
@@ -121,6 +122,7 @@ export function CardsScreen({
     instruction,
     matchesIanColeman,
     method,
+    progress,
     progressText,
     result,
     restoreInput,
@@ -478,13 +480,13 @@ export function CardsScreen({
             </Pressable>
           </View>
 
-          <Text
-            numberOfLines={3}
+          <ProgressValueText
             style={[styles.progressText, { color: colors.muted }]}
             testID="card-progress"
-          >
-            {progressText}
-          </Text>
+            text={progressText}
+            textColor={colors.muted}
+            valueColor={progress >= 1 ? colors.accent : colors.error}
+          />
           <View style={[styles.inputSurface, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <TextInput
               accessibilityLabel={copy.inputLabel}

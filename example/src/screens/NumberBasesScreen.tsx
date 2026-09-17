@@ -14,6 +14,7 @@ import { BackspaceIconButton } from '../components/BackspaceKey';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
+import { ProgressValueText } from '../components/ProgressValueText';
 import { entropyToMnemonic, mnemonicToSeed } from '../native/entropyStudio';
 import { DiceWordList } from '../features/dice/components/DirectDicePreview';
 import { NumberBaseCalculationsScreen } from './CalculationsScreen';
@@ -570,12 +571,26 @@ export function NumberBasesScreen({
             style={styles.inputProgress}
             testID="number-base-input-progress"
           >
-            <Text style={[styles.inputProgressLine, { color: colors.muted }]}>
-              {inputProgress}
-            </Text>
-            <Text style={[styles.inputProgressLine, { color: colors.muted }]}>
-              {seedWordsFilled}
-            </Text>
+            <ProgressValueText
+              style={styles.inputProgressLine}
+              testID="number-base-character-progress"
+              text={inputProgress}
+              textColor={colors.muted}
+              valueColor={
+                analysis.digitCount === analysis.config.digits &&
+                !analysis.finalInvalid &&
+                analysis.invalidCharacterCount === 0
+                  ? colors.accent
+                  : colors.error
+              }
+            />
+            <ProgressValueText
+              style={styles.inputProgressLine}
+              testID="number-base-word-progress"
+              text={seedWordsFilled}
+              textColor={colors.muted}
+              valueColor={words.length === wordCount ? colors.accent : colors.error}
+            />
           </View>
           <View
             style={[

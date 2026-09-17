@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { BackspaceIconButton } from '../../../components/BackspaceKey';
+import { ProgressValueText } from '../../../components/ProgressValueText';
 import { formatDiceTranscript } from '../dice';
 import type { DiceMethod, WordCount } from '../dice';
 import type { DiceColors } from '../diceTheme';
@@ -19,6 +20,7 @@ type Props = {
   readonly onProgrammaticSelectionChange: (selection: DiceTranscriptSelection) => void;
   readonly onSelectionChange: (selection: DiceTranscriptSelection) => void;
   readonly progressText: string;
+  readonly progressValueColor: string;
   readonly rolls: string;
   readonly selection: DiceTranscriptSelection | null;
   readonly selectionRequestId: number;
@@ -34,6 +36,7 @@ export function DiceTranscriptInput({
   onProgrammaticSelectionChange,
   onSelectionChange,
   progressText,
+  progressValueColor,
   rolls,
   selection,
   selectionRequestId,
@@ -75,13 +78,13 @@ export function DiceTranscriptInput({
           testID="remove-dice-roll"
         />
       </View>
-      <Text
-        numberOfLines={3}
+      <ProgressValueText
         style={[styles.progressText, { color: colors.muted }]}
         testID="dice-progress"
-      >
-        {progressText}
-      </Text>
+        text={progressText}
+        textColor={colors.muted}
+        valueColor={progressValueColor}
+      />
       <View
         style={[
           styles.surface,

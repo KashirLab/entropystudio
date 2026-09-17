@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
+import { ProgressValueText } from '../components/ProgressValueText';
 import { NativeSheet } from '../features/dice/components/NativeSheet';
 import { diceColors } from '../features/dice/diceTheme';
 import {
@@ -614,15 +615,16 @@ export function PrivateKeyScreen({
                   {UPSTREAM_TEXT.key.inputLabel}
                 </Text>
               </View>
-              <Text
+              <ProgressValueText
                 style={[
                   styles.progress,
-                  { color: inputState.canDerive ? colors.accent : inputHasError ? colors.error : colors.muted },
+                  { color: colors.muted },
                 ]}
                 testID="private-key-progress"
-              >
-                {inputProgress}
-              </Text>
+                text={inputProgress}
+                textColor={colors.muted}
+                valueColor={inputState.canDerive ? colors.accent : colors.error}
+              />
               {inputError && (
                 <Text style={[styles.status, { color: colors.error }]} testID="private-key-status">
                   {inputError}

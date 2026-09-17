@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
+import { ProgressValueText } from '../components/ProgressValueText';
 import { DiceWordList } from '../features/dice/components/DirectDicePreview';
 import type { WordCount } from '../features/dice/dice';
 import { diceColors } from '../features/dice/diceTheme';
@@ -494,18 +495,16 @@ export function SeedPhraseScreen({
                 : formatCopy(UPSTREAM_TEXT.seed.numbersLabel, { words: wordCount })}
             </Text>
           </View>
-          <Text
+          <ProgressValueText
             style={[
               styles.status,
-              {
-                color:
-                  entropy || analysis.canDerive ? colors.accent : colors.muted,
-              },
+              { color: colors.muted },
             ]}
             testID={seedMethod === 'words' ? 'seed-phrase-status' : 'seed-number-status'}
-          >
-            {seedPhraseStatusCopy(analysis, seedMethod, wordCount)}
-          </Text>
+            text={seedPhraseStatusCopy(analysis, seedMethod, wordCount)}
+            textColor={colors.muted}
+            valueColor={entropy || analysis.canDerive ? colors.accent : colors.error}
+          />
           {seedMethod === 'numbers' && (
             <View style={styles.zeroIndexToggle}>
               <View style={styles.zeroIndexCopy}>

@@ -151,6 +151,7 @@ export function diceProgressCopy(
 
   if (rollCount === 0) {
     const count = formatCopy(UPSTREAM_TEXT.dice.meta.empty, {
+      have: rollCount,
       method: HASHED_DICE_COPY[method].title,
       n: requiredRolls,
     });

@@ -119,6 +119,7 @@ export function DiceRollsScreen({
     d8D16Copy,
     enabledFaces,
     method,
+    progress,
     progressText,
     result,
     restoreInput,
@@ -438,6 +439,7 @@ export function DiceRollsScreen({
             onProgrammaticSelectionChange={setProgrammaticTranscriptSelection}
             onSelectionChange={setTranscriptSelection}
             progressText={progressText}
+            progressValueColor={progress >= 1 ? colors.accent : colors.error}
             rolls={rolls}
             selection={transcriptSelection}
             selectionRequestId={selectionRequestId}
