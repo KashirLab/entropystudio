@@ -291,6 +291,10 @@ describe('Upstream UI copy provenance', () => {
         source: upstreamAppJs,
         template: /\$\{hodlEscapeHtml\(firstLabel\)\} address #\$\{hodlAddressIndexHtml\(firstIndex\)\}/,
       },
+      'result.addressTableLabel': {
+        source: upstreamAppJs,
+        template: /let label = hodlAddressBranchLabel\(branch\.branch\), key = hodlAddressBranchKey\(prefix, branch\.branch\);\s*return `<p class="label">\$\{hodlEscapeHtml\(`\$\{label\} addresses`\)\}/,
+      },
       'result.addressCheckMatch': {
         source: upstreamAppJs,
         template: /\$\{chain\} address #\$\{hit\.index\} of this wallet \\xB7 \$\{hodlDisplayDerivationPath\(hit\.path\)\}\$\{extra\}/,

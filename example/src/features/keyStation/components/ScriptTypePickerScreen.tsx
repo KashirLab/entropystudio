@@ -26,6 +26,7 @@ import {
   accountAddressCheck,
   accountPrivateMaterial,
   type AccountAddressCheck,
+  type AccountWatchOnlyAddress,
   type AccountPrivateMaterial,
 } from '../../../native/entropyStudio';
 
@@ -71,6 +72,65 @@ function watchOnlyBranchLabel(branch: number): string {
     index: branch,
     role: branch === 0 ? 'receive' : branch === 1 ? 'change' : 'custom',
   });
+}
+
+function AddressTable({
+  colors,
+  columnStyle,
+  label,
+  measureColumn,
+  rows,
+}: {
+  readonly colors: DiceColors;
+  readonly columnStyle: (column: AddressTableColumn) => { width: number } | undefined;
+  readonly label: string;
+  readonly measureColumn: (column: AddressTableColumn) => (event: LayoutChangeEvent) => void;
+  readonly rows: readonly AccountWatchOnlyAddress[];
+}) {
+  return (
+    <>
+      <Text style={[styles.addressTableTitle, { color: colors.text }]}>
+        {UPSTREAM_UI_FALLBACK_COPY.result.addressTableLabel(label)}
+      </Text>
+      <View style={[styles.addressTable, { borderColor: colors.border }]}>
+        <View
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          pointerEvents="none"
+          style={styles.addressTableMeasure}
+        >
+          <Text numberOfLines={1} onLayout={measureColumn('index')} style={styles.addressTableMeasureText}>#</Text>
+          <Text numberOfLines={1} onLayout={measureColumn('path')} style={styles.addressTableMeasureText}>{UPSTREAM_TEXT.result.path}</Text>
+          <Text numberOfLines={1} onLayout={measureColumn('address')} style={styles.addressTableMeasureText}>{UPSTREAM_TEXT.result.address}</Text>
+          {rows.map(item => (
+            <View key={`measure-${item.index}`}>
+              <Text numberOfLines={1} onLayout={measureColumn('index')} style={styles.addressTableMeasureText}>{item.index}</Text>
+              <Text numberOfLines={1} onLayout={measureColumn('path')} style={[styles.addressTableMeasureText, styles.addressTableValue]}>{item.path}</Text>
+              <Text numberOfLines={1} onLayout={measureColumn('address')} style={[styles.addressTableMeasureText, styles.addressTableValue]}>{item.address}</Text>
+            </View>
+          ))}
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator>
+          <View style={styles.addressTableContent}>
+            <View style={[styles.addressTableRow, styles.addressTableHeader]}>
+              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.muted }]}>#</Text>
+              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressPathCell, columnStyle('path'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.path}</Text>
+              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressValueCell, columnStyle('address'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.address}</Text>
+              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressWifCell, { color: colors.muted }]}>{UPSTREAM_TEXT.result.wif}</Text>
+            </View>
+            {rows.map(item => (
+              <View key={item.index} style={[styles.addressTableRow, styles.addressTableDataRow, { borderTopColor: colors.border }]}>
+                <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, columnStyle('index'), { color: colors.text }]}>{item.index}</Text>
+                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, columnStyle('path'), { color: colors.text }]}>{item.path}</Text>
+                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, columnStyle('address'), { color: colors.text }]}>{item.address}</Text>
+                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.text }]}>{item.wif}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </>
+  );
 }
 
 /** A focused, native-picker screen matching EntropyLab's Script type control. */
@@ -500,54 +560,19 @@ export function ScriptTypePickerScreen({
                         </Text>
                       </View>
                     </Pressable>
-                    <Text style={[styles.addressTableTitle, { color: colors.text }]}>
-                      {watchOnlyBranchLabel(privateMaterial.firstWatchOnlyAddress.branch)}
-                    </Text>
-                    <View style={[styles.addressTable, { borderColor: colors.border }]}>
-                      <View
-                        accessible={false}
-                        importantForAccessibility="no-hide-descendants"
-                        pointerEvents="none"
-                        style={styles.addressTableMeasure}
-                      >
-                        <Text numberOfLines={1} onLayout={measureAddressTableColumn('index')} style={styles.addressTableMeasureText}>#</Text>
-                        <Text numberOfLines={1} onLayout={measureAddressTableColumn('path')} style={styles.addressTableMeasureText}>{UPSTREAM_TEXT.result.path}</Text>
-                        <Text numberOfLines={1} onLayout={measureAddressTableColumn('address')} style={styles.addressTableMeasureText}>{UPSTREAM_TEXT.result.address}</Text>
-                        {privateMaterial.watchOnlyAddresses.map(item => (
-                          <View key={`measure-${item.branch}-${item.index}`}>
-                            <Text numberOfLines={1} onLayout={measureAddressTableColumn('index')} style={styles.addressTableMeasureText}>{item.index}</Text>
-                            <Text numberOfLines={1} onLayout={measureAddressTableColumn('path')} style={[styles.addressTableMeasureText, styles.addressTableValue]}>{item.path}</Text>
-                            <Text numberOfLines={1} onLayout={measureAddressTableColumn('address')} style={[styles.addressTableMeasureText, styles.addressTableValue]}>{item.address}</Text>
-                          </View>
-                        ))}
-                      </View>
-                      <ScrollView horizontal showsHorizontalScrollIndicator>
-                        <View style={styles.addressTableContent}>
-                          <View style={[styles.addressTableRow, styles.addressTableHeader]}>
-                            <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, addressTableColumnStyle('index'), { color: colors.muted }]}>#</Text>
-                            <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressPathCell, addressTableColumnStyle('path'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.path}</Text>
-                            <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressValueCell, addressTableColumnStyle('address'), { color: colors.muted }]}>{UPSTREAM_TEXT.result.address}</Text>
-                            <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressWifCell, { color: colors.muted }]}>{UPSTREAM_TEXT.result.wif}</Text>
-                          </View>
-                          {privateMaterial.watchOnlyAddresses.map(item => (
-                            <View key={`${item.branch}-${item.index}`} style={[styles.addressTableRow, styles.addressTableDataRow, { borderTopColor: colors.border }]}>
-                              <Text numberOfLines={1} style={[styles.addressTableCell, styles.addressIndexCell, addressTableColumnStyle('index'), { color: colors.text }]}>
-                                {item.index}
-                              </Text>
-                              <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressPathCell, styles.addressTableValue, addressTableColumnStyle('path'), { color: colors.text }]}>
-                                {item.path}
-                              </Text>
-                              <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressValueCell, styles.addressTableValue, addressTableColumnStyle('address'), { color: colors.text }]}>
-                                {item.address}
-                              </Text>
-                              <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.text }]}>
-                                {item.wif}
-                              </Text>
-                            </View>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </View>
+                    {privateAccountMaterialInput.branches.map(branch => {
+                      const rows = privateMaterial.watchOnlyAddresses.filter(item => item.branch === branch);
+                      return rows.length ? (
+                        <AddressTable
+                          colors={colors}
+                          columnStyle={addressTableColumnStyle}
+                          key={branch}
+                          label={watchOnlyBranchLabel(branch)}
+                          measureColumn={measureAddressTableColumn}
+                          rows={rows}
+                        />
+                      ) : null;
+                    })}
                     <View style={styles.addressCheckSection}>
                       <Text style={[styles.privateMaterialTitle, { color: colors.text }]}>
                         {UPSTREAM_UI_FALLBACK_COPY.result.checkAnAddress}

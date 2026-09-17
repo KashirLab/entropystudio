@@ -934,6 +934,7 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     multisigCosigner: (prefix: string, label: string) =>
       formatCopy(UPSTREAM_TEXT.result.multisigCosigner, { prefix, label }),
     address: (label: string, index: number) => `${label} address #${index}`,
+    addressTableLabel: (label: string) => `${label} addresses`,
     addressCheckMatch: (
       label: string,
       index: number,

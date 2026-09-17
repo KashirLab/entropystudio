@@ -289,6 +289,7 @@ export {
 export type {
   AccountAddressCheck,
   AccountPrivateMaterial,
+  AccountWatchOnlyAddress,
   Bip39PassphraseState,
   DiceMethodInfo,
   DirectCardState,
