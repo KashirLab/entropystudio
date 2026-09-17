@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BottomSheet } from '@expo/ui';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -11,6 +11,7 @@ type Props = {
   readonly descriptionScrollable?: boolean;
   readonly heading?: string;
   readonly headingTestID?: string;
+  readonly popupContent?: ReactNode;
   readonly sheetHeight?: number;
   readonly testIDPrefix?: string;
 };
@@ -21,6 +22,7 @@ export function KeyStationIntroduction({
   descriptionScrollable = false,
   heading = UPSTREAM_TEXT.keys.stationIntroduction.heading,
   headingTestID,
+  popupContent,
   sheetHeight = 280,
   testIDPrefix = 'key-station-introduction',
 }: Props) {
@@ -61,13 +63,17 @@ export function KeyStationIntroduction({
               style={{ height: sheetHeight - 40 }}
               testID={`${testIDPrefix}-description-scroll`}
             >
-              <Text
-                style={[styles.description, { color: colors.muted }]}
-                testID={`${testIDPrefix}-description`}
-              >
-                {description}
-              </Text>
+              {popupContent ?? (
+                <Text
+                  style={[styles.description, { color: colors.muted }]}
+                  testID={`${testIDPrefix}-description`}
+                >
+                  {description}
+                </Text>
+              )}
             </ScrollView>
+          ) : popupContent ? (
+            popupContent
           ) : (
             <Text
               style={[styles.description, { color: colors.muted }]}

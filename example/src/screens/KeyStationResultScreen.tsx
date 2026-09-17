@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { DiceColors } from '../features/dice/diceTheme';
+import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
 import { KeyStationLifeHash } from '../features/keyStation/components/KeyStationLifeHash';
 import { RecoveryMaterialPanel } from '../features/keyStation/components/RecoveryMaterialPanel';
 import { SeedQrPanel } from '../features/keyStation/components/SeedQrPanel';
@@ -95,19 +96,25 @@ function SafetyNotes({ colors, notes, testIDPrefix }: SafetyNotesProps) {
   }
 
   return (
-    <View style={[styles.safetyNotes, { borderColor: colors.border }]} testID={`${testIDPrefix}-notes`}>
-      <Text style={[styles.safetyNotesTitle, { color: colors.text }]}>
-        {UPSTREAM_TEXT.result.safetyNotes}
-      </Text>
-      {notes.map((note, index) => (
-        <SafetyNote
-          colors={colors}
-          key={note.text}
-          note={note}
-          noteTestID={`${testIDPrefix}-note-${index}`}
-        />
-      ))}
-    </View>
+    <KeyStationIntroduction
+      colors={colors}
+      descriptionScrollable
+      heading={UPSTREAM_TEXT.result.safetyNotes}
+      popupContent={
+        <View testID={`${testIDPrefix}-notes`}>
+          {notes.map((note, index) => (
+            <SafetyNote
+              colors={colors}
+              key={note.text}
+              note={note}
+              noteTestID={`${testIDPrefix}-note-${index}`}
+            />
+          ))}
+        </View>
+      }
+      sheetHeight={460}
+      testIDPrefix={testIDPrefix}
+    />
   );
 }
 
@@ -515,11 +522,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  safetyNotes: {
-    borderLeftWidth: 3,
-    marginBottom: 20,
-    paddingLeft: 12,
-  },
   safetyNotesCopy: {
     fontSize: 14,
     lineHeight: 21,
@@ -536,11 +538,6 @@ const styles = StyleSheet.create({
   },
   safetyNotesCenteredArrowLine: {
     marginTop: 6,
-  },
-  safetyNotesTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
   },
   summary: {
     marginBottom: 18,
