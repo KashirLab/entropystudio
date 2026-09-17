@@ -16,16 +16,21 @@ const upstreamUiCopyFile = join(root, 'example/src/features/upstreamUiCopy.ts');
 
 const upstreamSourceKeys = readUpstreamSourceKeys();
 const upstreamSourceSet = new Set(upstreamSourceKeys);
-const upstreamRenderedSource = [
-  readFileSync(upstreamAppFile, 'utf8'),
-  readFileSync(upstreamVanityFile, 'utf8'),
-  readFileSync(upstreamShellFile, 'utf8'),
-].join('\n');
+const upstreamAppSource = sourceFile(upstreamAppFile);
+const upstreamVanitySource = sourceFile(upstreamVanityFile);
+const upstreamShell = readFileSync(upstreamShellFile, 'utf8');
 const upstreamLabelsSource = sourceFile(upstreamLabelsFile);
 const upstreamUiCopySource = sourceFile(upstreamUiCopyFile);
 const staticText = findStaticText(upstreamUiCopySource);
 const fallbackText = findFallbackText(upstreamUiCopySource);
 const upstreamLabelExports = new Set(findUpstreamLabelExports(upstreamUiCopySource));
+const upstreamRenderedText = renderedUpstreamText(
+  upstreamShell,
+  upstreamAppSource,
+  upstreamVanitySource,
+  upstreamLabelsSource,
+  upstreamLabelExports,
+);
 
 for (const entry of staticText) {
   assertCurrentUpstreamSource(entry.text, entry.location);
@@ -53,9 +58,50 @@ function readUpstreamSourceKeys() {
 }
 
 function assertCurrentUpstreamSource(text, location) {
-  if (!upstreamSourceSet.has(text) && !upstreamRenderedSource.includes(text)) {
+  if (!upstreamRenderedText.has(text)) {
     fail(`${location} is not current pinned upstream UI text: ${JSON.stringify(text)}.`);
   }
+}
+
+function renderedUpstreamText(shell, appSource, vanitySource, labelsSource, labelExports) {
+  const text = new Set();
+
+  // shell.html is injected into the first paint and imported by app.js for
+  // runtime rendering. Its text is therefore live UI copy, unlike locale keys
+  // which may legitimately remain after a UI string is retired.
+  for (const value of shellText(shell)) {
+    text.add(value);
+  }
+
+  // App-generated UI includes strings selected by helper variables and
+  // template branches, so collect parsed string literals rather than relying
+  // on locale catalog keys (which may be retained after retirement).
+  for (const source of [appSource, vanitySource]) {
+    collectSourceStringLiterals(source, text);
+  }
+
+  for (const name of labelExports) {
+    for (const value of findStaticLabelExport(labelsSource, name)) {
+      text.add(value);
+    }
+  }
+
+  return text;
+}
+
+function shellText(shell) {
+  return shell.match(/(?<=>)[^<]+(?=<)/g)?.map(value => value.trim()).filter(Boolean) ?? [];
+}
+
+function collectSourceStringLiterals(source, text) {
+  function visit(node) {
+    if (typescript.isStringLiteral(node) || typescript.isNoSubstitutionTemplateLiteral(node)) {
+      text.add(node.text);
+    }
+    typescript.forEachChild(node, visit);
+  }
+
+  visit(source);
 }
 
 function assertAbsentFromUpstreamSource(entry) {

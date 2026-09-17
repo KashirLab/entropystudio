@@ -21,17 +21,7 @@ const upstreamVanityJs = readFileSync(
   'utf8',
 );
 const upstreamShellHtml = readOptionalSource('src/shell.html');
-const renderedUpstreamAppJs = decodeJavaScriptEscapes(upstreamAppJs);
-const renderedUpstreamUiSources = [
-  renderedUpstreamAppJs,
-  decodeJavaScriptEscapes(upstreamVanityJs),
-  decodeJavaScriptEscapes(readOptionalSource('src/js/i18n-labels.js')),
-  upstreamShellHtml,
-  readOptionalSource('src/index.html'),
-  // The catalog's keys are English source text; it is read only by this
-  // provenance test and is never bundled by the React Native app.
-  readOptionalSource('src/locales/es.json'),
-].join('\n');
+const renderedUpstreamUiText = renderedUpstreamText();
 
 describe('Upstream UI copy provenance', () => {
   test('limits Studio-authored navigation copy to approved actions', () => {
@@ -47,14 +37,11 @@ describe('Upstream UI copy provenance', () => {
 
   test('centralizes only text rendered by the current upstream UI', () => {
     const copiedText = collectStrings({
-      fallback: UPSTREAM_UI_FALLBACK_COPY,
       labels: UPSTREAM_UI_LABELS,
       text: UPSTREAM_TEXT,
     });
 
-    copiedText.forEach(text => {
-      expect(renderedUpstreamUiSources).toContain(text);
-    });
+    expect(copiedText.filter(text => !renderedUpstreamUiText.has(text))).toEqual([]);
   });
 
   test('keeps shell-owned introductions in the rendered upstream shell', () => {
@@ -611,6 +598,37 @@ describe('Upstream UI copy provenance', () => {
 function readOptionalSource(path) {
   const sourcePath = resolve(__dirname, '../../../entropylab', path);
   return existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : '';
+}
+
+function renderedUpstreamText() {
+  const text = new Set(
+    upstreamShellHtml
+      .match(/(?<=>)[^<]+(?=<)/g)
+      ?.map(value => value.trim())
+      .filter(Boolean),
+  );
+
+  collectSourceStringLiterals(upstreamAppJs, text);
+  collectSourceStringLiterals(upstreamVanityJs, text);
+  collectStrings(UPSTREAM_UI_LABELS).forEach(value => text.add(value));
+  return text;
+}
+
+function collectSourceStringLiterals(sourceText, text) {
+  const source = typescript.createSourceFile(
+    'upstream-ui.js',
+    sourceText,
+    typescript.ScriptTarget.Latest,
+    true,
+  );
+  function visit(node) {
+    if (typescript.isStringLiteral(node) || typescript.isNoSubstitutionTemplateLiteral(node)) {
+      text.add(node.text);
+    }
+    typescript.forEachChild(node, visit);
+  }
+
+  visit(source);
 }
 
 function collectStrings(value) {
