@@ -551,6 +551,7 @@ export const UPSTREAM_TEXT = {
     wifUncompressed: 'WIF uncompressed',
   },
   seed: {
+    chooseNthWord: 'Choose {article} {n}th word',
     count: '{entered} of {words} BIP39 words entered',
     finalPrefix: {
       singular: '{n} valid checksum word starts with “{prefix}”',

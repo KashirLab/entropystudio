@@ -28,6 +28,8 @@ type Props<Value extends string | number> = {
   readonly disabled?: boolean;
   readonly onValueChange: (value: Value) => void;
   readonly options: readonly NativeSelectOption<Value>[];
+  /** Displayed while the selected value does not match an option. */
+  readonly placeholder?: string;
   readonly selectedValue: Value;
 };
 
@@ -42,11 +44,13 @@ export function NativeSelect<Value extends string | number>({
   disabled = false,
   onValueChange,
   options,
+  placeholder,
   selectedValue,
 }: Props<Value>) {
   const [iosPickerOpen, setIosPickerOpen] = useState(false);
   const [iosPendingValue, setIosPendingValue] = useState<Value>(selectedValue);
-  const selectedLabel = options.find(option => option.value === selectedValue)?.label ?? String(selectedValue);
+  const selectedOption = options.find(option => option.value === selectedValue);
+  const selectedLabel = selectedOption?.label ?? placeholder ?? String(selectedValue);
 
   function openIosPicker() {
     setIosPendingValue(selectedValue);

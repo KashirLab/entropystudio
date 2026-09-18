@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EntropyMethodList } from '../components/EntropyMethodList';
 import type { EntropyTool } from '../components/EntropyMethodList';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
+import { NativeSelect } from '../components/NativeSelect';
 import { ProgressValueText } from '../components/ProgressValueText';
 import { DiceWordList } from '../features/dice/components/DirectDicePreview';
 import type { WordCount } from '../features/dice/dice';
@@ -60,6 +61,7 @@ import { mnemonicToEntropy, mnemonicToSeed } from '../native/entropyStudio';
 import type { KeyDerivationAdvancedInput } from '../native/entropyStudio';
 
 const CONTENT_HORIZONTAL_PADDING = 24;
+const FINAL_WORD_PLACEHOLDER_VALUE = '';
 
 type SeedPhraseView = 'entry' | 'key-settings' | 'passphrase' | 'setup';
 type InputSelection = { readonly end: number; readonly start: number };
@@ -161,6 +163,13 @@ export function SeedPhraseScreen({
   const canDeleteInput = selectedInput.end > selectedInput.start || selectedInput.start > 0;
   const activePhrase = analysis.phrase;
   const previewWords = analysis.words;
+  const finalWord = analysis.words[wordCount - 1] ?? '';
+  const finalWordPickerVisible =
+    seedMethod === 'words' && analysis.finalCandidates.length > 0;
+  const selectedFinalWord = analysis.finalCandidates.includes(finalWord)
+    ? finalWord
+    : FINAL_WORD_PLACEHOLDER_VALUE;
+  const finalWordOptions = analysis.finalCandidates.map(word => ({ label: word, value: word }));
   const canInsertInputSpace = seedPhraseSpaceAllowed(
     input,
     selectedInput,
@@ -324,6 +333,17 @@ export function SeedPhraseScreen({
     setNumberInput(translateSeedNumberIndices(numberInput, zeroIndexed, nextZeroIndexed));
     setInputSelection(null);
     setZeroIndexed(nextZeroIndexed);
+  }
+
+  function selectFinalWord(word: string) {
+    if (!word) {
+      return;
+    }
+
+    const nextInput = updateInput(
+      [...analysis.words.slice(0, wordCount - 1), word].join(' '),
+    );
+    setInputSelection({ end: nextInput.length, start: nextInput.length });
   }
 
   function openPassphrase() {
@@ -569,6 +589,30 @@ export function SeedPhraseScreen({
             />
           </View>
 
+          {finalWordPickerVisible ? (
+            <View style={styles.finalWordPicker} testID="seed-phrase-final-word-picker">
+              <Text style={[styles.finalWordLabel, { color: colors.muted }]}>
+                {formatCopy(UPSTREAM_TEXT.seed.lastWordLabel, {
+                  n: analysis.finalCandidates.length,
+                })}
+              </Text>
+              <NativeSelect
+                accessibilityLabel={formatCopy(UPSTREAM_TEXT.seed.lastWordLabel, {
+                  n: analysis.finalCandidates.length,
+                })}
+                colors={colors}
+                controlTestID="seed-phrase-final-word-select"
+                onValueChange={selectFinalWord}
+                options={finalWordOptions}
+                placeholder={formatCopy(UPSTREAM_TEXT.seed.chooseNthWord, {
+                  article: wordCount === 18 ? 'an' : 'a',
+                  n: wordCount,
+                })}
+                selectedValue={selectedFinalWord}
+              />
+            </View>
+          ) : null}
+
           <SeedPhraseKeypad
             canDelete={canDeleteInput}
             canInsert={canInsertInputCharacter}
@@ -660,6 +704,14 @@ const styles = StyleSheet.create({
   entryActions: {
     flexDirection: 'row',
     gap: 8,
+    marginTop: 12,
+  },
+  finalWordLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  finalWordPicker: {
     marginTop: 12,
   },
   entryContent: {
