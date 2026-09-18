@@ -100,6 +100,19 @@ function sourceOptionStyle(colors: DiceColors, selected: boolean) {
   ];
 }
 
+function rootInputStyle(colors: DiceColors, height: number) {
+  return [
+    styles.input,
+    styles.rootInput,
+    {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      color: colors.text,
+      height,
+    },
+  ];
+}
+
 export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
   const colors = diceColors(isDarkMode);
   const sourceTabs = tabs.filter(tab => Boolean(tab.rootXprv));
@@ -109,6 +122,7 @@ export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
   const [selectedSourceId, setSelectedSourceId] = useState<number | null>(null);
   const [wordCount, setWordCount] = useState(24);
   const [size, setSize] = useState('32');
+  const [rootInputHeight, setRootInputHeight] = useState(96);
   const [children, setChildren] = useState<readonly Bip85Result[]>([]);
   const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
   const [error, setError] = useState('');
@@ -366,10 +380,14 @@ export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
                 multiline
                 numberOfLines={4}
                 onChangeText={value => { setManualRoot(value); setError(''); }}
+                onContentSizeChange={event => {
+                  setRootInputHeight(Math.max(96, Math.ceil(event.nativeEvent.contentSize.height)));
+                }}
                 placeholder={UPSTREAM_TEXT.bip85.source.rootPlaceholder}
                 placeholderTextColor={colors.placeholder}
+                scrollEnabled={false}
                 spellCheck={false}
-                style={[styles.input, styles.rootInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                style={rootInputStyle(colors, rootInputHeight)}
                 testID="bip85-root-input"
                 value={manualRoot}
               />
