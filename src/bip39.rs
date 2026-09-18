@@ -1,5 +1,5 @@
 use crate::error::EntropyStudioError;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 use miniscript::descriptor::checksum::Engine as DescriptorChecksumEngine;
 use unicode_normalization::UnicodeNormalization;
 
@@ -76,24 +76,22 @@ pub fn account_address_check(phrase: String, passphrase: String, account_path: S
     if address.is_empty() { return Ok(AccountAddressCheck { is_empty: true, is_match: false, branch: None, index: None, path: None, beyond_shown: false, shown_count: 0, searched_to: address_index }); }
     let mut components = parse_account_path(&account_path)?;
     let display_account_path = components.iter().map(|(index, hardened)| format!("{index}{}", if *hardened { "'" } else { "" })).collect::<Vec<_>>().join("/");
-    let mut seed = mnemonic_to_seed(phrase, passphrase);
-    let mut node = [0u8; 78];
-    if unsafe { entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), node.as_mut_ptr()) } != 78 { wipe_bytes(&mut seed); wipe_bytes(&mut node); return Err(EntropyStudioError::InvalidMasterKey); }
-    wipe_bytes(&mut seed);
     let testnet = components.get(1).is_some_and(|(index, _)| *index == 1);
-    let mut account_node = derive_private_path(node, &mut components)?;
-    wipe_bytes(&mut node);
+    let account_node = {
+        let seed = Sensitive::new(mnemonic_to_seed(phrase, passphrase));
+        let master_node = Sensitive::new(master_private_node(&seed)?);
+        Sensitive::new(derive_private_path(master_node.copy(), &mut components)?)
+    };
     let shown_end = address_index.checked_add(address_count).filter(|index| *index < (1 << 31)).ok_or(EntropyStudioError::InvalidMasterKey)?;
     let search_end = shown_end.saturating_add(1000).min(1 << 31);
     for index in address_index..search_end {
         for branch in &branches {
-            let mut derived = derive_account_address(account_node, *branch, index, script_type, testnet, branch_hardened, address_hardened, &display_account_path)?;
+            let derived = derive_account_address(account_node.copy(), *branch, index, script_type, testnet, branch_hardened, address_hardened, &display_account_path)?;
             let matches = addresses_equal(&address, &derived.address);
-            wipe_string(&mut derived.wif);
-            if matches { wipe_bytes(&mut account_node); return Ok(AccountAddressCheck { is_empty: false, is_match: true, branch: Some(*branch), index: Some(index), path: Some(derived.path), beyond_shown: index >= shown_end, shown_count: address_count, searched_to: index }); }
+            let _wif = Sensitive::new(derived.wif);
+            if matches { return Ok(AccountAddressCheck { is_empty: false, is_match: true, branch: Some(*branch), index: Some(index), path: Some(derived.path), beyond_shown: index >= shown_end, shown_count: address_count, searched_to: index }); }
         }
     }
-    wipe_bytes(&mut account_node);
     Ok(AccountAddressCheck { is_empty: false, is_match: false, branch: None, index: None, path: None, beyond_shown: false, shown_count: address_count, searched_to: search_end.saturating_sub(1) })
 }
 
@@ -113,31 +111,30 @@ fn is_bech32_address(value: &str) -> bool { value.get(..3).is_some_and(|prefix| 
 #[uniffi::export]
 pub fn account_private_material(phrase: String, passphrase: String, account_path: String, master_fingerprint: String, script_type: AccountScriptType, branches: Vec<u32>, address_index: u32, address_count: u32, branch_hardened: bool, address_hardened: bool) -> Result<AccountPrivateMaterial, EntropyStudioError> {
     let mut components = parse_account_path(&account_path)?;
-    let mut seed = mnemonic_to_seed(phrase, passphrase);
-    let mut node = [0u8; 78];
-    if unsafe { entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), node.as_mut_ptr()) } != 78 {
-        wipe_bytes(&mut seed); wipe_bytes(&mut node);
-        return Err(EntropyStudioError::InvalidMasterKey);
-    }
-    wipe_bytes(&mut seed);
     let testnet = components.get(1).is_some_and(|(index, _)| *index == 1);
-    let root = node;
-    node = derive_private_path(node, &mut components)?;
-    let mut account_node = node;
+    let (root, account_node) = {
+        let seed = Sensitive::new(mnemonic_to_seed(phrase, passphrase));
+        let master_node = Sensitive::new(master_private_node(&seed)?);
+        let root = Sensitive::new(master_node.copy());
+        let account_node = Sensitive::new(derive_private_path(master_node.copy(), &mut components)?);
+        (root, account_node)
+    };
+    // Re-versioning is serialization-only. Keep the derivation node at the
+    // canonical xprv/tprv version so it remains valid input to upstream CKD.
+    let mut serializable_account_node = Sensitive::new(account_node.copy());
     let multisig_cosigner_xpub = if let (AccountScriptType::NativeSegwit, Some((coin, _)), Some((account, _))) = (script_type, components.get(1), components.get(2)) {
         let mut bip48 = [(48, true), (*coin, true), (*account, true), (2, true)];
-        let cosigner = derive_private_path(root, &mut bip48)?;
-        let mut cosigner_public = public_node(&cosigner)?;
+        let cosigner = Sensitive::new(derive_private_path(root.copy(), &mut bip48)?);
+        let mut cosigner_public = Sensitive::new(public_node(&cosigner)?);
         cosigner_public[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
         let output = base58check_node(&cosigner_public)?;
-        wipe_bytes(&mut cosigner_public);
         Some(output)
     } else { None };
-    let mut account_public_node = public_node(&node)?;
+    let mut account_public_node = Sensitive::new(public_node(&account_node)?);
     account_public_node[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
     let bitcoin_core_xpub = base58check_node(&account_public_node)?;
-    node[..4].copy_from_slice(if testnet { &TESTNET_TPRV } else { &MAINNET_XPRV });
-    let bitcoin_core_xprv = base58check_node(&node)?;
+    serializable_account_node[..4].copy_from_slice(if testnet { &TESTNET_TPRV } else { &MAINNET_XPRV });
+    let bitcoin_core_xprv = base58check_node(&serializable_account_node)?;
     // Upstream only assigns the y/z SLIP-132 family if both the selected
     // policy and the retained account purpose agree. Result policy selection
     // intentionally does not rewrite a custom purpose.
@@ -148,8 +145,8 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
         _ => None,
     };
     let slip132_private = slip132_config.map(|(testnet_version, mainnet_version, _)| {
-        node[..4].copy_from_slice(if testnet { &testnet_version } else { &mainnet_version });
-        base58check_node(&node)
+        serializable_account_node[..4].copy_from_slice(if testnet { &testnet_version } else { &mainnet_version });
+        base58check_node(&serializable_account_node)
     }).transpose()?;
     let slip132_public = slip132_config.map(|(_, _, label)| {
         let (testnet_version, mainnet_version) = match label {
@@ -172,12 +169,10 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
     } else if branch_hardened {
         branches.iter().map(|branch| {
             let mut component = [(*branch, true)];
-            let mut child = derive_private_path(account_node, &mut component)?;
-            let mut child_public = public_node(&child)?;
+            let child = Sensitive::new(derive_private_path(account_node.copy(), &mut component)?);
+            let mut child_public = Sensitive::new(public_node(&child)?);
             child_public[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
             let child_xpub = base58check_node(&child_public)?;
-            wipe_bytes(&mut child);
-            wipe_bytes(&mut child_public);
             let branch = component[0].0;
             let key = format!("[{master_fingerprint}/{origin_path}/{branch}h]{child_xpub}/*");
             let body = script_descriptor(script_type, &key);
@@ -202,7 +197,7 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
         for offset in 0..address_count {
             let index = address_index.checked_add(offset).filter(|index| *index < (1 << 31)).ok_or(EntropyStudioError::InvalidMasterKey)?;
             watch_only_addresses.push(derive_account_address(
-                account_node,
+                account_node.copy(),
                 *branch,
                 index,
                 script_type,
@@ -214,9 +209,6 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
         }
     }
     let first_watch_only_address = watch_only_addresses.first().cloned();
-    wipe_bytes(&mut node);
-    wipe_bytes(&mut account_node);
-    wipe_bytes(&mut account_public_node);
     Ok(AccountPrivateMaterial {
         bitcoin_core_xprv,
         bitcoin_core_xpub,
@@ -245,14 +237,12 @@ fn derive_account_address(
     display_account_path: &str,
 ) -> Result<AccountWatchOnlyAddress, EntropyStudioError> {
     let mut steps = [(branch, branch_hardened), (index, address_hardened)];
-    let mut child = derive_private_path(account_node, &mut steps)?;
-    let mut public_key = [0u8; 65];
+    let child = Sensitive::new(derive_private_path(account_node, &mut steps)?);
+    let mut public_key = Sensitive::new([0u8; 65]);
     if unsafe { entropylab_wasm::secp_pubkey_create(child[46..].as_ptr(), public_key.as_mut_ptr(), 1) } != 33 {
-        wipe_bytes(&mut child);
-        wipe_bytes(&mut public_key);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
-    let mut script = [0u8; 64];
+    let mut script = Sensitive::new([0u8; 64]);
     let script_length = unsafe {
         match script_type {
             AccountScriptType::Legacy => entropylab_wasm::el_spk_p2pkh(public_key.as_ptr(), 33, script.as_mut_ptr(), script.len()),
@@ -261,7 +251,7 @@ fn derive_account_address(
             AccountScriptType::Taproot => entropylab_wasm::el_spk_p2tr_key(public_key[1..].as_ptr(), script.as_mut_ptr(), script.len()),
         }
     };
-    let mut output = [0u8; 128];
+    let mut output = Sensitive::new([0u8; 128]);
     let wif = encode_derived_wif(&child[46..], testnet)?;
     let address_length = if script_length > 0 {
         unsafe { entropylab_wasm::el_addr_from_script(script.as_ptr(), script_length as usize, if testnet { 1 } else { 0 }, output.as_mut_ptr(), output.len()) }
@@ -273,10 +263,6 @@ fn derive_account_address(
     } else {
         Err(EntropyStudioError::InvalidMasterKey)
     };
-    wipe_bytes(&mut child);
-    wipe_bytes(&mut public_key);
-    wipe_bytes(&mut script);
-    wipe_bytes(&mut output);
     result.map(|address| AccountWatchOnlyAddress {
         branch: steps[0].0,
         index: steps[1].0,
@@ -290,19 +276,17 @@ fn encode_derived_wif(private_key: &[u8], testnet: bool) -> Result<String, Entro
     if private_key.len() != 32 || unsafe { entropylab_wasm::secp_seckey_valid(private_key.as_ptr()) } != 1 {
         return Err(EntropyStudioError::InvalidMasterKey);
     }
-    let mut payload = [0u8; 34];
+    let mut payload = Sensitive::new([0u8; 34]);
     payload[0] = if testnet { 0xef } else { 0x80 };
     payload[1..33].copy_from_slice(private_key);
     payload[33] = 1;
-    let mut encoded = [0u8; 64];
+    let mut encoded = Sensitive::new([0u8; 64]);
     let length = unsafe { entropylab_wasm::el_b58check_encode(payload.as_ptr(), payload.len(), encoded.as_mut_ptr(), encoded.len()) };
     let result = if length > 0 && (length as usize) <= encoded.len() {
         std::str::from_utf8(&encoded[..length as usize]).map(str::to_owned).map_err(|_| EntropyStudioError::InvalidMasterKey)
     } else {
         Err(EntropyStudioError::InvalidMasterKey)
     };
-    wipe_bytes(&mut payload);
-    wipe_bytes(&mut encoded);
     result
 }
 
@@ -326,31 +310,30 @@ fn descriptor_branch_step(branches: &[u32], hardened: bool) -> Result<String, En
     }
 }
 
-fn derive_private_path(mut node: [u8; 78], components: &mut [(u32, bool)]) -> Result<[u8; 78], EntropyStudioError> {
+fn derive_private_path(node: [u8; 78], components: &mut [(u32, bool)]) -> Result<[u8; 78], EntropyStudioError> {
+    let mut node = Sensitive::new(node);
     for (index, hardened) in components {
-        let mut child = [0u8; 78];
+        let mut child = Sensitive::new([0u8; 78]);
         loop {
             match unsafe { entropylab_wasm::el_hd_ckd_priv(node.as_ptr(), *index | if *hardened { 1 << 31 } else { 0 }, child.as_mut_ptr()) } {
                 78 => break,
                 1 => *index = index.checked_add(1).filter(|next| *next < (1 << 31)).ok_or(EntropyStudioError::InvalidMasterKey)?,
-                _ => { wipe_bytes(&mut node); wipe_bytes(&mut child); return Err(EntropyStudioError::InvalidMasterKey); }
+                _ => return Err(EntropyStudioError::InvalidMasterKey),
             }
         }
-        wipe_bytes(&mut node); node = child;
+        node = child;
     }
-    Ok(node)
+    Ok(node.copy())
 }
 
 fn public_node(private_node: &[u8; 78]) -> Result<[u8; 78], EntropyStudioError> {
-    let mut public_key = [0u8; 65];
+    let mut public_key = Sensitive::new([0u8; 65]);
     if unsafe { entropylab_wasm::secp_pubkey_create(private_node[46..].as_ptr(), public_key.as_mut_ptr(), 1) } != 33 {
-        wipe_bytes(&mut public_key);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
     let mut node = [0u8; 78];
     node[4..45].copy_from_slice(&private_node[4..45]);
     node[45..].copy_from_slice(&public_key[..33]);
-    wipe_bytes(&mut public_key);
     Ok(node)
 }
 
@@ -365,10 +348,10 @@ fn parse_account_path(path: &str) -> Result<Vec<(u32, bool)>, EntropyStudioError
 }
 
 fn base58check_node(node: &[u8; 78]) -> Result<String, EntropyStudioError> {
-    let mut encoded = [0u8; 112];
+    let mut encoded = Sensitive::new([0u8; 112]);
     let length = unsafe { entropylab_wasm::el_b58check_encode(node.as_ptr(), node.len(), encoded.as_mut_ptr(), encoded.len()) };
     let result = if length >= 0 && length as usize <= encoded.len() { std::str::from_utf8(&encoded[..length as usize]).map(str::to_owned).map_err(|_| EntropyStudioError::InvalidMasterKey) } else { Err(EntropyStudioError::InvalidMasterKey) };
-    wipe_bytes(&mut encoded); result
+    result
 }
 
 fn descriptor_checksum(descriptor: &str) -> Result<String, EntropyStudioError> {
@@ -383,8 +366,9 @@ pub fn bip39_entropy_bits(target_words: u8) -> Result<u16, EntropyStudioError> {
 }
 
 #[uniffi::export]
-pub fn mnemonic_to_entropy(mut normalized_phrase: String) -> Result<Vec<u8>, EntropyStudioError> {
-    let mut entropy = [0u8; 32];
+pub fn mnemonic_to_entropy(normalized_phrase: String) -> Result<Vec<u8>, EntropyStudioError> {
+    let normalized_phrase = Sensitive::new(normalized_phrase);
+    let mut entropy = Sensitive::new([0u8; 32]);
     let length = unsafe {
         entropylab_wasm::el_bip39_mnemonic_to_entropy(
             normalized_phrase.as_ptr(),
@@ -393,15 +377,11 @@ pub fn mnemonic_to_entropy(mut normalized_phrase: String) -> Result<Vec<u8>, Ent
             entropy.len(),
         )
     };
-    wipe_string(&mut normalized_phrase);
-
     if length < 0 {
-        wipe_bytes(&mut entropy);
         return Err(EntropyStudioError::InvalidMnemonic);
     }
 
     let result = entropy[..length as usize].to_vec();
-    wipe_bytes(&mut entropy);
     Ok(result)
 }
 
@@ -410,13 +390,11 @@ pub fn mnemonic_to_entropy(mut normalized_phrase: String) -> Result<Vec<u8>, Ent
 /// indices per word; the compact payload is the underlying BIP39 entropy.
 #[uniffi::export]
 pub fn seed_qr_data(mnemonic: String) -> Result<SeedQrData, EntropyStudioError> {
-    let mut compact = mnemonic_to_entropy(mnemonic)?;
-    let mut canonical_mnemonic = entropy_to_mnemonic(compact.clone())?;
+    let compact = Sensitive::new(mnemonic_to_entropy(mnemonic)?);
+    let canonical_mnemonic = Sensitive::new(entropy_to_mnemonic(compact.to_vec())?);
     let word_count = canonical_mnemonic.split_whitespace().count() as u8;
 
     if word_count != 12 && word_count != 24 {
-        wipe_string(&mut canonical_mnemonic);
-        wipe_bytes(&mut compact);
         return Ok(SeedQrData {
             word_count,
             numeric: String::new(),
@@ -424,42 +402,33 @@ pub fn seed_qr_data(mnemonic: String) -> Result<SeedQrData, EntropyStudioError> 
         });
     }
 
-    let words: Vec<String> = canonical_mnemonic
-        .split_whitespace()
-        .map(str::to_owned)
-        .collect();
     let mut numeric = String::with_capacity(usize::from(word_count) * 4);
-    for word in words {
+    for word in canonical_mnemonic.split_whitespace() {
         let Some(index) =
             (0..2048).find(|index| bip39_word(*index).is_ok_and(|candidate| candidate == word))
         else {
-            wipe_string(&mut canonical_mnemonic);
-            wipe_bytes(&mut compact);
             return Err(EntropyStudioError::InvalidMnemonic);
         };
         use std::fmt::Write;
         write!(&mut numeric, "{index:04}").expect("writing to String cannot fail");
     }
-    wipe_string(&mut canonical_mnemonic);
-
     Ok(SeedQrData {
         word_count,
         numeric,
-        compact,
+        compact: compact.to_vec(),
     })
 }
 
 #[uniffi::export]
-pub fn mnemonic_to_seed(mut phrase: String, mut passphrase: String) -> Vec<u8> {
-    let mut normalized_phrase: String = phrase.nfkd().collect();
-    let mut salt = String::from("mnemonic");
+pub fn mnemonic_to_seed(phrase: String, passphrase: String) -> Vec<u8> {
+    let phrase = Sensitive::new(phrase);
+    let passphrase = Sensitive::new(passphrase);
+    let normalized_phrase = Sensitive::new(phrase.nfkd().collect::<String>());
+    let mut salt = Sensitive::new(String::from("mnemonic"));
     salt.push_str(&passphrase);
-    let mut normalized_salt: String = salt.nfkd().collect();
-    wipe_string(&mut phrase);
-    wipe_string(&mut passphrase);
-    wipe_string(&mut salt);
+    let normalized_salt = Sensitive::new(salt.nfkd().collect::<String>());
 
-    let mut seed = [0u8; 64];
+    let mut seed = Sensitive::new([0u8; 64]);
     unsafe {
         entropylab_wasm::el_pbkdf2_hmac_sha512(
             normalized_phrase.as_ptr(),
@@ -471,10 +440,7 @@ pub fn mnemonic_to_seed(mut phrase: String, mut passphrase: String) -> Vec<u8> {
             seed.len(),
         );
     }
-    wipe_string(&mut normalized_phrase);
-    wipe_string(&mut normalized_salt);
     let result = seed.to_vec();
-    wipe_bytes(&mut seed);
     result
 }
 
@@ -483,10 +449,8 @@ pub fn mnemonic_to_master_fingerprint(
     phrase: String,
     passphrase: String,
 ) -> Result<String, EntropyStudioError> {
-    let mut seed = mnemonic_to_seed(phrase, passphrase);
-    let result = master_fingerprint_from_seed(&seed);
-    wipe_bytes(&mut seed);
-    result
+    let seed = Sensitive::new(mnemonic_to_seed(phrase, passphrase));
+    master_fingerprint_from_seed(&seed)
 }
 
 #[uniffi::export]
@@ -494,39 +458,27 @@ pub fn mnemonic_to_master_xprv(
     phrase: String,
     passphrase: String,
 ) -> Result<String, EntropyStudioError> {
-    let mut seed = mnemonic_to_seed(phrase, passphrase);
-    let mut master = [0u8; 78];
-    let mut encoded = [0u8; 112];
-    let master_length = unsafe {
-        entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), master.as_mut_ptr())
+    let master = {
+        let seed = Sensitive::new(mnemonic_to_seed(phrase, passphrase));
+        Sensitive::new(master_private_node(&seed)?)
     };
-    wipe_bytes(&mut seed);
-
-    if master_length != 78 {
-        wipe_bytes(&mut master);
-        wipe_bytes(&mut encoded);
-        return Err(EntropyStudioError::InvalidMasterKey);
-    }
+    let mut encoded = Sensitive::new([0u8; 112]);
 
     let encoded_length = unsafe {
         entropylab_wasm::el_b58check_encode(
             master.as_ptr(),
-            master_length as usize,
+            master.len(),
             encoded.as_mut_ptr(),
             encoded.len(),
         )
     };
-    wipe_bytes(&mut master);
-
     if encoded_length < 0 || encoded_length as usize > encoded.len() {
-        wipe_bytes(&mut encoded);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
 
     let result = std::str::from_utf8(&encoded[..encoded_length as usize])
         .map(str::to_owned)
         .map_err(|_| EntropyStudioError::InvalidMasterKey);
-    wipe_bytes(&mut encoded);
     result
 }
 
@@ -535,22 +487,13 @@ pub fn mnemonic_to_master_xpub(
     phrase: String,
     passphrase: String,
 ) -> Result<String, EntropyStudioError> {
-    let mut seed = mnemonic_to_seed(phrase, passphrase);
-    let mut master = [0u8; 78];
-    let mut public_key = [0u8; 65];
-    let mut xpub = [0u8; 78];
-    let mut encoded = [0u8; 112];
-    let master_length = unsafe {
-        entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), master.as_mut_ptr())
+    let master = {
+        let seed = Sensitive::new(mnemonic_to_seed(phrase, passphrase));
+        Sensitive::new(master_private_node(&seed)?)
     };
-    wipe_bytes(&mut seed);
-    if master_length != 78 {
-        wipe_bytes(&mut master);
-        wipe_bytes(&mut public_key);
-        wipe_bytes(&mut xpub);
-        wipe_bytes(&mut encoded);
-        return Err(EntropyStudioError::InvalidMasterKey);
-    }
+    let mut public_key = Sensitive::new([0u8; 65]);
+    let mut xpub = Sensitive::new([0u8; 78]);
+    let mut encoded = Sensitive::new([0u8; 112]);
 
     let public_key_status = unsafe {
         entropylab_wasm::secp_pubkey_create(master[46..].as_ptr(), public_key.as_mut_ptr(), 1)
@@ -558,18 +501,11 @@ pub fn mnemonic_to_master_xpub(
     // `secp_pubkey_create` returns the number of serialized bytes, rather
     // than a boolean. We request compressed SEC encoding for BIP32 xpubs.
     if public_key_status != 33 {
-        wipe_bytes(&mut master);
-        wipe_bytes(&mut public_key);
-        wipe_bytes(&mut xpub);
-        wipe_bytes(&mut encoded);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
     xpub[..4].copy_from_slice(&MAINNET_XPUB);
     xpub[4..45].copy_from_slice(&master[4..45]);
     xpub[45..].copy_from_slice(&public_key[..33]);
-    wipe_bytes(&mut master);
-    wipe_bytes(&mut public_key);
-
     let encoded_length = unsafe {
         entropylab_wasm::el_b58check_encode(
             xpub.as_ptr(),
@@ -578,30 +514,18 @@ pub fn mnemonic_to_master_xpub(
             encoded.len(),
         )
     };
-    wipe_bytes(&mut xpub);
     if encoded_length < 0 || encoded_length as usize > encoded.len() {
-        wipe_bytes(&mut encoded);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
     let result = std::str::from_utf8(&encoded[..encoded_length as usize])
         .map(str::to_owned)
         .map_err(|_| EntropyStudioError::InvalidMasterKey);
-    wipe_bytes(&mut encoded);
     result
 }
 
 fn master_fingerprint_from_seed(seed: &[u8]) -> Result<String, EntropyStudioError> {
-    let mut master = [0u8; 78];
-    let mut child = [0u8; 78];
-    let master_length = unsafe {
-        entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), master.as_mut_ptr())
-    };
-
-    if master_length != 78 {
-        wipe_bytes(&mut master);
-        wipe_bytes(&mut child);
-        return Err(EntropyStudioError::InvalidMasterKey);
-    }
+    let master = Sensitive::new(master_private_node(seed)?);
+    let mut child = Sensitive::new([0u8; 78]);
 
     let mut child_index = 0u32;
     loop {
@@ -613,29 +537,30 @@ fn master_fingerprint_from_seed(seed: &[u8]) -> Result<String, EntropyStudioErro
                 .iter()
                 .map(|byte| format!("{byte:02x}"))
                 .collect();
-            wipe_bytes(&mut master);
-            wipe_bytes(&mut child);
             return Ok(fingerprint);
         }
         if child_length != 1 {
-            wipe_bytes(&mut master);
-            wipe_bytes(&mut child);
             return Err(EntropyStudioError::InvalidMasterKey);
         }
         child_index = match child_index.checked_add(1) {
             Some(next_index) => next_index,
-            None => {
-                wipe_bytes(&mut master);
-                wipe_bytes(&mut child);
-                return Err(EntropyStudioError::InvalidMasterKey);
-            }
+            None => return Err(EntropyStudioError::InvalidMasterKey),
         };
     }
 }
 
+fn master_private_node(seed: &[u8]) -> Result<[u8; 78], EntropyStudioError> {
+    let mut node = Sensitive::new([0u8; 78]);
+    if unsafe { entropylab_wasm::el_hd_master(seed.as_ptr(), seed.len(), node.as_mut_ptr()) } != 78 {
+        return Err(EntropyStudioError::InvalidMasterKey);
+    }
+    Ok(node.copy())
+}
+
 #[uniffi::export]
-pub fn entropy_to_mnemonic(mut entropy: Vec<u8>) -> Result<String, EntropyStudioError> {
-    let mut phrase = [0u8; 256];
+pub fn entropy_to_mnemonic(entropy: Vec<u8>) -> Result<String, EntropyStudioError> {
+    let entropy = Sensitive::new(entropy);
+    let mut phrase = Sensitive::new([0u8; 256]);
     let length = unsafe {
         entropylab_wasm::el_bip39_entropy_to_mnemonic(
             entropy.as_ptr(),
@@ -644,17 +569,13 @@ pub fn entropy_to_mnemonic(mut entropy: Vec<u8>) -> Result<String, EntropyStudio
             phrase.len(),
         )
     };
-    wipe_bytes(&mut entropy);
-
     if length < 0 {
-        wipe_bytes(&mut phrase);
         return Err(EntropyStudioError::InvalidEntropy);
     }
 
     let result = std::str::from_utf8(&phrase[..length as usize])
         .map(str::to_owned)
         .map_err(|_| EntropyStudioError::InvalidEntropy);
-    wipe_bytes(&mut phrase);
     result
 }
 
@@ -674,12 +595,10 @@ pub(crate) fn bip39_word(index: usize) -> Result<String, EntropyStudioError> {
     let length =
         unsafe { entropylab_wasm::el_bip39_word_at(index as u32, bytes.as_mut_ptr(), bytes.len()) };
     if length < 0 {
-        wipe_bytes(&mut bytes);
         return Err(EntropyStudioError::InvalidEntropy);
     }
     let result = std::str::from_utf8(&bytes[..length as usize])
         .map(str::to_owned)
         .map_err(|_| EntropyStudioError::InvalidEntropy);
-    wipe_bytes(&mut bytes);
     result
 }
