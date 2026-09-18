@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
   Group,
+  HStack,
+  Image,
   List,
   NavigationDestination,
   NavigationLink,
@@ -16,6 +18,7 @@ import {
   listRowInsets,
   listSectionSpacing,
   navigationTitle,
+  foregroundStyle,
   scrollContentBackground,
 } from '@expo/ui/swift-ui/modifiers';
 
@@ -30,8 +33,17 @@ type Props = {
   readonly isActive: boolean;
   readonly isDarkMode: boolean;
   readonly onReturnToStation: () => void;
+  readonly privateDataVisible: boolean;
   readonly rootTitle: string;
 };
+
+function isPrivateRow(section: KeyDerivationSection): boolean {
+  return (
+    section === 'recovery' ||
+    section === 'addresses' ||
+    section === 'account-private'
+  );
+}
 
 /** Full-screen SwiftUI navigation for Key Station's derived-key rows. */
 export function NativeKeyDerivationNavigator({
@@ -41,6 +53,7 @@ export function NativeKeyDerivationNavigator({
   isActive,
   isDarkMode,
   onReturnToStation,
+  privateDataVisible,
   rootTitle,
 }: Props) {
   // Keep the SwiftUI route in React state, as Settings does. An uncontrolled
@@ -104,16 +117,35 @@ export function NativeKeyDerivationNavigator({
             >
               <RNHostView matchContents>{children}</RNHostView>
             </Group>
-            {KEY_DERIVATION_SECTION_ROWS.map(row => (
-              <NavigationLink
-                key={row.id}
-                modifiers={[listRowBackground(colors.segment)]}
-                testID={`open-key-derivation-${row.id}`}
-                value={row.id}
-              >
-                <Text>{row.label}</Text>
-              </NavigationLink>
-            ))}
+            {KEY_DERIVATION_SECTION_ROWS.map(row => {
+              const privateRow = isPrivateRow(row.id);
+              const revealed = privateRow && privateDataVisible;
+              const contentColor = revealed ? colors.error : colors.text;
+
+              return (
+                <NavigationLink
+                  key={row.id}
+                  modifiers={[listRowBackground(colors.segment)]}
+                  testID={`open-key-derivation-${row.id}`}
+                  value={row.id}
+                >
+                  {privateRow ? (
+                    <HStack spacing={4}>
+                      <Text modifiers={[foregroundStyle(contentColor)]}>
+                        {row.label}
+                      </Text>
+                      <Image
+                        color={contentColor}
+                        size={18}
+                        systemName={revealed ? 'eye' : 'eye.slash'}
+                      />
+                    </HStack>
+                  ) : (
+                    <Text>{row.label}</Text>
+                  )}
+                </NavigationLink>
+              );
+            })}
           </List>
         </Group>
         {KEY_DERIVATION_SECTION_ROWS.map(({ id: section }) => (

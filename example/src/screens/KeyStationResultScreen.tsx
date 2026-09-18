@@ -422,6 +422,7 @@ export function KeyStationResultScreen({
         isActive={isActive}
         isDarkMode={isDarkMode}
         onReturnToStation={onReturnToStation}
+        privateDataVisible={privateDataVisible}
         rootTitle={tab.masterFingerprint}
       >
         <View

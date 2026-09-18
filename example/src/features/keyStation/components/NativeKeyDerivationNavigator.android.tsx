@@ -13,6 +13,7 @@ type Props = {
   readonly isActive: boolean;
   readonly isDarkMode: boolean;
   readonly onReturnToStation: () => void;
+  readonly privateDataVisible: boolean;
   readonly rootTitle: string;
 };
 
@@ -24,6 +25,7 @@ export function NativeKeyDerivationNavigator({
   isActive,
   isDarkMode,
   onReturnToStation,
+  privateDataVisible: _privateDataVisible,
   rootTitle: _rootTitle,
 }: Props) {
   const [destination, setDestination] = useState<KeyDerivationSection | null>(
