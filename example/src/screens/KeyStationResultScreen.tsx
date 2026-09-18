@@ -816,6 +816,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   nativeOverviewContent: {
+    paddingBottom: 0,
     paddingTop: 0,
   },
   nativeSafetyNotes: {
