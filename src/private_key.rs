@@ -1,5 +1,5 @@
 use crate::error::EntropyStudioError;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 #[derive(Debug, Clone, Copy, uniffi::Enum)]
 pub enum PrivateKeyFormat {
@@ -43,77 +43,72 @@ pub struct PrivateKeyMaterial {
 
 #[uniffi::export]
 pub fn private_key_input_state(
-    mut value: String,
+    value: String,
     format: PrivateKeyFormat,
     trim_brain_wallet_boundary_whitespace: bool,
 ) -> PrivateKeyInputState {
-    let state = match format {
+    let value = Sensitive::new(value);
+    match format {
         PrivateKeyFormat::Wif => wif_input_state(&value),
         PrivateKeyFormat::Hex => hex_input_state(&value),
         PrivateKeyFormat::MiniKey => mini_key_input_state(&value),
         PrivateKeyFormat::BrainWallet => {
             brain_wallet_input_state(&value, trim_brain_wallet_boundary_whitespace)
         }
-    };
-    wipe_string(&mut value);
-    state
+    }
 }
 
 #[uniffi::export]
 pub fn private_key_entropy(
-    mut value: String,
+    value: String,
     format: PrivateKeyFormat,
     trim_brain_wallet_boundary_whitespace: bool,
 ) -> Result<Vec<u8>, EntropyStudioError> {
-    let result = private_key_entropy_inner(&value, format, trim_brain_wallet_boundary_whitespace);
-    wipe_string(&mut value);
-    result
+    let value = Sensitive::new(value);
+    private_key_entropy_inner(&value, format, trim_brain_wallet_boundary_whitespace)
 }
 
 #[uniffi::export]
 pub fn private_key_material(
-    mut value: String,
+    value: String,
     format: PrivateKeyFormat,
     trim_brain_wallet_boundary_whitespace: bool,
 ) -> Result<PrivateKeyMaterial, EntropyStudioError> {
-    let result = private_key_entropy_inner(&value, format, trim_brain_wallet_boundary_whitespace)
-        .map(|mut entropy| {
+    let value = Sensitive::new(value);
+    private_key_entropy_inner(&value, format, trim_brain_wallet_boundary_whitespace)
+        .map(|entropy| {
+            let entropy = Sensitive::new(entropy);
             let material = PrivateKeyMaterial {
-                hex_private_key: hex::encode(&entropy),
+                hex_private_key: hex::encode(&*entropy),
                 wif_compressed: encode_wif_private_key(&entropy, true),
                 wif_uncompressed: encode_wif_private_key(&entropy, false),
             };
-            wipe_bytes(&mut entropy);
             material
-        });
-    wipe_string(&mut value);
-    result
+        })
 }
 
 #[uniffi::export]
 pub fn private_key_key_allowed(
-    mut value: String,
+    value: String,
     selection_start: u32,
     selection_end: u32,
-    mut character: String,
+    character: String,
     format: PrivateKeyFormat,
 ) -> bool {
-    let allowed = if character.chars().count() != 1 {
+    let value = Sensitive::new(value);
+    let character = Sensitive::new(character);
+    if character.chars().count() != 1 {
         false
     } else {
-        let mut candidate = replace_selection(&value, selection_start, selection_end, &character);
+        let candidate = Sensitive::new(replace_selection(&value, selection_start, selection_end, &character));
         let allowed = match format {
             PrivateKeyFormat::Wif => wif_prefix_allowed(&candidate),
             PrivateKeyFormat::Hex => hex_prefix_allowed(&candidate),
             PrivateKeyFormat::MiniKey => mini_key_prefix_allowed(&candidate),
             PrivateKeyFormat::BrainWallet => true,
         };
-        wipe_string(&mut candidate);
         allowed
-    };
-    wipe_string(&mut value);
-    wipe_string(&mut character);
-    allowed
+    }
 }
 
 fn private_key_entropy_inner(
@@ -121,16 +116,15 @@ fn private_key_entropy_inner(
     format: PrivateKeyFormat,
     trim_brain_wallet_boundary_whitespace: bool,
 ) -> Result<Vec<u8>, EntropyStudioError> {
-    let mut entropy = match format {
+    let entropy = Sensitive::new(match format {
         PrivateKeyFormat::Wif => wif_entropy(value)?,
         PrivateKeyFormat::Hex => hex_entropy(value)?,
         PrivateKeyFormat::MiniKey => mini_key_entropy(value)?,
         PrivateKeyFormat::BrainWallet => {
             brain_wallet_entropy(value, trim_brain_wallet_boundary_whitespace)?
         }
-    };
+    });
     let result = entropy.to_vec();
-    wipe_bytes(&mut entropy);
     Ok(result)
 }
 
@@ -140,7 +134,7 @@ fn wif_entropy(value: &str) -> Result<[u8; 32], EntropyStudioError> {
         return Err(EntropyStudioError::EmptyPrivateKey);
     }
 
-    let mut payload = [0u8; 34];
+    let mut payload = Sensitive::new([0u8; 34]);
     let length = unsafe {
         entropylab_wasm::el_b58check_decode(
             candidate.as_ptr(),
@@ -156,7 +150,6 @@ fn wif_entropy(value: &str) -> Result<[u8; 32], EntropyStudioError> {
         }
         _ => Err(EntropyStudioError::InvalidWifPrivateKey),
     };
-    wipe_bytes(&mut payload);
     result
 }
 
@@ -165,7 +158,7 @@ pub(crate) fn encode_wif_private_key(entropy: &[u8], compressed: bool) -> String
         return String::new();
     }
 
-    let mut payload = [0u8; 34];
+    let mut payload = Sensitive::new([0u8; 34]);
     payload[0] = 0x80;
     payload[1..33].copy_from_slice(entropy);
     let payload_length = if compressed {
@@ -174,7 +167,7 @@ pub(crate) fn encode_wif_private_key(entropy: &[u8], compressed: bool) -> String
     } else {
         33
     };
-    let mut encoded = [0u8; 64];
+    let mut encoded = Sensitive::new([0u8; 64]);
     let length = unsafe {
         entropylab_wasm::el_b58check_encode(
             payload.as_ptr(),
@@ -189,8 +182,6 @@ pub(crate) fn encode_wif_private_key(entropy: &[u8], compressed: bool) -> String
         .and_then(|length| std::str::from_utf8(&encoded[..length]).ok())
         .map(str::to_owned)
         .unwrap_or_default();
-    wipe_bytes(&mut payload);
-    wipe_bytes(&mut encoded);
     result
 }
 
@@ -244,10 +235,10 @@ fn wif_input_state(value: &str) -> PrivateKeyInputState {
 }
 
 fn hex_entropy(value: &str) -> Result<[u8; 32], EntropyStudioError> {
-    let mut compact: String = value
+    let compact = Sensitive::new(value
         .chars()
         .filter(|character| !character.is_whitespace())
-        .collect();
+        .collect::<String>());
     let result = (|| {
         if compact.is_empty() {
             return Err(EntropyStudioError::EmptyPrivateKey);
@@ -273,15 +264,14 @@ fn hex_entropy(value: &str) -> Result<[u8; 32], EntropyStudioError> {
         }
         validate_private_key(entropy)
     })();
-    wipe_string(&mut compact);
     result
 }
 
 fn hex_input_state(value: &str) -> PrivateKeyInputState {
-    let mut compact: String = value
+    let compact = Sensitive::new(value
         .chars()
         .filter(|character| !character.is_whitespace())
-        .collect();
+        .collect::<String>());
     let state = {
         let digits = compact
             .strip_prefix("0x")
@@ -316,7 +306,6 @@ fn hex_input_state(value: &str) -> PrivateKeyInputState {
             status,
         )
     };
-    wipe_string(&mut compact);
     state
 }
 
@@ -332,13 +321,11 @@ fn mini_key_entropy(value: &str) -> Result<[u8; 32], EntropyStudioError> {
         return Err(EntropyStudioError::InvalidMiniPrivateKeyFormat);
     }
 
-    let mut checksum_input = String::with_capacity(candidate.len() + 1);
+    let mut checksum_input = Sensitive::new(String::with_capacity(candidate.len() + 1));
     checksum_input.push_str(candidate);
     checksum_input.push('?');
-    let mut checksum = sha256_digest(checksum_input.as_bytes());
-    wipe_string(&mut checksum_input);
+    let checksum = Sensitive::new(sha256_digest(checksum_input.as_bytes()));
     let valid_checksum = checksum[0] == 0;
-    wipe_bytes(&mut checksum);
     if !valid_checksum {
         return Err(EntropyStudioError::InvalidMiniPrivateKey);
     }
@@ -545,11 +532,11 @@ fn sha256_digest(input: &[u8]) -> [u8; 32] {
     digest
 }
 
-fn validate_private_key(mut entropy: [u8; 32]) -> Result<[u8; 32], EntropyStudioError> {
+fn validate_private_key(entropy: [u8; 32]) -> Result<[u8; 32], EntropyStudioError> {
+    let entropy = Sensitive::new(entropy);
     let valid = unsafe { entropylab_wasm::secp_seckey_valid(entropy.as_ptr()) } == 1;
     if !valid {
-        wipe_bytes(&mut entropy);
         return Err(EntropyStudioError::InvalidPrivateKeyRange);
     }
-    Ok(entropy)
+    Ok(entropy.copy())
 }

@@ -18,15 +18,27 @@ pub(crate) trait Wipe {
     fn wipe(&mut self);
 }
 
-impl<const N: usize> Wipe for [u8; N] {
+impl Wipe for u8 {
     fn wipe(&mut self) {
-        wipe_bytes(self);
+        unsafe { std::ptr::write_volatile(self, 0) };
     }
 }
 
-impl Wipe for Vec<u8> {
+impl<T: Wipe, const N: usize> Wipe for [T; N] {
     fn wipe(&mut self) {
-        wipe_bytes(self);
+        for value in self {
+            value.wipe();
+        }
+        std::sync::atomic::compiler_fence(std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
+impl<T: Wipe> Wipe for Vec<T> {
+    fn wipe(&mut self) {
+        for value in self {
+            value.wipe();
+        }
+        std::sync::atomic::compiler_fence(std::sync::atomic::Ordering::SeqCst);
     }
 }
 

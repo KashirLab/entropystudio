@@ -1,7 +1,7 @@
 use crate::bip39::bip39_entropy_bytes;
 use crate::error::EntropyStudioError;
 use crate::hash::sha256;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 #[derive(Debug, Clone, Copy, uniffi::Enum)]
 pub enum CardHashMethod {
@@ -41,44 +41,43 @@ pub struct HashedCardState {
 
 #[uniffi::export]
 pub fn card_transcript_to_entropy(
-    mut transcript: String,
+    transcript: String,
     method: CardHashMethod,
     target_words: u8,
 ) -> Result<Vec<u8>, EntropyStudioError> {
-    let result = card_transcript_to_entropy_inner(&transcript, method, target_words);
-    wipe_string(&mut transcript);
-    result
+    let transcript = Sensitive::new(transcript);
+    card_transcript_to_entropy_inner(&transcript, method, target_words)
 }
 
 #[uniffi::export]
 pub fn hashed_card_state(
-    mut transcript: String,
+    transcript: String,
     target_words: u8,
 ) -> Result<HashedCardState, EntropyStudioError> {
-    let result = hashed_card_state_inner(&transcript, target_words);
-    wipe_string(&mut transcript);
-    result
+    let transcript = Sensitive::new(transcript);
+    hashed_card_state_inner(&transcript, target_words)
 }
 
 #[uniffi::export]
-pub fn normalize_card_token(mut token: String) -> String {
+pub fn normalize_card_token(token: String) -> String {
+    let token = Sensitive::new(token);
     let normalized = normalize_card_token_inner(&token).unwrap_or_default();
-    wipe_string(&mut token);
     normalized
 }
 
 #[uniffi::export]
-pub fn normalize_direct_card_transcript(mut transcript: String) -> String {
+pub fn normalize_direct_card_transcript(transcript: String) -> String {
+    let transcript = Sensitive::new(transcript);
     let normalized = transcript
         .chars()
         .filter(|character| !is_card_separator(*character))
         .collect();
-    wipe_string(&mut transcript);
     normalized
 }
 
 #[uniffi::export]
-pub fn card_key_allowed(mut key: String, method: CardInputMethod, active_max: u8) -> bool {
+pub fn card_key_allowed(key: String, method: CardInputMethod, active_max: u8) -> bool {
+    let key = Sensitive::new(key);
     let allowed = if matches!(key.as_str(), "Backspace" | "Delete" | "Enter" | "Tab")
         || key.starts_with("Arrow")
     {
@@ -104,7 +103,6 @@ pub fn card_key_allowed(mut key: String, method: CardInputMethod, active_max: u8
             _ => false,
         }
     };
-    wipe_string(&mut key);
     allowed
 }
 
@@ -114,19 +112,16 @@ fn card_transcript_to_entropy_inner(
     target_words: u8,
 ) -> Result<Vec<u8>, EntropyStudioError> {
     let entropy_length = bip39_entropy_bytes(target_words)?;
-    let mut cards = parse_card_transcript(transcript, target_words)?;
+    let cards = Sensitive::new(parse_card_transcript(transcript, target_words)?);
 
     if cards.is_empty() {
         return Err(EntropyStudioError::NoCards);
     }
 
-    let mut hash_input = cards_hash_input(&cards, method);
-    let mut digest = sha256(hash_input.as_bytes().to_vec());
+    let hash_input = Sensitive::new(cards_hash_input(&cards, method));
+    let digest = Sensitive::new(sha256(hash_input.as_bytes().to_vec()));
     let result = digest[..entropy_length].to_vec();
 
-    wipe_string(&mut hash_input);
-    wipe_bytes(&mut digest);
-    wipe_cards(&mut cards);
     Ok(result)
 }
 
@@ -135,11 +130,10 @@ pub(crate) fn parse_card_transcript(
     target_words: u8,
 ) -> Result<Vec<String>, EntropyStudioError> {
     let (first_shuffle_cards, _) = card_counts_needed(target_words)?;
-    let mut cards = Vec::new();
+    let mut cards = Sensitive::new(Vec::new());
 
     for token in transcript.split(is_card_separator).filter(|token| !token.is_empty()) {
         let Some(card) = normalize_card_token_inner(token) else {
-            wipe_cards(&mut cards);
             return Err(EntropyStudioError::InvalidCardTranscript);
         };
         let shuffle_start = if cards.len() < first_shuffle_cards {
@@ -148,13 +142,12 @@ pub(crate) fn parse_card_transcript(
             first_shuffle_cards
         };
         if cards[shuffle_start..].iter().any(|dealt| dealt == &card) {
-            wipe_cards(&mut cards);
             return Err(EntropyStudioError::DuplicateCard);
         }
         cards.push(card);
     }
 
-    Ok(cards)
+    Ok(cards.iter().cloned().collect())
 }
 
 fn hashed_card_state_inner(
@@ -164,7 +157,7 @@ fn hashed_card_state_inner(
     let (first_shuffle_cards, extra_shuffle_cards) = card_counts_needed(target_words)?;
     let required_cards = first_shuffle_cards + extra_shuffle_cards;
     let has_input = transcript.chars().any(|character| !is_card_separator(character));
-    let mut cards = Vec::new();
+    let mut cards = Sensitive::new(Vec::new());
     let mut invalid_tokens = Vec::new();
 
     for token in transcript.split(is_card_separator).filter(|token| !token.is_empty()) {
@@ -205,8 +198,6 @@ fn hashed_card_state_inner(
         HashedCardInstruction::FirstShuffle
     };
     let progress = (card_count as f64 / required_cards as f64).min(1.0);
-    wipe_cards(&mut cards);
-
     Ok(HashedCardState {
         available_cards,
         card_count: card_count as u32,
@@ -274,18 +265,16 @@ fn normalize_card_token_inner(token: &str) -> Option<String> {
 }
 
 fn first_duplicate_card(cards: &[String], first_shuffle_cards: usize) -> String {
-    let mut seen = Vec::new();
+    let mut seen = Sensitive::new(Vec::new());
     for (index, card) in cards.iter().enumerate() {
         if index == first_shuffle_cards {
-            wipe_cards(&mut seen);
+            seen = Sensitive::new(Vec::new());
         }
         if seen.iter().any(|dealt| dealt == card) {
-            wipe_cards(&mut seen);
             return card.clone();
         }
         seen.push(card.clone());
     }
-    wipe_cards(&mut seen);
     String::new()
 }
 
@@ -313,11 +302,4 @@ fn cards_hash_input(cards: &[String], method: CardHashMethod) -> String {
 
 pub(crate) fn is_card_separator(character: char) -> bool {
     character.is_whitespace() || matches!(character, ',' | '.' | ';' | ':' | '_' | '|' | '/' | '-')
-}
-
-fn wipe_cards(cards: &mut Vec<String>) {
-    for card in cards.iter_mut() {
-        wipe_string(card);
-    }
-    cards.clear();
 }

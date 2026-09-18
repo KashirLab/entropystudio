@@ -1,7 +1,7 @@
 use crate::bip39::{bip39_entropy_bytes, bip39_word};
 use crate::error::EntropyStudioError;
 use crate::hashed_dice::{is_dice_separator, recommended_dice_rolls};
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
 pub enum DirectDiceMethod {
@@ -95,37 +95,34 @@ pub struct DirectDiceCalculationRow {
 
 #[uniffi::export]
 pub fn direct_dice_state(
-    mut rolls: String,
+    rolls: String,
     method: DirectDiceMethod,
     target_words: u8,
 ) -> Result<DirectDiceState, EntropyStudioError> {
-    let result = direct_dice_input_state_inner(&rolls, method, target_words, "");
-    wipe_string(&mut rolls);
-    result
+    let rolls = Sensitive::new(rolls);
+    direct_dice_input_state_inner(&rolls, method, target_words, "")
 }
 
 #[uniffi::export]
 pub fn direct_dice_input_state(
-    mut rolls: String,
+    rolls: String,
     method: DirectDiceMethod,
     target_words: u8,
-    mut selected_final_word: String,
+    selected_final_word: String,
 ) -> Result<DirectDiceState, EntropyStudioError> {
-    let result = direct_dice_input_state_inner(&rolls, method, target_words, &selected_final_word);
-    wipe_string(&mut rolls);
-    wipe_string(&mut selected_final_word);
-    result
+    let rolls = Sensitive::new(rolls);
+    let selected_final_word = Sensitive::new(selected_final_word);
+    direct_dice_input_state_inner(&rolls, method, target_words, &selected_final_word)
 }
 
 #[uniffi::export]
 pub fn direct_dice_calculations(
-    mut rolls: String,
+    rolls: String,
     method: DirectDiceMethod,
     target_words: u8,
 ) -> Result<Vec<DirectDiceCalculationRow>, EntropyStudioError> {
-    let result = direct_dice_calculations_inner(&rolls, method, target_words);
-    wipe_string(&mut rolls);
-    result
+    let rolls = Sensitive::new(rolls);
+    direct_dice_calculations_inner(&rolls, method, target_words)
 }
 
 #[uniffi::export]
@@ -169,7 +166,7 @@ fn bitbox_dice_calculations(
 
     let partial_words = direct_dice_partial_words(target_words)?;
     let mut rows = Vec::with_capacity(usize::from(partial_words));
-    let mut dice_faces = Vec::with_capacity(5);
+    let mut dice_faces = Sensitive::new(Vec::with_capacity(5));
 
     for character in rolls.chars() {
         let face = match character {
@@ -221,11 +218,9 @@ fn bitbox_dice_calculations(
             index,
             terms,
         });
-        wipe_bytes(&mut dice_faces);
-        dice_faces.clear();
+        dice_faces = Sensitive::new(Vec::with_capacity(5));
     }
 
-    wipe_bytes(&mut dice_faces);
     Ok(rows)
 }
 
@@ -290,17 +285,16 @@ fn d8_d16_dice_calculations(
 
 #[uniffi::export]
 pub fn format_dice_transcript(
-    mut rolls: String,
+    rolls: String,
     method: DiceInputMethod,
     target_words: u8,
 ) -> Result<String, EntropyStudioError> {
-    let result = match method {
+    let rolls = Sensitive::new(rolls);
+    match method {
         DiceInputMethod::Coldcard | DiceInputMethod::Coleman => Ok(rolls.clone()),
         DiceInputMethod::Bitbox => format_bitbox_transcript(&rolls, target_words),
         DiceInputMethod::D8D16 => Ok(format_d8_d16_transcript(&rolls, target_words)),
-    };
-    wipe_string(&mut rolls);
-    result
+    }
 }
 
 fn direct_dice_input_state_inner(
@@ -332,7 +326,7 @@ const D8_D16_FINAL_STEPS_24: &[D8D16FinalStep] = &[D8D16FinalStep::D8];
 fn bitbox_dice_state(rolls: &str, target_words: u8) -> Result<DirectDiceState, EntropyStudioError> {
     let partial_words = direct_dice_partial_words(target_words)?;
     let mut words = Vec::with_capacity(usize::from(partial_words));
-    let mut dice_faces = Vec::with_capacity(5);
+    let mut dice_faces = Sensitive::new(Vec::with_capacity(5));
     let mut invalid_count = 0;
     let mut extra_count = 0;
     let mut skipped_count = 0;
@@ -368,8 +362,7 @@ fn bitbox_dice_state(rolls: &str, target_words: u8) -> Result<DirectDiceState, E
             * 2
             + usize::from(face >= 4);
         words.push(bip39_word(word_index)?);
-        wipe_bytes(&mut dice_faces);
-        dice_faces.clear();
+        dice_faces = Sensitive::new(Vec::with_capacity(5));
     }
 
     let (step, active_roll) = if words.len() >= usize::from(partial_words) {
@@ -385,8 +378,6 @@ fn bitbox_dice_state(rolls: &str, target_words: u8) -> Result<DirectDiceState, E
         words.len() as u8 + 1
     };
     let candidates = direct_dice_candidates(&words, target_words);
-    wipe_bytes(&mut dice_faces);
-
     Ok(DirectDiceState {
         completed_groups: words.len() as u8,
         words,
@@ -701,25 +692,21 @@ fn direct_dice_candidates(words: &[String], target_words: u8) -> Vec<String> {
         return Vec::new();
     }
 
-    let mut partial_phrase = words.join(" ");
+    let partial_phrase = Sensitive::new(words.join(" "));
     let mut candidates = Vec::new();
     for index in 0..2048 {
-        let Ok(mut word) = bip39_word(index) else {
+        let Ok(word) = bip39_word(index) else {
             continue;
         };
-        let mut phrase = String::with_capacity(partial_phrase.len() + word.len() + 1);
+        let mut phrase = Sensitive::new(String::with_capacity(partial_phrase.len() + word.len() + 1));
         phrase.push_str(&partial_phrase);
         phrase.push(' ');
         phrase.push_str(&word);
         let valid =
             unsafe { entropylab_wasm::el_bip39_validate(phrase.as_ptr(), phrase.len()) == 1 };
-        wipe_string(&mut phrase);
         if valid {
             candidates.push(word);
-        } else {
-            wipe_string(&mut word);
         }
     }
-    wipe_string(&mut partial_phrase);
     candidates
 }

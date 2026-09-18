@@ -1,7 +1,7 @@
 use crate::bip39::{bip39_entropy_bytes, bip39_word};
 use crate::error::EntropyStudioError;
 use crate::hash::sha256;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 #[derive(Debug, Clone, Copy, uniffi::Enum)]
 pub enum NumberBaseFormat {
@@ -78,51 +78,49 @@ struct ParsedNumberBaseInput {
 
 #[uniffi::export]
 pub fn analyze_number_base_input(
-    mut value: String,
+    value: String,
     format: NumberBaseFormat,
     target_words: u8,
 ) -> Result<NumberBaseAnalysis, EntropyStudioError> {
-    let mut parsed = parse_number_base_input(&value, format, target_words)?;
-    wipe_string(&mut value);
-    wipe_string(&mut parsed.bits);
+    let value = Sensitive::new(value);
+    let parsed = parse_number_base_input(&value, format, target_words)?;
+    let _bits = Sensitive::new(parsed.bits);
     Ok(parsed.analysis)
 }
 
 #[uniffi::export]
 pub fn number_base_entropy(
-    mut value: String,
+    value: String,
     format: NumberBaseFormat,
     target_words: u8,
 ) -> Result<Vec<u8>, EntropyStudioError> {
-    let mut parsed = parse_number_base_input(&value, format, target_words)?;
-    wipe_string(&mut value);
+    let value = Sensitive::new(value);
+    let parsed = parse_number_base_input(&value, format, target_words)?;
+    let bits = Sensitive::new(parsed.bits);
 
     if !parsed.analysis.is_ready {
-        wipe_string(&mut parsed.bits);
         return Err(EntropyStudioError::InvalidNumberBaseInput);
     }
 
-    let entropy = bits_to_bytes(&parsed.bits);
-    wipe_string(&mut parsed.bits);
+    let entropy = bits_to_bytes(&bits);
     Ok(entropy)
 }
 
 #[uniffi::export]
 pub fn number_base_calculations(
-    mut value: String,
+    value: String,
     format: NumberBaseFormat,
     target_words: u8,
 ) -> Result<NumberBaseCalculations, EntropyStudioError> {
-    let mut parsed = parse_number_base_input(&value, format, target_words)?;
-    wipe_string(&mut value);
-    let result = number_base_calculation_rows(&parsed.bits, &parsed.analysis).map(|rows| {
+    let value = Sensitive::new(value);
+    let parsed = parse_number_base_input(&value, format, target_words)?;
+    let bits = Sensitive::new(parsed.bits);
+    number_base_calculation_rows(&bits, &parsed.analysis).map(|rows| {
         NumberBaseCalculations {
             digit_values: number_base_digit_values(&parsed.analysis),
             rows,
         }
-    });
-    wipe_string(&mut parsed.bits);
-    result
+    })
 }
 
 pub(crate) fn number_base_bits(
@@ -130,13 +128,12 @@ pub(crate) fn number_base_bits(
     format: NumberBaseFormat,
     target_words: u8,
 ) -> Result<String, EntropyStudioError> {
-    let mut parsed = parse_number_base_input(value, format, target_words)?;
+    let parsed = parse_number_base_input(value, format, target_words)?;
     let valid = parsed.analysis.invalid_character_count == 0
         && parsed.analysis.excess_digit_count == 0
         && !parsed.analysis.final_invalid;
 
     if !valid {
-        wipe_string(&mut parsed.bits);
         return Err(EntropyStudioError::InvalidNumberBaseInput);
     }
 
@@ -201,8 +198,8 @@ fn number_base_calculation_rows(
     }
 
     if analysis.is_ready {
-        let mut checksum = sha256(bits_to_bytes(bits));
-        let mut final_group = String::with_capacity(11);
+        let checksum = Sensitive::new(sha256(bits_to_bytes(bits)));
+        let mut final_group = Sensitive::new(String::with_capacity(11));
         final_group.push_str(&bits[rows.len() * 11..]);
         for position in 0..bits.len() / 32 {
             final_group.push(if checksum[0] & (1 << (7 - position)) != 0 {
@@ -211,9 +208,7 @@ fn number_base_calculation_rows(
                 '0'
             });
         }
-        wipe_bytes(&mut checksum);
         let row = number_base_calculation_row(rows.len() as u8 + 1, final_group.as_bytes());
-        wipe_string(&mut final_group);
         rows.push(row?);
     }
 

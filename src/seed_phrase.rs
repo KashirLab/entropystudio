@@ -3,7 +3,7 @@ use std::sync::OnceLock;
 use crate::bip39::{bip39_entropy_bytes, bip39_word, mnemonic_to_entropy};
 use crate::error::EntropyStudioError;
 use crate::hash::sha256;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 const BIP39_WORD_COUNT: usize = 2048;
 
@@ -63,63 +63,59 @@ pub struct SeedPhraseAutocompleteResult {
 
 #[uniffi::export]
 pub fn bip39_passphrase_state(
-    mut value: String,
+    value: String,
     active_caret: Option<u32>,
 ) -> Bip39PassphraseState {
-    let result = analyze_bip39_passphrase(&value, active_caret);
-    wipe_string(&mut value);
-    result
+    let value = Sensitive::new(value);
+    analyze_bip39_passphrase(&value, active_caret)
 }
 
 #[uniffi::export]
 pub fn bip39_passphrase_key_allowed(
-    mut value: String,
+    value: String,
     selection_start: u32,
     selection_end: u32,
-    mut character: String,
+    character: String,
 ) -> bool {
+    let value = Sensitive::new(value);
+    let character = Sensitive::new(character);
     let result = if character.len() != 1 || !character.as_bytes()[0].is_ascii_lowercase() {
         false
     } else {
         let (start, end) = selection_bounds(&value, selection_start, selection_end);
-        let mut candidate = replace_selection(&value, start, end, &character);
+        let candidate = Sensitive::new(replace_selection(&value, start, end, &character));
         let allowed = analyze_bip39_passphrase(&candidate, Some((start + character.len()) as u32))
             .invalid_count
             == 0;
-        wipe_string(&mut candidate);
         allowed
     };
-    wipe_string(&mut value);
-    wipe_string(&mut character);
     result
 }
 
 #[uniffi::export]
 pub fn bip39_passphrase_space_allowed(
-    mut value: String,
+    value: String,
     selection_start: u32,
     selection_end: u32,
 ) -> bool {
+    let value = Sensitive::new(value);
     let (start, end) = selection_bounds(&value, selection_start, selection_end);
-    let mut candidate = replace_selection(&value, start, end, " ");
+    let candidate = Sensitive::new(replace_selection(&value, start, end, " "));
     let state = analyze_bip39_passphrase(&candidate, None);
     let allowed = state.invalid_count == 0
         && state.complete_words > 0
         && state.complete_words == passphrase_tokens(&candidate).len() as u32;
-    wipe_string(&mut candidate);
-    wipe_string(&mut value);
     allowed
 }
 
 #[uniffi::export]
 pub fn bip39_passphrase_autocomplete(
-    mut value: String,
+    value: String,
     cursor: u32,
     enabled: bool,
 ) -> SeedPhraseAutocompleteResult {
-    let result = autocomplete_bip39_passphrase(&value, cursor, enabled);
-    wipe_string(&mut value);
-    result
+    let value = Sensitive::new(value);
+    autocomplete_bip39_passphrase(&value, cursor, enabled)
 }
 
 struct ParsedNumber {
@@ -134,6 +130,7 @@ pub fn seed_phrase_state(
     target_words: u8,
     zero_indexed: bool,
 ) -> Result<SeedPhraseState, EntropyStudioError> {
+    let value = Sensitive::new(value);
     match method {
         SeedPhraseInputMethod::Words => analyze_words(&value, target_words),
         SeedPhraseInputMethod::Numbers => analyze_numbers(&value, target_words, zero_indexed),
@@ -142,15 +139,17 @@ pub fn seed_phrase_state(
 
 #[uniffi::export]
 pub fn seed_phrase_key_allowed(
-    mut value: String,
+    value: String,
     selection_start: u32,
     selection_end: u32,
-    mut character: String,
+    character: String,
     method: SeedPhraseInputMethod,
     target_words: u8,
     zero_indexed: bool,
 ) -> Result<bool, EntropyStudioError> {
-    let result = match method {
+    let value = Sensitive::new(value);
+    let character = Sensitive::new(character);
+    match method {
         SeedPhraseInputMethod::Words => word_key_allowed(
             &value,
             selection_start,
@@ -166,22 +165,20 @@ pub fn seed_phrase_key_allowed(
             target_words,
             zero_indexed,
         ),
-    };
-    wipe_string(&mut value);
-    wipe_string(&mut character);
-    result
+    }
 }
 
 #[uniffi::export]
 pub fn seed_phrase_space_allowed(
-    mut value: String,
+    value: String,
     selection_start: u32,
     selection_end: u32,
     method: SeedPhraseInputMethod,
     target_words: u8,
     zero_indexed: bool,
 ) -> Result<bool, EntropyStudioError> {
-    let result = match method {
+    let value = Sensitive::new(value);
+    match method {
         SeedPhraseInputMethod::Words => {
             validate_target_words(target_words)?;
             let normalized = normalize_word_input(&value);
@@ -202,27 +199,25 @@ pub fn seed_phrase_space_allowed(
                 && state.entered_count < u32::from(target_words)
                 && state.invalid_position == 0)
         }
-    };
-    wipe_string(&mut value);
-    result
+    }
 }
 
 #[uniffi::export]
 pub fn seed_phrase_autocomplete(
-    mut value: String,
+    value: String,
     cursor: u32,
     target_words: u8,
     enabled: bool,
 ) -> Result<SeedPhraseAutocompleteResult, EntropyStudioError> {
-    let result = autocomplete_word_input(&value, cursor, target_words, enabled);
-    wipe_string(&mut value);
-    result
+    let value = Sensitive::new(value);
+    autocomplete_word_input(&value, cursor, target_words, enabled)
 }
 
 #[uniffi::export]
-pub fn seed_phrase_words_to_numbers(mut value: String, zero_indexed: bool) -> String {
-    let mut normalized = normalize_word_input(&value);
-    let mut words = input_words(&normalized);
+pub fn seed_phrase_words_to_numbers(value: String, zero_indexed: bool) -> String {
+    let value = Sensitive::new(value);
+    let normalized = Sensitive::new(normalize_word_input(&value));
+    let words = Sensitive::new(input_words(&normalized));
     let result = if words.is_empty() {
         String::new()
     } else {
@@ -239,18 +234,16 @@ pub fn seed_phrase_words_to_numbers(mut value: String, zero_indexed: bool) -> St
             })
             .unwrap_or_default()
     };
-    wipe_strings(&mut words);
-    wipe_string(&mut normalized);
-    wipe_string(&mut value);
     result
 }
 
 #[uniffi::export]
 pub fn seed_phrase_numbers_to_words(
-    mut value: String,
+    value: String,
     target_words: u8,
     zero_indexed: bool,
 ) -> Result<String, EntropyStudioError> {
+    let value = Sensitive::new(value);
     let result = analyze_numbers(&value, target_words, zero_indexed).map(|state| {
         if state.invalid_position == 0 && state.extra_count == 0 && state.entered_count > 0 {
             state.words.join(" ")
@@ -258,18 +251,18 @@ pub fn seed_phrase_numbers_to_words(
             String::new()
         }
     });
-    wipe_string(&mut value);
     result
 }
 
 #[uniffi::export]
 pub fn translate_seed_number_indices(
-    mut value: String,
+    value: String,
     from_zero_indexed: bool,
     to_zero_indexed: bool,
 ) -> String {
+    let value = Sensitive::new(value);
     let mut translated = String::with_capacity(value.len());
-    let mut token = String::new();
+    let mut token = Sensitive::new(String::new());
     for character in value.chars() {
         if character.is_ascii_digit() {
             token.push(character);
@@ -280,8 +273,6 @@ pub fn translate_seed_number_indices(
         translated.push(character);
     }
     translate_number_token(&mut translated, &token, from_zero_indexed, to_zero_indexed);
-    wipe_string(&mut token);
-    wipe_string(&mut value);
     translated
 }
 
@@ -482,9 +473,9 @@ fn word_key_allowed(
     if character.len() != 1 || !character.as_bytes()[0].is_ascii_lowercase() {
         return Ok(false);
     }
-    let normalized = normalize_word_input(value);
+    let normalized = Sensitive::new(normalize_word_input(value));
     let (start, end) = selection_bounds(&normalized, selection_start, selection_end);
-    let mut candidate = replace_selection(&normalized, start, end, character);
+    let candidate = Sensitive::new(replace_selection(&normalized, start, end, character));
     let caret = start + character.len();
     let tokens = word_tokens(&candidate);
     let target = usize::from(target_words);
@@ -513,7 +504,6 @@ fn word_key_allowed(
     } else {
         false
     };
-    wipe_string(&mut candidate);
     Ok(allowed)
 }
 
@@ -528,12 +518,11 @@ fn number_key_allowed(
     if character.len() != 1 || !character.as_bytes()[0].is_ascii_digit() {
         return Ok(false);
     }
-    let normalized = normalize_number_input(value);
+    let normalized = Sensitive::new(normalize_number_input(value));
     let (start, end) = selection_bounds(&normalized, selection_start, selection_end);
-    let mut candidate = replace_selection(&normalized, start, end, character);
+    let candidate = Sensitive::new(replace_selection(&normalized, start, end, character));
     let state = analyze_numbers(&candidate, target_words, zero_indexed)?;
     let allowed = state.invalid_position == 0 && state.extra_count == 0;
-    wipe_string(&mut candidate);
     Ok(allowed)
 }
 
@@ -720,13 +709,12 @@ fn final_word_candidates(
 
     for suffix in 0..(1usize << suffix_bits) {
         let entropy = entropy_from_prefix(prefix_indices, suffix, suffix_bits, entropy_bits);
-        let mut digest = sha256(entropy);
+        let digest = Sensitive::new(sha256(entropy));
         let checksum = digest
             .iter()
             .flat_map(|byte| (0..8).rev().map(move |shift| usize::from((byte >> shift) & 1)))
             .take(checksum_bits)
             .fold(0usize, |value, bit| (value << 1) | bit);
-        wipe_bytes(&mut digest);
         candidates.push(bip39_word((suffix << checksum_bits) | checksum)?);
     }
     Ok(candidates)
@@ -758,8 +746,8 @@ fn append_bits(bytes: &mut [u8], offset: &mut usize, value: usize, width: usize)
 
 fn valid_mnemonic(phrase: &str) -> bool {
     match mnemonic_to_entropy(phrase.to_owned()) {
-        Ok(mut entropy) => {
-            wipe_bytes(&mut entropy);
+        Ok(entropy) => {
+            let _entropy = Sensitive::new(entropy);
             true
         }
         Err(_) => false,
@@ -914,12 +902,6 @@ fn translate_number_token(
         .map(|index| (index + if to_zero_indexed { 0 } else { 1 }).to_string())
         .unwrap_or_else(|| token.to_owned());
     translated.push_str(&replacement);
-}
-
-fn wipe_strings(strings: &mut [String]) {
-    for value in strings {
-        wipe_string(value);
-    }
 }
 
 fn validate_target_words(target_words: u8) -> Result<(), EntropyStudioError> {

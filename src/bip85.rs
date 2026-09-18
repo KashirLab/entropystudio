@@ -8,7 +8,7 @@ use bitcoin::{
 use crate::bip39::mnemonic_to_master_fingerprint;
 use crate::error::EntropyStudioError;
 use crate::hash::sha256;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 const PURPOSE: u32 = 83_696_968;
 
@@ -46,14 +46,14 @@ pub struct Bip85Result {
 }
 
 #[uniffi::export]
-pub fn bip85_derive(mut request: Bip85Request) -> Result<Bip85Result, EntropyStudioError> {
-    let index = parse_child_index(&mut request.index)?;
+pub fn bip85_derive(request: Bip85Request) -> Result<Bip85Result, EntropyStudioError> {
+    let index = parse_child_index(request.index)?;
     let (path, path_indices) = application_path(request.application, request.word_count, request.size, index)?;
-    let root = parse_root_xprv(&mut request.root_xprv)?;
+    let root = parse_root_xprv(request.root_xprv)?;
     let secp = Secp256k1::new();
     let parent_fingerprint = root.fingerprint(&secp).to_string();
-    let mut entropy = bip85_extended::derive(&secp, &root, &path_indices)
-        .map_err(|_| EntropyStudioError::InvalidBip85ChildKey)?;
+    let entropy = Sensitive::new(bip85_extended::derive(&secp, &root, &path_indices)
+        .map_err(|_| EntropyStudioError::InvalidBip85ChildKey)?);
     let entropy_hex = entropy_hex(request.application, request.word_count, request.size, &entropy)?;
 
     let (secret, fingerprint, fingerprint_kind) = match request.application {
@@ -92,7 +92,6 @@ pub fn bip85_derive(mut request: Bip85Request) -> Result<Bip85Result, EntropyStu
         }
     };
 
-    wipe_bytes(&mut entropy);
     Ok(Bip85Result {
         application: request.application,
         entropy_hex,
@@ -110,28 +109,28 @@ pub fn bip85_derive(mut request: Bip85Request) -> Result<Bip85Result, EntropyStu
 #[uniffi::export]
 pub fn bip85_path(
     application: Bip85Application,
-    mut index: String,
+    index: String,
     word_count: u8,
     size: u8,
 ) -> Result<String, EntropyStudioError> {
-    let index = parse_child_index(&mut index)?;
+    let index = parse_child_index(index)?;
     application_path(application, word_count, size, index).map(|(path, _)| path)
 }
 
-fn parse_child_index(value: &mut String) -> Result<u32, EntropyStudioError> {
+fn parse_child_index(value: String) -> Result<u32, EntropyStudioError> {
+    let value = Sensitive::new(value);
     let result = value
         .trim()
         .parse::<u32>()
         .ok()
         .filter(|index| *index < (1 << 31))
         .ok_or(EntropyStudioError::InvalidBip85Request);
-    wipe_string(value);
     result
 }
 
-fn parse_root_xprv(value: &mut String) -> Result<Xpriv, EntropyStudioError> {
+fn parse_root_xprv(value: String) -> Result<Xpriv, EntropyStudioError> {
+    let value = Sensitive::new(value);
     let root = Xpriv::from_str(value.trim());
-    wipe_string(value);
     let root = root.map_err(|_| EntropyStudioError::InvalidBip85Root)?;
     if root.depth != 0 {
         return Err(EntropyStudioError::InvalidBip85Root);

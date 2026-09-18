@@ -1,7 +1,7 @@
 use crate::bip39::bip39_entropy_bytes;
 use crate::error::EntropyStudioError;
 use crate::hash::sha256;
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 #[derive(Debug, Clone, Copy, uniffi::Enum)]
 pub enum DiceRollMethod {
@@ -23,9 +23,10 @@ pub struct HashedDiceState {
 
 #[uniffi::export]
 pub fn hashed_dice_state(
-    mut rolls: String,
+    rolls: String,
     target_words: u8,
 ) -> Result<HashedDiceState, EntropyStudioError> {
+    let rolls = Sensitive::new(rolls);
     let recommended_rolls = recommended_dice_rolls(target_words)?;
     let mut invalid_faces = String::new();
     let mut roll_count = 0;
@@ -37,8 +38,6 @@ pub fn hashed_dice_state(
             _ => invalid_faces.push(face),
         }
     }
-    wipe_string(&mut rolls);
-
     Ok(HashedDiceState {
         allowed_faces: ('1'..='6').map(|face| face.to_string()).collect(),
         can_derive: roll_count > 0,
@@ -53,12 +52,13 @@ pub fn hashed_dice_state(
 
 #[uniffi::export]
 pub fn dice_rolls_to_entropy(
-    mut rolls: String,
+    rolls: String,
     method: DiceRollMethod,
     target_words: u8,
 ) -> Result<Vec<u8>, EntropyStudioError> {
+    let rolls = Sensitive::new(rolls);
     let entropy_length = bip39_entropy_bytes(target_words)?;
-    let mut hash_input = Vec::with_capacity(rolls.len());
+    let mut hash_input = Sensitive::new(Vec::with_capacity(rolls.len()));
 
     for face in rolls.chars() {
         match face {
@@ -69,22 +69,16 @@ pub fn dice_rolls_to_entropy(
             }),
             separator if is_dice_separator(separator) => {}
             _ => {
-                wipe_string(&mut rolls);
-                wipe_bytes(&mut hash_input);
                 return Err(EntropyStudioError::InvalidDiceRolls);
             }
         }
     }
-    wipe_string(&mut rolls);
-
     if hash_input.is_empty() {
-        wipe_bytes(&mut hash_input);
         return Err(EntropyStudioError::NoDiceRolls);
     }
 
-    let mut digest = sha256(hash_input);
+    let digest = Sensitive::new(sha256(hash_input.to_vec()));
     let result = digest[..entropy_length].to_vec();
-    wipe_bytes(&mut digest);
     Ok(result)
 }
 

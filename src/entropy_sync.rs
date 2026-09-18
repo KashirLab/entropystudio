@@ -10,7 +10,7 @@ use crate::hashed_dice::{
 use crate::number_bases::{number_base_bits, number_base_value_from_bits, NumberBaseFormat};
 use crate::private_key::{encode_wif_private_key, private_key_entropy, PrivateKeyFormat};
 use crate::seed_phrase::{seed_phrase_state, seed_phrase_words_to_numbers, SeedPhraseInputMethod};
-use crate::wipe::{wipe_bytes, wipe_string};
+use crate::wipe::Sensitive;
 
 const MINIMUM_ENTROPY_BITS: u16 = 128;
 
@@ -63,21 +63,23 @@ pub struct EntropySyncSnapshot {
 
 #[uniffi::export]
 pub fn synchronize_entropy(
-    mut value: String,
+    value: String,
     source: EntropySyncSource,
     target_words: u8,
     zero_indexed: bool,
-    mut selected_final_word: String,
+    selected_final_word: String,
 ) -> Result<EntropySyncSnapshot, EntropyStudioError> {
-    let mut bits = String::new();
+    let value = Sensitive::new(value);
+    let selected_final_word = Sensitive::new(selected_final_word);
+    let mut bits = Sensitive::new(String::new());
     let result = (|| {
-        bits = source_bits(
+        bits = Sensitive::new(source_bits(
             &value,
             source,
             target_words,
             zero_indexed,
             &selected_final_word,
-        )?;
+        )?);
         let mut snapshot = snapshot_from_bits(&bits, target_words)?;
         let (effective_entropy_bits, entropy_strength_unknown) = effective_entropy_strength(
             &value,
@@ -92,9 +94,6 @@ pub fn synchronize_entropy(
         preserve_source_value(&mut snapshot, source, &value, zero_indexed);
         Ok(snapshot)
     })();
-    wipe_string(&mut bits);
-    wipe_string(&mut value);
-    wipe_string(&mut selected_final_word);
     result
 }
 
@@ -233,9 +232,8 @@ fn hashed_dice_bits(
     method: DiceRollMethod,
     target_words: u8,
 ) -> Result<String, EntropyStudioError> {
-    let mut entropy = dice_rolls_to_entropy(value.to_owned(), method, target_words)?;
+    let entropy = Sensitive::new(dice_rolls_to_entropy(value.to_owned(), method, target_words)?);
     let bits = bytes_to_bits(&entropy);
-    wipe_bytes(&mut entropy);
     Ok(bits)
 }
 
@@ -244,9 +242,8 @@ fn hashed_card_bits(
     method: CardHashMethod,
     target_words: u8,
 ) -> Result<String, EntropyStudioError> {
-    let mut entropy = card_transcript_to_entropy(value.to_owned(), method, target_words)?;
+    let entropy = Sensitive::new(card_transcript_to_entropy(value.to_owned(), method, target_words)?);
     let bits = bytes_to_bits(&entropy);
-    wipe_bytes(&mut entropy);
     Ok(bits)
 }
 
@@ -262,9 +259,8 @@ fn bitbox_bits(
         selected_final_word.to_owned(),
     )?;
     if state.can_derive {
-        let mut entropy = mnemonic_to_entropy(state.mnemonic)?;
+        let entropy = Sensitive::new(mnemonic_to_entropy(state.mnemonic)?);
         let bits = bytes_to_bits(&entropy);
-        wipe_bytes(&mut entropy);
         return Ok(bits);
     }
 
@@ -426,9 +422,8 @@ fn seed_bits(
         return Err(EntropyStudioError::InvalidMnemonic);
     }
     if state.can_derive {
-        let mut entropy = mnemonic_to_entropy(state.phrase)?;
+        let entropy = Sensitive::new(mnemonic_to_entropy(state.phrase)?);
         let bits = bytes_to_bits(&entropy);
-        wipe_bytes(&mut entropy);
         return Ok(bits);
     }
     if state.entered_count == u32::from(target_words) {
@@ -443,7 +438,7 @@ fn words_to_bits(words: &[String]) -> Result<String, EntropyStudioError> {
         return Ok(String::new());
     }
 
-    let mut values = seed_phrase_words_to_numbers(words.join(" "), true);
+    let values = Sensitive::new(seed_phrase_words_to_numbers(words.join(" "), true));
     let result = values
         .split_whitespace()
         .try_fold(String::new(), |mut bits, value| {
@@ -453,7 +448,6 @@ fn words_to_bits(words: &[String]) -> Result<String, EntropyStudioError> {
             push_bits(&mut bits, index, 11);
             Ok(bits)
         });
-    wipe_string(&mut values);
     result
 }
 
@@ -462,21 +456,20 @@ fn private_key_bits(
     format: PrivateKeyFormat,
     trim_brain_wallet_boundary_whitespace: bool,
 ) -> Result<String, EntropyStudioError> {
-    let mut entropy = private_key_entropy(
+    let entropy = Sensitive::new(private_key_entropy(
         value.to_owned(),
         format,
         trim_brain_wallet_boundary_whitespace,
-    )?;
+    )?);
     let bits = bytes_to_bits(&entropy);
-    wipe_bytes(&mut entropy);
     Ok(bits)
 }
 
 fn private_key_hex_bits(value: &str) -> Result<String, EntropyStudioError> {
-    let mut compact: String = value
+    let compact = Sensitive::new(value
         .chars()
         .filter(|character| !character.is_whitespace())
-        .collect();
+        .collect::<String>());
     let digits = compact
         .strip_prefix("0x")
         .or_else(|| compact.strip_prefix("0X"))
@@ -490,7 +483,6 @@ fn private_key_hex_bits(value: &str) -> Result<String, EntropyStudioError> {
         push_bits(&mut bits, value as usize, 4);
     }
 
-    wipe_string(&mut compact);
     Ok(bits)
 }
 
@@ -699,9 +691,8 @@ fn wif_private_key_value(bits: &str) -> String {
         return String::new();
     }
 
-    let mut entropy = bits_to_bytes(&bits[..256]);
+    let entropy = Sensitive::new(bits_to_bytes(&bits[..256]));
     let result = encode_wif_private_key(&entropy, true);
-    wipe_bytes(&mut entropy);
     result
 }
 
