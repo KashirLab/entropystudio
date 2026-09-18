@@ -16,6 +16,7 @@
     "@expo/ui": "~57.0.18",
     "entropystudio": "file:..",
     "expo": "~57.0.22",
+    "expo-clipboard": "~57.0.2",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-bottom-tabs": "^1.4.0",

@@ -20,11 +20,16 @@ const upstreamVanityJs = readFileSync(
   resolve(__dirname, '../../../entropylab/src/js/vanity.js'),
   'utf8',
 );
+const upstreamBip85Js = readFileSync(
+  resolve(__dirname, '../../../entropylab/src/js/bip85.js'),
+  'utf8',
+);
 const upstreamAddressQrJs = readOptionalSource('src/js/address-qr.js');
 const upstreamShellHtml = readOptionalSource('src/shell.html');
 const renderedUpstreamUiSources = [
   decodeJavaScriptEscapes(upstreamAppJs),
   decodeJavaScriptEscapes(upstreamVanityJs),
+  decodeJavaScriptEscapes(upstreamBip85Js),
   decodeJavaScriptEscapes(upstreamAddressQrJs),
   decodeJavaScriptEscapes(readOptionalSource('src/js/i18n-labels.js')),
   upstreamShellHtml,
@@ -81,6 +86,32 @@ describe('Upstream UI copy provenance', () => {
 
   test('copies every dynamic formatter only from current upstream templates', () => {
     const dynamicFallbackTemplates = {
+      'bip85.bip39SecretLabel': {
+        source: upstreamBip85Js,
+        template: /secretLabel: `BIP-39 seed phrase · \$\{wordCount\} English words`/,
+      },
+      'bip85.wifSecretLabel': {
+        source: upstreamBip85Js,
+        template:
+          /secretLabel: testnet \? "Compressed WIF · testnet" : "Compressed WIF · mainnet"/,
+      },
+      'bip85.xprvSecretLabel': {
+        source: upstreamBip85Js,
+        template: /secretLabel: testnet \? "BIP-32 TPRV" : "BIP-32 XPRV"/,
+      },
+      'bip85.hexSecretLabel': {
+        source: upstreamBip85Js,
+        template: /secretLabel: `Hex entropy · \$\{size\} bytes`/,
+      },
+      'bip85.passwordBase64SecretLabel': {
+        source: upstreamBip85Js,
+        template: /secretLabel: `Password · Base64 · \$\{size\} characters`/,
+      },
+      'bip85.passwordBase85SecretLabel': {
+        source: upstreamBip85Js,
+        template:
+          /secretLabel: `Password · RFC1924 Base85 · \$\{size\} characters`/,
+      },
       'calculations.die': {
         source: upstreamAppJs,
         template: /Die \$\{index \+ 1\}/,

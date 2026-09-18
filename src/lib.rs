@@ -1,4 +1,5 @@
 mod bip39;
+mod bip85;
 mod cards;
 mod direct_cards;
 mod direct_dice;
@@ -19,6 +20,7 @@ pub use bip39::{
 	bip39_entropy_bits, entropy_to_mnemonic, mnemonic_to_entropy, mnemonic_to_master_fingerprint,
 	mnemonic_to_master_xprv, mnemonic_to_master_xpub, mnemonic_to_seed, seed_qr_data, SeedQrData,
 };
+pub use bip85::{bip85_derive, bip85_path, Bip85Application, Bip85Request, Bip85Result};
 pub use cards::{
 	card_key_allowed, card_transcript_to_entropy, hashed_card_state, normalize_card_token,
 	normalize_direct_card_transcript, CardHashMethod, CardInputMethod, HashedCardInstruction,

@@ -4,7 +4,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   useWindowDimensions,
   View,
@@ -14,6 +13,7 @@ import type { DiceColors } from '../features/dice/diceTheme';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
 import { KeyStationLifeHash } from '../features/keyStation/components/KeyStationLifeHash';
 import { KeyStationEdgeNote } from '../features/keyStation/components/KeyStationEdgeNote';
+import { PrivateDataVisibilityControl } from '../features/keyStation/components/PrivateDataVisibilityControl';
 import { RecoveryMaterialPanel } from '../features/keyStation/components/RecoveryMaterialPanel';
 import { SeedQrPanel } from '../features/keyStation/components/SeedQrPanel';
 import { ScriptTypePickerScreen } from '../features/keyStation/components/ScriptTypePickerScreen';
@@ -133,63 +133,6 @@ function SafetyNotes({ colors, notes, testIDPrefix }: SafetyNotesProps) {
       sheetHeight={460}
       testIDPrefix={testIDPrefix}
     />
-  );
-}
-
-function PrivateDataVisibilityControl({
-  colors,
-  contentWidth,
-  onChange,
-  visible,
-}: {
-  readonly colors: DiceColors;
-  readonly contentWidth: number;
-  readonly onChange: (visible: boolean) => void;
-  readonly visible: boolean;
-}) {
-  const state = visible
-    ? UPSTREAM_TEXT.result.privateDataVisible
-    : UPSTREAM_TEXT.result.privateDataHidden;
-
-  return (
-    <Pressable
-      accessibilityLabel={state}
-      accessibilityRole="switch"
-      accessibilityState={{ checked: visible }}
-      onPress={() => onChange(!visible)}
-      style={[
-        styles.privacyBar,
-        {
-          backgroundColor: visible ? `${colors.error}1A` : colors.segment,
-          borderColor: visible ? colors.error : colors.border,
-          width: contentWidth,
-        },
-      ]}
-      testID="toggle-private-data-visibility"
-    >
-      <Switch
-        accessibilityElementsHidden
-        pointerEvents="none"
-        thumbColor={visible ? colors.error : undefined}
-        trackColor={{ false: colors.border, true: `${colors.error}88` }}
-        value={visible}
-      />
-      <View style={styles.privacyBarCopy}>
-        <Text
-          style={[
-            styles.privacyBarState,
-            { color: visible ? colors.error : colors.text },
-          ]}
-        >
-          {state}
-        </Text>
-        <Text style={[styles.privacyBarHint, { color: colors.muted }]}>
-          {visible
-            ? UPSTREAM_TEXT.result.hidePrivateDataHint
-            : UPSTREAM_TEXT.result.revealPrivateDataHint}
-        </Text>
-      </View>
-    </Pressable>
   );
 }
 

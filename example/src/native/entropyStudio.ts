@@ -1,5 +1,6 @@
 import {
   AccountScriptType as GeneratedAccountScriptType,
+  Bip85Application as GeneratedBip85Application,
   accountAddressCheck,
   accountPrivateMaterial,
   CardHashMethod,
@@ -29,6 +30,8 @@ import {
   vanityBenchmark,
   vanityDefaultWorkerCount,
   analyzeNumberBaseInput,
+  bip85Derive,
+  bip85Path,
   bip39EntropyBits,
   bip39PassphraseAutocomplete,
   bip39PassphraseKeyAllowed,
@@ -86,6 +89,9 @@ export const DirectDiceMethod = {
 } as const;
 export const AccountScriptType = GeneratedAccountScriptType;
 export type AccountScriptType = GeneratedAccountScriptType;
+
+export const Bip85Application = GeneratedBip85Application;
+export type Bip85Application = GeneratedBip85Application;
 
 export const DiceInputMethod = {
   Bitbox: GeneratedDiceInputMethod.Bitbox,
@@ -233,6 +239,8 @@ export {
   HashedCardInstruction,
   GeneratedNumberBaseFormat as NumberBaseFormat,
   analyzeNumberBaseInput,
+  bip85Derive,
+  bip85Path,
   bip39EntropyBits,
   bip39PassphraseAutocomplete,
   bip39PassphraseKeyAllowed,
@@ -290,6 +298,8 @@ export type {
   AccountAddressCheck,
   AccountPrivateMaterial,
   AccountWatchOnlyAddress,
+  Bip85Request,
+  Bip85Result,
   Bip39PassphraseState,
   DiceMethodInfo,
   DirectCardState,

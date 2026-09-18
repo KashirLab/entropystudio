@@ -43,6 +43,7 @@ import { EntropySyncSettingsScreen } from './screens/EntropySyncSettingsScreen';
 import { KeyStationResultScreen } from './screens/KeyStationResultScreen';
 import { SeedPhraseScreen } from './screens/SeedPhraseScreen';
 import { VanityScreen } from './screens/VanityScreen';
+import { Bip85Screen } from './screens/Bip85Screen';
 import type { VanityScriptId } from './screens/VanityScreen';
 
 function pathComponentDraft({ index, hardened }: KeyDerivationPathComponent): string {
@@ -170,7 +171,7 @@ function inputWithVanityPassphrase(
   return { ...input, passphrase };
 }
 
-type AppTab = 'method' | 'vanity' | 'settings';
+type AppTab = 'method' | 'bip85' | 'vanity' | 'settings';
 
 type AppTabRoute = {
   readonly focusedIcon?: AppleIcon;
@@ -185,6 +186,12 @@ const APP_TAB_ROUTES: AppTabRoute[] = [
     key: 'method',
     testID: 'app-tab-method',
     title: UPSTREAM_TEXT.keys.tabLabel,
+  },
+  {
+    focusedIcon: Platform.OS === 'ios' ? { sfSymbol: 'leaf.fill' } : undefined,
+    key: 'bip85',
+    testID: 'app-tab-bip85',
+    title: UPSTREAM_TEXT.bip85.tabLabel,
   },
   {
     focusedIcon: Platform.OS === 'ios' ? { sfSymbol: 'sparkles' } : undefined,
@@ -604,6 +611,18 @@ function App() {
     );
   }
 
+  function renderBip85Scene() {
+    return (
+      <TabScene>
+        <Bip85Screen
+          isActive={activeTab === 'bip85'}
+          isDarkMode={isDarkMode}
+          tabs={keyStationTabs}
+        />
+      </TabScene>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <EntropySyncProvider>
@@ -626,6 +645,8 @@ function App() {
                   switch (route.key) {
                     case 'method':
                       return renderMethodScene();
+                    case 'bip85':
+                      return renderBip85Scene();
                     case 'vanity':
                       return renderVanityScene();
                     case 'settings':

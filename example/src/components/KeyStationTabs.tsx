@@ -8,26 +8,54 @@ import { UPSTREAM_TEXT } from '../features/upstreamUiCopy';
 type Props = {
   readonly activeTabId: number | null;
   readonly colors: DiceColors;
+  readonly controlTestIDPrefix: string;
   readonly onDeleteActiveTab: () => void;
   readonly onOpenKeyStation: () => void;
   readonly onSelectTab: (id: number) => void;
   readonly tabs: readonly KeyStationTab[];
 };
 
-export function KeyStationTabs({
+export type FingerprintStationTab = {
+  readonly fingerprint: string;
+  readonly id: number;
+  readonly name: string;
+};
+
+type FingerprintStationTabsProps = {
+  readonly activeTabId: number | null;
+  readonly addAccessibilityLabel: string;
+  readonly colors: DiceColors;
+  readonly deleteAccessibilityLabel: string;
+  readonly onDeleteActiveTab: () => void;
+  readonly onOpenStation: () => void;
+  readonly onSelectTab: (id: number) => void;
+  readonly stationAccessibilityLabel: string;
+  readonly stationLabel: string;
+  readonly tabTestIDPrefix: string;
+  readonly tabs: readonly FingerprintStationTab[];
+};
+
+/** Shared Station / fingerprint-tab strip used by key-derived workspaces. */
+export function FingerprintStationTabs({
   activeTabId,
+  addAccessibilityLabel,
   colors,
+  controlTestIDPrefix,
+  deleteAccessibilityLabel,
   onDeleteActiveTab,
-  onOpenKeyStation,
+  onOpenStation,
   onSelectTab,
+  stationAccessibilityLabel,
+  stationLabel,
+  tabTestIDPrefix,
   tabs,
-}: Props) {
+}: FingerprintStationTabsProps) {
   const isStationActive = activeTabId === null;
 
   return (
     <View
       style={[styles.strip, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-      testID="key-station-tab-strip"
+      testID={`${tabTestIDPrefix}-strip`}
     >
       <ScrollView
         contentContainerStyle={styles.tabList}
@@ -36,24 +64,24 @@ export function KeyStationTabs({
         style={styles.tabScroll}
       >
         <Pressable
-          accessibilityLabel={UPSTREAM_TEXT.keys.station}
+          accessibilityLabel={stationAccessibilityLabel}
           accessibilityRole="tab"
           accessibilityState={{ selected: isStationActive }}
-          onPress={onOpenKeyStation}
+          onPress={onOpenStation}
           style={({ pressed }) => [
             styles.tab,
             styles.stationTab,
             { borderBottomColor: isStationActive ? colors.accent : 'transparent' },
             pressed && styles.pressed,
           ]}
-          testID="key-station-tab-lab"
+          testID={`${tabTestIDPrefix}-lab`}
         >
           <Text
             adjustsFontSizeToFit
             numberOfLines={1}
             style={[styles.stationLabel, { color: isStationActive ? colors.text : colors.muted }]}
           >
-            {UPSTREAM_TEXT.keys.station}
+            {stationLabel}
           </Text>
         </Pressable>
         {tabs.map(tab => {
@@ -70,19 +98,19 @@ export function KeyStationTabs({
                 { borderBottomColor: selected ? colors.accent : 'transparent' },
                 pressed && styles.pressed,
               ]}
-              testID={`key-station-tab-${tab.id}`}
+              testID={`${tabTestIDPrefix}-${tab.id}`}
             >
               <KeyStationLifeHash
                 compact
-                fingerprint={tab.masterFingerprint}
-                imageTestID={`key-station-tab-${tab.id}-lifehash`}
+                fingerprint={tab.fingerprint}
+                imageTestID={`${tabTestIDPrefix}-${tab.id}-lifehash`}
               />
               <Text
                 adjustsFontSizeToFit
                 minimumFontScale={0.75}
                 numberOfLines={1}
                 style={[styles.tabLabel, { color: selected ? colors.text : colors.muted }]}
-                testID={`key-station-tab-${tab.id}-label`}
+                testID={`${tabTestIDPrefix}-${tab.id}-label`}
               >
                 {tab.name}
               </Text>
@@ -92,16 +120,16 @@ export function KeyStationTabs({
       </ScrollView>
       <View style={[styles.controls, { borderLeftColor: colors.border }]}>
         <Pressable
-          accessibilityLabel={UPSTREAM_TEXT.keys.add}
+          accessibilityLabel={addAccessibilityLabel}
           accessibilityRole="button"
-          onPress={onOpenKeyStation}
+          onPress={onOpenStation}
           style={({ pressed }) => [styles.control, pressed && styles.pressed]}
-          testID="key-station-add"
+          testID={`${controlTestIDPrefix}-add`}
         >
           <Text style={[styles.controlIcon, { color: colors.accent }]}>+</Text>
         </Pressable>
         <Pressable
-          accessibilityLabel={UPSTREAM_TEXT.keys.delete}
+          accessibilityLabel={deleteAccessibilityLabel}
           accessibilityRole="button"
           accessibilityState={{ disabled: isStationActive }}
           disabled={isStationActive}
@@ -111,12 +139,38 @@ export function KeyStationTabs({
             isStationActive && styles.disabled,
             pressed && styles.pressed,
           ]}
-          testID="key-station-delete"
+          testID={`${controlTestIDPrefix}-delete`}
         >
           <Text style={[styles.controlIcon, { color: isStationActive ? colors.muted : colors.error }]}>-</Text>
         </Pressable>
       </View>
     </View>
+  );
+}
+
+export function KeyStationTabs({
+  activeTabId,
+  colors,
+  onDeleteActiveTab,
+  onOpenKeyStation,
+  onSelectTab,
+  tabs,
+}: Props) {
+  return (
+    <FingerprintStationTabs
+      activeTabId={activeTabId}
+      addAccessibilityLabel={UPSTREAM_TEXT.keys.add}
+      colors={colors}
+      controlTestIDPrefix="key-station"
+      deleteAccessibilityLabel={UPSTREAM_TEXT.keys.delete}
+      onDeleteActiveTab={onDeleteActiveTab}
+      onOpenStation={onOpenKeyStation}
+      onSelectTab={onSelectTab}
+      stationAccessibilityLabel={UPSTREAM_TEXT.keys.station}
+      stationLabel={UPSTREAM_TEXT.keys.station}
+      tabTestIDPrefix="key-station-tab"
+      tabs={tabs.map(tab => ({ fingerprint: tab.masterFingerprint, id: tab.id, name: tab.name }))}
+    />
   );
 }
 

@@ -11,6 +11,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 base64 = "=0.22.1"
+bip85_extended = "=1.1.0"
 bc-lifehash = "0.1.0"
 bitcoin = "=0.32.11"
 entropylab-wasm = { path = "entropylab/entropylab-wasm" }

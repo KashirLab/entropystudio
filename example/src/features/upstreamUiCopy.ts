@@ -348,6 +348,67 @@ export const UPSTREAM_TEXT = {
     wordsNote:
       'Use complete lowercase English BIP39 words separated by single spaces',
   },
+  bip85: {
+    tabLabel: 'BIP-85',
+    station: 'BIP-85 Station',
+    intro: {
+      title: 'Child seeds from a parent key',
+      description:
+        'Same parent, same settings, same child every time. English BIP-39 children match COLDCARD. No new entropy is generated.',
+    },
+    source: {
+      note:
+        'Choose a compatible HD-root key from this session, or paste a root extended private key below.',
+      retention:
+        'Derived children remain in this page only. Anyone with the parent seed, passphrase, application, and index can reproduce them.',
+      heading: 'Use a key from Key Station',
+      root: 'Root xprv (optional)',
+      rootPlaceholder: 'Paste a root xprv or tprv',
+    },
+    form: {
+      application: 'Application',
+      index: 'Index',
+      indexHelp:
+        'Hardened child index · 0 to 2,147,483,647. COLDCARD defaults to 0–9,999.',
+      wordCount: 'Word count',
+      wordHelp:
+        "English wordlist only (language 0'). COLDCARD menus offer 12, 18, and 24.",
+      hexBytes: 'Hex bytes',
+      hexHelp: '16 to 64 bytes. COLDCARD offers 32 and 64.',
+      passwordLength: 'Password length',
+      passwordHelp: 'Base64: 20–86. Base85: 10–80.',
+      path: 'Path',
+      applicationOptions: {
+        bip39: 'BIP-39 mnemonic (English)',
+        wif: 'HD-seed WIF',
+        xprv: 'XPRV (BIP-32)',
+        hex: 'HEX',
+        passwordBase64: 'Password · Base64',
+        passwordBase85: 'Password · Base85',
+      },
+      words: {
+        twelve: '12 words · 128 bits',
+        fifteen: '15 words · 160 bits',
+        eighteen: '18 words · 192 bits',
+        twentyOne: '21 words · 224 bits',
+        twentyFour: '24 words · 256 bits',
+      },
+    },
+    actions: {
+      add: 'Open BIP-85 Station to derive another child',
+      derive: 'Derive Child Key',
+      clear: 'Clear Parent Key',
+      delete: 'Delete current BIP-85 child',
+    },
+    result: {
+      derivedEntropy: 'Derived entropy',
+      childOfParent: 'Child key of parent key',
+    },
+    errors: {
+      parent: 'Choose a compatible Key Station key, or paste a root xprv/tprv.',
+      root: 'BIP-85 needs a private root (xprv/tprv), not an extended public key.',
+    },
+  },
   result: {
     addressNumber: 'Address #{n}',
     accountPrivateKeyExports: 'Account private key exports',
@@ -674,6 +735,24 @@ export const UPSTREAM_UI_LABELS = {
 } as const;
 
 export const UPSTREAM_UI_FALLBACK_COPY = {
+  bip85: {
+    bip39SecretLabel: (wordCount: number) =>
+      `BIP-39 seed phrase · ${wordCount} English words`,
+    wifSecretLabel: (testnet: boolean) =>
+      `Compressed WIF · ${testnet ? 'testnet' : 'mainnet'}`,
+    xprvSecretLabel: (testnet: boolean) =>
+      testnet ? 'BIP-32 TPRV' : 'BIP-32 XPRV',
+    hexSecretLabel: (size: number) => `Hex entropy · ${size} bytes`,
+    passwordBase64SecretLabel: (size: number) =>
+      `Password · Base64 · ${size} characters`,
+    passwordBase85SecretLabel: (size: number) =>
+      `Password · RFC1924 Base85 · ${size} characters`,
+    copyChildSeedPhrase: 'Copy Child Seed Phrase',
+    copyChildSeedPhraseNote:
+      "Button below copies the child key's seed phrase regardless of whether that data is revealed above.",
+    childPrivacyDescription:
+      'Anyone with the parent, application, and index can reproduce this child key.',
+  },
   common: {
     back: 'Back',
   },

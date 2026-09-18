@@ -1,6 +1,7 @@
 use super::*;
 
 mod bip39;
+mod bip85;
 mod cards;
 mod dice;
 mod entropy_sync;
