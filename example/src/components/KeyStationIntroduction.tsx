@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   heading: {
+    flexShrink: 1,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 25,
@@ -112,6 +113,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   headingToggle: {
-    alignSelf: 'flex-start',
+    alignSelf: 'stretch',
   },
 });
