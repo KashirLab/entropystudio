@@ -4,7 +4,9 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -134,6 +136,63 @@ function SafetyNotes({ colors, notes, testIDPrefix }: SafetyNotesProps) {
   );
 }
 
+function PrivateDataVisibilityControl({
+  colors,
+  contentWidth,
+  onChange,
+  visible,
+}: {
+  readonly colors: DiceColors;
+  readonly contentWidth: number;
+  readonly onChange: (visible: boolean) => void;
+  readonly visible: boolean;
+}) {
+  const state = visible
+    ? UPSTREAM_TEXT.result.privateDataVisible
+    : UPSTREAM_TEXT.result.privateDataHidden;
+
+  return (
+    <Pressable
+      accessibilityLabel={state}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: visible }}
+      onPress={() => onChange(!visible)}
+      style={[
+        styles.privacyBar,
+        {
+          backgroundColor: visible ? `${colors.error}1A` : colors.segment,
+          borderColor: visible ? colors.error : colors.border,
+          width: contentWidth,
+        },
+      ]}
+      testID="toggle-private-data-visibility"
+    >
+      <Switch
+        accessibilityElementsHidden
+        pointerEvents="none"
+        thumbColor={visible ? colors.error : undefined}
+        trackColor={{ false: colors.border, true: `${colors.error}88` }}
+        value={visible}
+      />
+      <View style={styles.privacyBarCopy}>
+        <Text
+          style={[
+            styles.privacyBarState,
+            { color: visible ? colors.error : colors.text },
+          ]}
+        >
+          {state}
+        </Text>
+        <Text style={[styles.privacyBarHint, { color: colors.muted }]}>
+          {visible
+            ? UPSTREAM_TEXT.result.hidePrivateDataHint
+            : UPSTREAM_TEXT.result.revealPrivateDataHint}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
 /** Mirrors upstream's key-summary method and selected-method line. */
 function keyStationSummaryTitle(tab: KeyStationTab): string {
   const method = UPSTREAM_UI_LABELS.keyMode[tab.method];
@@ -179,6 +238,7 @@ export function KeyStationResultScreen({
   onSetResultScriptType,
   tab,
 }: Props) {
+  const { width } = useWindowDimensions();
   const [showingPrivateRecoveryMaterial, setShowingPrivateRecoveryMaterial] =
     useState(false);
   const [showingWatchOnlyWalletData, setShowingWatchOnlyWalletData] =
@@ -188,6 +248,9 @@ export function KeyStationResultScreen({
   const [accountSection, setAccountSection] = useState<AccountSection | null>(
     null,
   );
+  // The corresponding upstream result is masked until the user deliberately
+  // reveals it, and one switch controls every private value in this key.
+  const [privateDataVisible, setPrivateDataVisible] = useState(false);
 
   useEffect(() => {
     setShowingPrivateRecoveryMaterial(false);
@@ -195,6 +258,7 @@ export function KeyStationResultScreen({
     setShowingWalletData(false);
     setShowingScriptType(false);
     setAccountSection(null);
+    setPrivateDataVisible(false);
   }, [tab?.id]);
 
   useEffect(() => {
@@ -269,6 +333,7 @@ export function KeyStationResultScreen({
         initialSection={section}
         onBack={() => undefined}
         privateAccountMaterialInput={detailInput}
+        privateDataVisible={privateDataVisible}
         scriptType={tab.resultScriptType}
         showNavigationHeader={false}
       />
@@ -309,6 +374,7 @@ export function KeyStationResultScreen({
               mnemonic: derivation.mnemonic,
               rootXprv: tab.rootXprv,
             }}
+            privateDataVisible={privateDataVisible}
             rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, {
               name: 'xprv',
             })}
@@ -421,6 +487,15 @@ export function KeyStationResultScreen({
             onSelect={onSetResultScriptType}
             selected={tab.resultScriptType}
           />
+          <PrivateDataVisibilityControl
+            colors={colors}
+            contentWidth={Math.max(
+              0,
+              width - CONTENT_HORIZONTAL_PADDING * 2,
+            )}
+            onChange={setPrivateDataVisible}
+            visible={privateDataVisible}
+          />
         </View>
       </NativeKeyDerivationNavigator>
     );
@@ -452,6 +527,7 @@ export function KeyStationResultScreen({
               }
             : undefined
         }
+        privateDataVisible={privateDataVisible}
         scriptType={tab.resultScriptType}
       />
     );
@@ -544,6 +620,7 @@ export function KeyStationResultScreen({
                     mnemonic: fallbackDerivation.mnemonic,
                     rootXprv: tab.rootXprv,
                   }}
+                  privateDataVisible={privateDataVisible}
                   rootXprvLabel={formatCopy(UPSTREAM_TEXT.result.rootXprv, {
                     name: 'xprv',
                   })}
@@ -806,6 +883,31 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 12,
     textAlign: 'center',
+  },
+  privacyBar: {
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 16,
+    maxWidth: '100%',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  privacyBarCopy: {
+    flex: 1,
+    marginLeft: 10,
+    minWidth: 0,
+  },
+  privacyBarHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 1,
+  },
+  privacyBarState: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 19,
   },
   path: {
     fontFamily: 'monospace',

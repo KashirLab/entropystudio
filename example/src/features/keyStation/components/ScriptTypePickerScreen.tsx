@@ -35,6 +35,8 @@ type Props = {
   readonly colors: DiceColors;
   readonly initialSection?: 'addresses' | 'account-private' | 'watch-only' | null;
   readonly onBack: () => void;
+  /** Shared visibility state for private account exports and address WIFs. */
+  readonly privateDataVisible?: boolean;
   readonly showNavigationHeader?: boolean;
   readonly privateAccountMaterialInput?: {
     readonly accountPath: string;
@@ -93,6 +95,7 @@ function AddressTable({
   label,
   measureColumn,
   onOpenQr,
+  privateDataVisible,
   rows,
 }: {
   readonly colors: DiceColors;
@@ -100,6 +103,7 @@ function AddressTable({
   readonly label: string;
   readonly measureColumn: (column: AddressTableColumn) => (event: LayoutChangeEvent) => void;
   readonly onOpenQr: (address: AccountWatchOnlyAddress) => void;
+  readonly privateDataVisible: boolean;
   readonly rows: readonly AccountWatchOnlyAddress[];
 }) {
   return (
@@ -169,7 +173,24 @@ function AddressTable({
                     </Text>
                   </Pressable>
                 </View>
-                <Text numberOfLines={1} selectable style={[styles.addressTableCell, styles.addressWifCell, styles.addressTableValue, { color: colors.privateValue }]}>{item.wif}</Text>
+                <Text
+                  numberOfLines={1}
+                  selectable={privateDataVisible}
+                  style={[
+                    styles.addressTableCell,
+                    styles.addressWifCell,
+                    styles.addressTableValue,
+                    {
+                      color: privateDataVisible
+                        ? colors.privateValue
+                        : colors.muted,
+                    },
+                  ]}
+                >
+                  {privateDataVisible
+                    ? item.wif
+                    : UPSTREAM_TEXT.result.privateValueMask}
+                </Text>
               </View>
             ))}
             </View>
@@ -186,6 +207,7 @@ export function ScriptTypePickerScreen({
   initialSection,
   onBack,
   privateAccountMaterialInput,
+  privateDataVisible = true,
   showNavigationHeader = true,
   scriptType,
 }: Props) {
@@ -216,6 +238,8 @@ export function ScriptTypePickerScreen({
   };
   const addressTableColumnStyle = (column: AddressTableColumn) =>
     addressTableColumnWidths[column] > 0 ? { width: addressTableColumnWidths[column] } : undefined;
+  const privateValue = (value: string) =>
+    privateDataVisible ? value : UPSTREAM_TEXT.result.privateValueMask;
 
   useEffect(() => {
     if (initialDestinationKey.current === destinationKey) {
@@ -337,8 +361,8 @@ export function ScriptTypePickerScreen({
                 <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.bitcoinCore('xprv')}
                 </Text>
-                <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
-                  {privateMaterial.bitcoinCoreXprv}
+                <Text selectable={privateDataVisible} style={[styles.privateMaterialValue, { color: privateDataVisible ? colors.privateValue : colors.muted }]}>
+                  {privateValue(privateMaterial.bitcoinCoreXprv)}
                 </Text>
                 {privateMaterial.slip132Private ? (
                   <>
@@ -347,24 +371,24 @@ export function ScriptTypePickerScreen({
                         privateMaterial.slip132PrivateLabel ?? '',
                       )}
                     </Text>
-                    <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
-                      {privateMaterial.slip132Private}
+                    <Text selectable={privateDataVisible} style={[styles.privateMaterialValue, { color: privateDataVisible ? colors.privateValue : colors.muted }]}>
+                      {privateValue(privateMaterial.slip132Private)}
                     </Text>
                   </>
                 ) : null}
                 <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                   {UPSTREAM_UI_FALLBACK_COPY.result.spendingDescriptor('Change')}
                 </Text>
-                <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
-                  {privateMaterial.spendingChangeDescriptor}
+                <Text selectable={privateDataVisible} style={[styles.privateMaterialValue, { color: privateDataVisible ? colors.privateValue : colors.muted }]}>
+                  {privateValue(privateMaterial.spendingChangeDescriptor)}
                 </Text>
                 {privateMaterial.slip132Private ? (
                   <View style={[styles.genericCompatibilitySection, { borderTopColor: colors.border }]}>
                     <Text style={[styles.privateMaterialLabel, { color: colors.text }]}>
                       {UPSTREAM_UI_FALLBACK_COPY.result.genericDescriptorCompatibility('xprv')}
                     </Text>
-                    <Text selectable style={[styles.privateMaterialValue, { color: colors.privateValue }]}>
-                      {privateMaterial.bitcoinCoreXprv}
+                    <Text selectable={privateDataVisible} style={[styles.privateMaterialValue, { color: privateDataVisible ? colors.privateValue : colors.muted }]}>
+                      {privateValue(privateMaterial.bitcoinCoreXprv)}
                     </Text>
                   </View>
                 ) : null}
@@ -565,6 +589,7 @@ export function ScriptTypePickerScreen({
                       label={watchOnlyBranchLabel(branch)}
                       measureColumn={measureAddressTableColumn}
                       onOpenQr={setAddressQr}
+                      privateDataVisible={privateDataVisible}
                       rows={rows}
                     />
                   ) : null;

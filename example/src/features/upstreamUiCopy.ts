@@ -360,6 +360,13 @@ export const UPSTREAM_TEXT = {
     accountPrivateExportsWarningRisk:
       "An account extended public key combined with any non-hardened descendant private key, including a WIF shown in the address tables, can reconstruct that account's extended private key.",
     privateAccountMaterialIntro: 'These values can recreate or spend from the wallet.',
+    privateDataHidden: 'Private data hidden',
+    privateDataVisible: 'Private data visible',
+    privateValueMask: '************',
+    hidePrivateDataHint:
+      'Hide it before sharing your screen or stepping away',
+    revealPrivateDataHint:
+      'Reveal only offline, on an air-gapped computer',
     genericDescriptorCompatibility:
       'Generic {name} for descriptor compatibility',
     multisigCosigner: 'Multisig co-signer {prefix} · {label}',

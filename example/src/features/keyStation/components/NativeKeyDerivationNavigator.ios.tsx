@@ -13,6 +13,7 @@ import {
 import {
   background,
   listRowBackground,
+  listRowInsets,
   listSectionSpacing,
   navigationTitle,
   scrollContentBackground,
@@ -92,7 +93,15 @@ export function NativeKeyDerivationNavigator({
             ]}
             testID="key-derivation-navigation-list"
           >
-            <Group modifiers={[listRowBackground(colors.background)]}>
+            <Group
+              modifiers={[
+                // The hosted overview carries its own 24-point horizontal
+                // inset. Remove List's cell inset so its responsive width is
+                // not clipped a second time by SwiftUI.
+                listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 }),
+                listRowBackground(colors.background),
+              ]}
+            >
               <RNHostView matchContents>{children}</RNHostView>
             </Group>
             {KEY_DERIVATION_SECTION_ROWS.map(row => (

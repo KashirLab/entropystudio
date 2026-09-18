@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { DiceColors } from '../../dice/diceTheme';
+import { UPSTREAM_TEXT } from '../../upstreamUiCopy';
 
 export type EntropyResult =
   | {
@@ -29,6 +30,8 @@ type Props = {
   readonly masterSeedLabel?: string;
   readonly mnemonicLabel?: string;
   readonly rootXprvLabel?: string;
+  /** Shared visibility state for values that recreate or spend. */
+  readonly privateDataVisible?: boolean;
   readonly wifCompressedLabel?: string;
   readonly wifUncompressedLabel?: string;
   readonly result: EntropyResult | null;
@@ -41,6 +44,7 @@ export function RecoveryMaterialPanel({
   masterSeedLabel,
   mnemonicLabel,
   rootXprvLabel,
+  privateDataVisible = true,
   wifCompressedLabel,
   wifUncompressedLabel,
   result,
@@ -70,10 +74,12 @@ export function RecoveryMaterialPanel({
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.privateValue }]}
+                style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
                 testID="wif-compressed-output"
               >
-                {result.wifCompressed}
+                {privateDataVisible
+                  ? result.wifCompressed
+                  : UPSTREAM_TEXT.result.privateValueMask}
               </Text>
             </>
           ) : null}
@@ -87,10 +93,12 @@ export function RecoveryMaterialPanel({
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.privateValue }]}
+                style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
                 testID="wif-uncompressed-output"
               >
-                {result.wifUncompressed}
+                {privateDataVisible
+                  ? result.wifUncompressed
+                  : UPSTREAM_TEXT.result.privateValueMask}
               </Text>
             </>
           ) : null}
@@ -104,14 +112,18 @@ export function RecoveryMaterialPanel({
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.privateValue }]}
+                style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
                 testID="result-seed-phrase-output"
               >
-                {result.mnemonic}
+                {privateDataVisible
+                  ? result.mnemonic
+                  : UPSTREAM_TEXT.result.privateValueMask}
               </Text>
             </>
           ) : null}
-          {mnemonicLabel && result.mnemonic ? afterMnemonic : null}
+          {mnemonicLabel && result.mnemonic && privateDataVisible
+            ? afterMnemonic
+            : null}
           <Text
             style={[
               styles.label,
@@ -127,10 +139,12 @@ export function RecoveryMaterialPanel({
           </Text>
           <Text
             selectable
-            style={[styles.entropy, { color: colors.privateValue }]}
+            style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
             testID="entropy-output"
           >
-            {result.entropy}
+            {privateDataVisible
+              ? result.entropy
+              : UPSTREAM_TEXT.result.privateValueMask}
           </Text>
           {masterSeedLabel && result.masterSeed ? (
             <>
@@ -142,10 +156,12 @@ export function RecoveryMaterialPanel({
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.privateValue }]}
+                style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
                 testID="master-seed-output"
               >
-                {result.masterSeed}
+                {privateDataVisible
+                  ? result.masterSeed
+                  : UPSTREAM_TEXT.result.privateValueMask}
               </Text>
             </>
           ) : null}
@@ -159,10 +175,12 @@ export function RecoveryMaterialPanel({
               </Text>
               <Text
                 selectable
-                style={[styles.entropy, { color: colors.privateValue }]}
+                style={[styles.entropy, { color: privateDataVisible ? colors.privateValue : colors.muted }]}
                 testID="root-xprv-output"
               >
-                {result.rootXprv}
+                {privateDataVisible
+                  ? result.rootXprv
+                  : UPSTREAM_TEXT.result.privateValueMask}
               </Text>
             </>
           ) : null}
