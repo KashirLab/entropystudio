@@ -150,10 +150,7 @@ export function seedPhraseStatusCopy(
         { entered: state.enteredCount, n: state.extraCount, words: wordCount },
       )}`;
     case SeedPhraseStatus.ChooseFinal:
-      return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.chooseFinal, {
-        n: state.finalCandidates.length,
-        progress,
-      })}`;
+      return `${progress}\n${UPSTREAM_TEXT.dice.bitbox.lastWord}`;
     case SeedPhraseStatus.Ready:
       return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.ready, { progress })}`;
     case SeedPhraseStatus.FinalPrefix:
@@ -187,17 +184,7 @@ export function seedPhraseStatusCopy(
     case SeedPhraseStatus.ChecksumInvalid:
       return `${progress}\n${formatCopy(UPSTREAM_TEXT.seed.meta.checksumInvalid, { progress })}`;
     case SeedPhraseStatus.Remaining:
-      return method === 'words'
-        ? formatCopy(UPSTREAM_TEXT.seed.meta.remaining, {
-            progress,
-            remaining: state.remainingCount,
-          })
-        : formatCopy(UPSTREAM_TEXT.seed.meta.remainingRange, {
-            max: state.maximumNumber,
-            min: state.minimumNumber,
-            progress,
-            remaining: state.remainingCount,
-          });
+      return progress;
   }
 }
 

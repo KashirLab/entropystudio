@@ -290,7 +290,10 @@ export function diceScreenCopy(
     inputLabel,
     inputHelp,
     inputPlaceholder,
-    lastWordPlaceholder: UPSTREAM_TEXT.seed.lastWordPlaceholder,
+    lastWordPlaceholder: formatCopy(UPSTREAM_TEXT.seed.chooseNthWord, {
+      article: wordCount === 18 ? 'an' : 'a',
+      n: wordCount,
+    }),
     methodRequirement: formatCopy(UPSTREAM_TEXT.seedLength.entropy, {
       bits: info.entropyBits,
       words: wordCount,

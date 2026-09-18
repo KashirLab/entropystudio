@@ -6,6 +6,7 @@ const { existsSync, readdirSync, readFileSync } = require('node:fs');
 const { extname, join, relative, resolve } = require('node:path');
 const typescript = require('typescript');
 const {
+  formatCopy,
   UPSTREAM_TEXT,
   UPSTREAM_UI_FALLBACK_COPY,
   UPSTREAM_UI_LABELS,
@@ -55,6 +56,28 @@ describe('Upstream UI copy provenance', () => {
     });
 
     expect(copiedText.filter(text => !renderedUpstreamUiSources.includes(text))).toEqual([]);
+  });
+
+  test('formats the live Seed Phrase progress template', () => {
+    const template = UPSTREAM_TEXT.seed.count;
+    const expected = template.replace('{entered}', '2').replace('{words}', '24');
+
+    expect(formatCopy(template, { entered: 2, words: 24 })).toBe(expected);
+  });
+
+  test('uses the live upstream final-word picker placeholder', () => {
+    // All current picker entry points (seed phrase, D++, and BitBox) override
+    // the helper's legacy default. The helper alone is not evidence that its
+    // fallback text is visible in upstream's current UI.
+    [
+      /hodlRenderLastWordPicker\(picker, finalContext\.candidates, finalContext\.selected,[\s\S]*?placeholder: hodlTText\("Choose \{article\} \{n\}th word", \{ article: hodlTText\(config\.words === 18 \? "an" : "a"\), n: config\.words \}\) \}\);/,
+      /hodlRenderLastWordPicker\(picker, selectingFinal \? result\.candidates : \[\], selectedFinal,[\s\S]*?placeholder: hodlT\("Choose \{article\} \{n\}th word", \{ article: hodlT\(config\.words === 18 \? "an" : "a"\), n: config\.words \}\) \}\);/,
+      /hodlRenderLastWordPicker\(picker, last && !last\.error \? last\.candidates : \[\], hodlPickedLastWord,[\s\S]*?placeholder: hodlT\("Choose \{article\} \{n\}th word", \{ article: hodlT\(config\.words === 18 \? "an" : "a"\), n: config\.words \}\) \}\);/,
+    ].forEach(livePickerPlaceholder => {
+      expect(upstreamAppJs).toMatch(livePickerPlaceholder);
+    });
+    expect(UPSTREAM_TEXT.seed.chooseNthWord).toBe('Choose {article} {n}th word');
+    expect(UPSTREAM_TEXT.seed).not.toHaveProperty('lastWordPlaceholder');
   });
 
   test('keeps shell-owned introductions in the rendered upstream shell', () => {

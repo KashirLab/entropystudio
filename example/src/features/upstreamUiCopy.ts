@@ -559,10 +559,8 @@ export const UPSTREAM_TEXT = {
     },
     how: 'Seed phrase format',
     lastWordLabel: 'Valid final word ({n} choices)',
-    lastWordPlaceholder: 'Choose a confirmed final word',
     meta: {
       checksumInvalid: 'BIP39 checksum invalid · final word number highlighted',
-      chooseFinal: 'Choose a confirmed final word',
       extra: '{n} extra word highlighted · remove it to continue',
       extraWords: '{n} extra words highlighted · remove them to continue',
       invalidNumber:
@@ -571,8 +569,6 @@ export const UPSTREAM_TEXT = {
         'Word {n} (“{word}”) is not on the BIP39 English list · correct to continue',
       numberProgress: '{entered} of {words} BIP39 word numbers entered',
       ready: 'Checksum valid · ready to derive',
-      remaining: '{entered} of {words} BIP39 words entered',
-      remainingRange: '{entered} of {words} BIP39 word numbers entered',
     },
     method: {
       numbers: 'BIP39 word numbers',
@@ -693,9 +689,10 @@ export function formatCopy(
   template: string,
   values: Record<string, number | string>,
 ): string {
-  return Object.entries(values).reduce(
-    (copy, [name, value]) => copy.replaceAll(`{${name}}`, String(value)),
-    template,
+  return template.replace(
+    /\{([^{}]+)\}/g,
+    (placeholder, name: string) =>
+      Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : placeholder,
   );
 }
 
