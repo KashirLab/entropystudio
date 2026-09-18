@@ -19,7 +19,7 @@ import {
 import { KeyStationEdgeNote } from '../features/keyStation/components/KeyStationEdgeNote';
 import { KeyStationLifeHash } from '../features/keyStation/components/KeyStationLifeHash';
 import { KeyStationIntroduction } from '../components/KeyStationIntroduction';
-import { diceColors } from '../features/dice/diceTheme';
+import { diceColors, type DiceColors } from '../features/dice/diceTheme';
 import type { KeyStationTab } from '../features/keyStation/keyStation';
 import { UPSTREAM_TEXT, UPSTREAM_UI_FALLBACK_COPY } from '../features/upstreamUiCopy';
 import {
@@ -88,6 +88,16 @@ function secretLabel(result: Bip85Result): string {
     case Bip85Application.PasswordBase85:
       return copy.passwordBase85SecretLabel(result.size);
   }
+}
+
+function sourceOptionStyle(colors: DiceColors, selected: boolean) {
+  return [
+    styles.sourceOption,
+    {
+      backgroundColor: selected ? colors.surface : 'transparent',
+      borderColor: selected ? colors.accent : colors.border,
+    },
+  ];
 }
 
 export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
@@ -161,17 +171,18 @@ export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
     setCopyStatus('');
   }
 
-  function copyActiveChildSeedPhrase() {
+  async function copyActiveChildSeedPhrase() {
     if (!activeChild) return;
-    void Clipboard.setStringAsync(activeChild.secret)
-      .then(() => {
-        setCopyStatus(UPSTREAM_TEXT.vanity.result.copied);
-        if (copyStatusTimer.current !== null) {
-          clearTimeout(copyStatusTimer.current);
-        }
-        copyStatusTimer.current = setTimeout(() => setCopyStatus(''), 1600);
-      })
-      .catch(() => undefined);
+    try {
+      await Clipboard.setStringAsync(activeChild.secret);
+      setCopyStatus(UPSTREAM_TEXT.vanity.result.copied);
+      if (copyStatusTimer.current !== null) {
+        clearTimeout(copyStatusTimer.current);
+      }
+      copyStatusTimer.current = setTimeout(() => setCopyStatus(''), 1600);
+    } catch {
+      // Clipboard access can be unavailable in an unsupported runtime.
+    }
   }
 
   return (
@@ -332,8 +343,12 @@ export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
                       accessibilityRole="radio"
                       accessibilityState={{ selected }}
                       key={tab.id}
-                      onPress={() => { setSelectedSourceId(tab.id); setManualRoot(''); setError(''); }}
-                      style={[styles.sourceOption, { backgroundColor: selected ? colors.surface : 'transparent', borderColor: selected ? colors.accent : colors.border }]}
+                      onPress={() => {
+                        setSelectedSourceId(tab.id);
+                        setManualRoot(tab.rootXprv ?? '');
+                        setError('');
+                      }}
+                      style={sourceOptionStyle(colors, selected)}
                       testID={`bip85-source-${tab.id}`}
                     >
                       <Text style={{ color: selected ? colors.text : colors.muted }}>{tab.name}</Text>
@@ -348,12 +363,13 @@ export function Bip85Screen({ isActive, isDarkMode, tabs }: Props) {
                 accessibilityLabel={UPSTREAM_TEXT.bip85.source.root}
                 autoCapitalize="none"
                 autoCorrect={false}
+                multiline
+                numberOfLines={4}
                 onChangeText={value => { setManualRoot(value); setError(''); }}
                 placeholder={UPSTREAM_TEXT.bip85.source.rootPlaceholder}
                 placeholderTextColor={colors.placeholder}
-                secureTextEntry
                 spellCheck={false}
-                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                style={[styles.input, styles.rootInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 testID="bip85-root-input"
                 value={manualRoot}
               />
@@ -414,6 +430,7 @@ const styles = StyleSheet.create({
   parentRelationship: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 },
   path: { fontFamily: 'monospace', fontSize: 13, lineHeight: 20, marginTop: 2 },
   primaryButton: { alignItems: 'center', borderRadius: 8, flex: 1, minHeight: 44, padding: 12 },
+  rootInput: { minHeight: 96, textAlignVertical: 'top' },
   screen: { flex: 1 },
   secondaryButton: { alignItems: 'center', borderRadius: 8, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 14 },
   secret: { fontFamily: 'monospace', fontSize: 14, lineHeight: 21, marginBottom: 16 },

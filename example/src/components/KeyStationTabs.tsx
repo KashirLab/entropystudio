@@ -8,7 +8,6 @@ import { UPSTREAM_TEXT } from '../features/upstreamUiCopy';
 type Props = {
   readonly activeTabId: number | null;
   readonly colors: DiceColors;
-  readonly controlTestIDPrefix: string;
   readonly onDeleteActiveTab: () => void;
   readonly onOpenKeyStation: () => void;
   readonly onSelectTab: (id: number) => void;
@@ -25,6 +24,7 @@ type FingerprintStationTabsProps = {
   readonly activeTabId: number | null;
   readonly addAccessibilityLabel: string;
   readonly colors: DiceColors;
+  readonly controlTestIDPrefix: string;
   readonly deleteAccessibilityLabel: string;
   readonly onDeleteActiveTab: () => void;
   readonly onOpenStation: () => void;
