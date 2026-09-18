@@ -3,6 +3,26 @@ use crate::wipe::{wipe_bytes, wipe_string};
 use miniscript::descriptor::checksum::Engine as DescriptorChecksumEngine;
 use unicode_normalization::UnicodeNormalization;
 
+// Extended BIP32 key version fields. These are the first four bytes of a
+// serialized extended key; Base58Check encoding turns them into labels such as
+// xpub, zprv, or vpub without changing the underlying key material.
+type ExtendedKeyVersion = [u8; 4];
+
+const MAINNET_XPRV: ExtendedKeyVersion = [0x04, 0x88, 0xad, 0xe4];
+const MAINNET_XPUB: ExtendedKeyVersion = [0x04, 0x88, 0xb2, 0x1e];
+const TESTNET_TPRV: ExtendedKeyVersion = [0x04, 0x35, 0x83, 0x94];
+const TESTNET_TPUB: ExtendedKeyVersion = [0x04, 0x35, 0x87, 0xcf];
+
+const MAINNET_YPRV: ExtendedKeyVersion = [0x04, 0x9d, 0x78, 0x78];
+const MAINNET_YPUB: ExtendedKeyVersion = [0x04, 0x9d, 0x7c, 0xb2];
+const TESTNET_UPRV: ExtendedKeyVersion = [0x04, 0x4a, 0x4e, 0x28];
+const TESTNET_UPUB: ExtendedKeyVersion = [0x04, 0x4a, 0x52, 0x62];
+
+const MAINNET_ZPRV: ExtendedKeyVersion = [0x04, 0xb2, 0x43, 0x0c];
+const MAINNET_ZPUB: ExtendedKeyVersion = [0x04, 0xb2, 0x47, 0x46];
+const TESTNET_VPRV: ExtendedKeyVersion = [0x04, 0x5f, 0x18, 0xbc];
+const TESTNET_VPUB: ExtendedKeyVersion = [0x04, 0x5f, 0x1c, 0xf6];
+
 #[derive(Debug, uniffi::Record)]
 pub struct SeedQrData {
     pub word_count: u8,
@@ -108,22 +128,22 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
         let mut bip48 = [(48, true), (*coin, true), (*account, true), (2, true)];
         let cosigner = derive_private_path(root, &mut bip48)?;
         let mut cosigner_public = public_node(&cosigner)?;
-        cosigner_public[..4].copy_from_slice(if testnet { &[0x04, 0x35, 0x87, 0xcf] } else { &[0x04, 0x88, 0xb2, 0x1e] });
+        cosigner_public[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
         let output = base58check_node(&cosigner_public)?;
         wipe_bytes(&mut cosigner_public);
         Some(output)
     } else { None };
     let mut account_public_node = public_node(&node)?;
-    account_public_node[..4].copy_from_slice(if testnet { &[0x04, 0x35, 0x87, 0xcf] } else { &[0x04, 0x88, 0xb2, 0x1e] });
+    account_public_node[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
     let bitcoin_core_xpub = base58check_node(&account_public_node)?;
-    node[..4].copy_from_slice(if testnet { &[0x04, 0x35, 0x83, 0x94] } else { &[0x04, 0x88, 0xad, 0xe4] });
+    node[..4].copy_from_slice(if testnet { &TESTNET_TPRV } else { &MAINNET_XPRV });
     let bitcoin_core_xprv = base58check_node(&node)?;
     // Upstream only assigns the y/z SLIP-132 family if both the selected
     // policy and the retained account purpose agree. Result policy selection
     // intentionally does not rewrite a custom purpose.
     let slip132_config = match (script_type, components.first()) {
-        (AccountScriptType::NestedSegwit, Some((49, _))) => Some(([0x04, 0x4a, 0x4e, 0x28], [0x04, 0x9d, 0x78, 0x78], if testnet { "uprv" } else { "yprv" })),
-        (AccountScriptType::NativeSegwit, Some((84, _))) => Some(([0x04, 0x5f, 0x18, 0xbc], [0x04, 0xb2, 0x43, 0x0c], if testnet { "vprv" } else { "zprv" })),
+        (AccountScriptType::NestedSegwit, Some((49, _))) => Some((TESTNET_UPRV, MAINNET_YPRV, if testnet { "uprv" } else { "yprv" })),
+        (AccountScriptType::NativeSegwit, Some((84, _))) => Some((TESTNET_VPRV, MAINNET_ZPRV, if testnet { "vprv" } else { "zprv" })),
         (AccountScriptType::Legacy | AccountScriptType::Taproot, _) => None,
         _ => None,
     };
@@ -133,8 +153,8 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
     }).transpose()?;
     let slip132_public = slip132_config.map(|(_, _, label)| {
         let (testnet_version, mainnet_version) = match label {
-            "uprv" | "yprv" => ([0x04, 0x4a, 0x52, 0x62], [0x04, 0x9d, 0x7c, 0xb2]),
-            "vprv" | "zprv" => ([0x04, 0x5f, 0x1c, 0xf6], [0x04, 0xb2, 0x47, 0x46]),
+            "uprv" | "yprv" => (TESTNET_UPUB, MAINNET_YPUB),
+            "vprv" | "zprv" => (TESTNET_VPUB, MAINNET_ZPUB),
             _ => unreachable!("only supported SLIP-132 families are configured"),
         };
         account_public_node[..4].copy_from_slice(if testnet { &testnet_version } else { &mainnet_version });
@@ -154,7 +174,7 @@ pub fn account_private_material(phrase: String, passphrase: String, account_path
             let mut component = [(*branch, true)];
             let mut child = derive_private_path(account_node, &mut component)?;
             let mut child_public = public_node(&child)?;
-            child_public[..4].copy_from_slice(if testnet { &[0x04, 0x35, 0x87, 0xcf] } else { &[0x04, 0x88, 0xb2, 0x1e] });
+            child_public[..4].copy_from_slice(if testnet { &TESTNET_TPUB } else { &MAINNET_XPUB });
             let child_xpub = base58check_node(&child_public)?;
             wipe_bytes(&mut child);
             wipe_bytes(&mut child_public);
@@ -544,7 +564,7 @@ pub fn mnemonic_to_master_xpub(
         wipe_bytes(&mut encoded);
         return Err(EntropyStudioError::InvalidMasterKey);
     }
-    xpub[..4].copy_from_slice(&[0x04, 0x88, 0xb2, 0x1e]);
+    xpub[..4].copy_from_slice(&MAINNET_XPUB);
     xpub[4..45].copy_from_slice(&master[4..45]);
     xpub[45..].copy_from_slice(&public_key[..33]);
     wipe_bytes(&mut master);
