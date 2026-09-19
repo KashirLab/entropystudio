@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  BackHandler,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -40,6 +41,7 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
   const colors = diceColors(isDarkMode);
   const [cosigners, setCosigners] = useState(['', '', '']);
   const [descriptor, setDescriptor] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
   const [keyOrder, setKeyOrder] = useState<KeyOrder>('sorted');
   const [quorum, setQuorum] = useState('2');
   const [scriptType, setScriptType] = useState<ScriptType>('p2wsh');
@@ -50,6 +52,16 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
     quorum || '0',
     signerCount,
   );
+
+  useEffect(() => {
+    if (!isActive || !isImporting) return undefined;
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      setIsImporting(false);
+      return true;
+    });
+    return () => subscription.remove();
+  }, [isActive, isImporting]);
 
   return (
     <SafeAreaView
@@ -66,7 +78,7 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
         controlTestIDPrefix="multisig-station"
         deleteAccessibilityLabel={copy.delete}
         onDeleteActiveTab={() => {}}
-        onOpenStation={() => {}}
+        onOpenStation={() => setIsImporting(false)}
         onSelectTab={() => {}}
         stationAccessibilityLabel={copy.openStation}
         stationLabel={copy.station}
@@ -74,29 +86,70 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
         tabs={[]}
       />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <KeyStationIntroduction
-          colors={colors}
-          description={copy.description}
-          heading={copy.title}
-          headingTestID="multisig-screen-title"
-          testIDPrefix="multisig-introduction"
-        />
+        {isImporting ? (
+          <View style={styles.importScreen} testID="multisig-import-screen">
+            <View style={styles.importHeader}>
+              <Pressable
+                accessibilityLabel={UPSTREAM_TEXT.common.cancel}
+                accessibilityRole="button"
+                onPress={() => setIsImporting(false)}
+                style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+                testID="close-multisig-import"
+              >
+                <Text accessibilityElementsHidden style={[styles.backMark, { color: colors.text }]}>‹</Text>
+              </Pressable>
+              <Text style={[styles.importTitle, { color: colors.text }]}>{copy.importExisting}</Text>
+            </View>
+            <Text style={[styles.help, { color: colors.muted }]}>{copy.descriptorHelp}</Text>
+            <Text style={[styles.label, { color: colors.text }]}>{copy.descriptorLabel}</Text>
+            <TextInput
+              multiline
+              onChangeText={setDescriptor}
+              placeholder={copy.descriptorPlaceholder}
+              placeholderTextColor={colors.muted}
+              style={[
+                styles.input,
+                styles.descriptorInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              value={descriptor}
+            />
+          </View>
+        ) : (
+          <>
+            <KeyStationIntroduction
+              colors={colors}
+              description={copy.description}
+              heading={copy.title}
+              headingTestID="multisig-screen-title"
+              testIDPrefix="multisig-introduction"
+            />
+            <Pressable
+              accessibilityLabel={copy.importExisting}
+              accessibilityRole="button"
+              onPress={() => setIsImporting(true)}
+              style={({ pressed }) => [
+                styles.disclosure,
+                { borderColor: colors.border, opacity: pressed ? 0.72 : 1 },
+              ]}
+              testID="open-multisig-import"
+            >
+              <Text style={[styles.disclosureLabel, { color: colors.text }]}>
+                {copy.importExisting}
+              </Text>
+              <Text
+                accessibilityElementsHidden
+                style={[styles.disclosureMark, { color: colors.muted }]}
+              >
+                ›
+              </Text>
+            </Pressable>
 
-        <View style={[styles.section, { borderColor: colors.border }]}> 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{copy.importExisting}</Text>
-          <Text style={[styles.help, { color: colors.muted }]}>{copy.descriptorHelp}</Text>
-          <Text style={[styles.label, { color: colors.text }]}>{copy.descriptorLabel}</Text>
-          <TextInput
-            multiline
-            onChangeText={setDescriptor}
-            placeholder={copy.descriptorPlaceholder}
-            placeholderTextColor={colors.muted}
-            style={[styles.input, styles.descriptorInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-            value={descriptor}
-          />
-        </View>
-
-        <View style={[styles.section, { borderColor: colors.border }]}> 
+            <View style={[styles.section, { borderColor: colors.border }]}> 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{copy.quorum}</Text>
           <Text style={[styles.help, { color: colors.muted }]}>{copy.thresholdHelp}</Text>
           <KeyStationEdgeNote colors={colors} kind="public" testID="multisig-quorum-note">
@@ -129,7 +182,7 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
           </View>
         </View>
 
-        <View style={[styles.section, { borderColor: colors.border }]}> 
+            <View style={[styles.section, { borderColor: colors.border }]}> 
           <Text style={[styles.label, { color: colors.text }]}>{copy.scriptType}</Text>
           <View style={styles.scriptGrid}>
             {SCRIPT_TYPES.map(option => {
@@ -159,7 +212,7 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
           />
         </View>
 
-        <View style={[styles.section, { borderColor: colors.border }]}> 
+            <View style={[styles.section, { borderColor: colors.border }]}> 
           {cosigners.map((value, index) => (
             <View key={index} style={styles.cosigner}>
               <Text style={[styles.label, { color: colors.text }]}>
@@ -177,23 +230,34 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
           ))}
           <Text style={[styles.help, { color: colors.muted }]}>{copy.keyReuseNote}</Text>
         </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  backButton: { alignItems: 'center', height: 44, justifyContent: 'center', marginLeft: -10, width: 44 },
+  backMark: { fontSize: 34, lineHeight: 38 },
   content: { gap: 16, padding: 20, paddingBottom: 32 },
   cosigner: { gap: 6 },
   cosignerInput: { minHeight: 72 },
   descriptorInput: { minHeight: 104 },
+  disclosure: { alignItems: 'center', borderRadius: 6, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 14 },
+  disclosureLabel: { flex: 1, fontSize: 16, fontWeight: '700' },
+  disclosureMark: { fontSize: 24, lineHeight: 28, marginLeft: 12 },
   help: { fontSize: 13, lineHeight: 18 },
   hidden: { display: 'none' },
   input: { borderRadius: 6, borderWidth: 1, fontSize: 16, minHeight: 44, paddingHorizontal: 12, paddingVertical: 10, textAlignVertical: 'top' },
+  importHeader: { alignItems: 'center', flexDirection: 'row', marginLeft: -2 },
+  importScreen: { gap: 12 },
+  importTitle: { flex: 1, fontSize: 24, fontWeight: '700', lineHeight: 30 },
   label: { fontSize: 15, fontWeight: '700' },
   readOnlyInput: { textAlignVertical: 'center' },
   requirement: { fontSize: 14, lineHeight: 20 },
   requirementValue: { fontFamily: 'monospace', fontWeight: '700' },
+  pressed: { opacity: 0.72 },
   screen: { flex: 1 },
   scriptButton: { alignItems: 'center', borderRadius: 6, borderWidth: 1, flexBasis: '48%', flexGrow: 1, justifyContent: 'center', minHeight: 44, padding: 8 },
   scriptGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
