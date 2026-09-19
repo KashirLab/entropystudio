@@ -1073,13 +1073,13 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
     },
   },
   multisig: {
-    requirement: (quorum: string, signerCount: number) =>
+    requirement: () =>
       ({
         afterSignerCount: ' total signing keys to spend.',
         beforeQuorum: 'Multisig requires a quorum of ',
         beforeSignerCount: ' signatures of ',
-        quorum,
-        signerCount,
+        quorum: 'm',
+        signerCount: 'n',
       }),
   },
   result: {

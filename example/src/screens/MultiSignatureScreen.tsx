@@ -48,10 +48,7 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
 
   const signerCount = cosigners.length;
   const copy = UPSTREAM_TEXT.multisig;
-  const quorumRequirement = UPSTREAM_UI_FALLBACK_COPY.multisig.requirement(
-    quorum || '0',
-    signerCount,
-  );
+  const quorumRequirement = UPSTREAM_UI_FALLBACK_COPY.multisig.requirement();
 
   useEffect(() => {
     if (!isActive || !isImporting) return undefined;
