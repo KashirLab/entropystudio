@@ -454,7 +454,7 @@ export const UPSTREAM_TEXT = {
     watchOnlyWalletData: 'Watch-only wallet data',
     watchOnlyExports: 'Watch-only exports',
     watchOnlyWalletDescriptorImport:
-      'Import this output descriptor into Sparrow or another wallet.',
+      'Import the watch-only wallet descriptor into Sparrow or another wallet.',
     addressBranchDescriptors: 'Address branch descriptors',
     advancedWatchOnlyExport: 'Watch-only wallet data',
     addresses: 'Addresses',
