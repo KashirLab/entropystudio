@@ -409,6 +409,53 @@ export const UPSTREAM_TEXT = {
       root: 'BIP-85 needs a private root (xprv/tprv), not an extended public key.',
     },
   },
+  multisig: {
+    add: 'Open MS Station to derive another multisig',
+    tabLabel: 'Multi Signature',
+    delete: 'Delete current multisig',
+    openStation: 'Open MS Station',
+    station: 'MS Station',
+    title: 'Build a watch-only multisig',
+    description:
+      'You supply individual co-signer xpubs, choose from keys entered in the Key Station, or paste in an existing multisig wallet descriptor. Verify the derived addresses, or any other info needed to setup a watch-only multisig wallet.',
+    importExisting: 'Import existing multisig wallet',
+    descriptorHelp:
+      'Input a wallet-exported multisig descriptor — the quorum, script type, key order, and co-signer xpubs will be filled in below. Only accepts watch-only public keys; a descriptor carrying private keys will be refused.',
+    descriptorLabel: 'Paste wallet descriptor here',
+    descriptorPlaceholder: 'wsh(sortedmulti(2,[fingerprint/48h/0h/0h/2h]Zpub…/0/*, …))',
+    quorum: 'Quorum',
+    thresholdHelp:
+      'This will be updated for you if you import an existing multisig above, or you can configure a new multisig directly below.',
+    thresholdLabels: {
+      quorum: 'm',
+      signerCount: 'n',
+    },
+    signaturesNeeded: 'Signatures needed to spend',
+    totalSigningKeys: 'Total signing keys',
+    scriptType: 'Script type',
+    scriptTypes: {
+      legacy: 'Legacy',
+      nestedSegwit: 'Nested SegWit',
+      nativeSegwit: 'Native SegWit',
+      taproot: 'Taproot',
+    },
+    keyOrder: 'Key order',
+    keyOrderHelp:
+      'Sorted is the default. Addresses stay the same no matter which co-signer you paste first. As listed uses multi: the order of the fields is part of the wallet. Taproot uses sortedmulti_a or multi_a.',
+    keyOrders: {
+      sorted: 'Sorted · sortedmulti',
+      listed: 'As listed · multi',
+    },
+    allowKeyReuse: 'Allow key reuse',
+    keyReuseNote:
+      'Keep selected Key Station keys available for more than one co-signer input. Reused keys need different derivation paths.',
+    cosignerLabels: [
+      'Co-signer 1 multisig extended public key',
+      'Co-signer 2 multisig extended public key',
+      'Co-signer 3 multisig extended public key',
+    ],
+    cosignerPlaceholder: 'xpub…',
+  },
   result: {
     addressNumber: 'Address #{n}',
     accountPrivateKeyExports: 'Account private key exports',
@@ -1023,6 +1070,16 @@ export const UPSTREAM_UI_FALLBACK_COPY = {
           `${enteredCount} of ${requiredCount} WIF characters entered\n${remainingCount} remaining`,
       },
     },
+  },
+  multisig: {
+    requirement: (quorum: string, signerCount: number) =>
+      ({
+        afterSignerCount: ' total signing keys to spend.',
+        beforeQuorum: 'Multisig requires a quorum of ',
+        beforeSignerCount: ' signatures of ',
+        quorum,
+        signerCount,
+      }),
   },
   result: {
     checkAnAddress: 'Check an address',

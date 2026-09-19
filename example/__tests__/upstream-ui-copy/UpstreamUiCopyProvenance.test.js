@@ -598,6 +598,11 @@ describe('Upstream UI copy provenance', () => {
         template:
           /Starting workers — stepping through account indexes of key \$\{inputs\.sourceLabel\}…[\s\S]*?Starting workers — extending key \$\{inputs\.sourceLabel\}'s passphrase with the counter characters…/,
       },
+      'multisig.requirement': {
+        source: upstreamShellHtml,
+        template:
+          /Multisig requires a quorum of <strong><span class="mono">m<\/span><\/strong> signatures of <strong><span class="mono">n<\/span><\/strong> total signing keys to spend\./,
+      },
     };
 
     expect(Object.keys(dynamicFallbackTemplates).sort()).toEqual(

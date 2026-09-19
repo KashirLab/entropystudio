@@ -44,6 +44,7 @@ import { KeyStationResultScreen } from './screens/KeyStationResultScreen';
 import { SeedPhraseScreen } from './screens/SeedPhraseScreen';
 import { VanityScreen } from './screens/VanityScreen';
 import { Bip85Screen } from './screens/Bip85Screen';
+import { MultiSignatureScreen } from './screens/MultiSignatureScreen';
 import type { VanityScriptId } from './screens/VanityScreen';
 
 function pathComponentDraft({ index, hardened }: KeyDerivationPathComponent): string {
@@ -171,7 +172,7 @@ function inputWithVanityPassphrase(
   return { ...input, passphrase };
 }
 
-type AppTab = 'method' | 'bip85' | 'vanity' | 'settings';
+type AppTab = 'method' | 'bip85' | 'multisig' | 'vanity' | 'settings';
 
 type AppTabRoute = {
   readonly focusedIcon?: AppleIcon;
@@ -192,6 +193,12 @@ const APP_TAB_ROUTES: AppTabRoute[] = [
     key: 'bip85',
     testID: 'app-tab-bip85',
     title: UPSTREAM_TEXT.bip85.tabLabel,
+  },
+  {
+    focusedIcon: Platform.OS === 'ios' ? { sfSymbol: 'person.3.fill' } : undefined,
+    key: 'multisig',
+    testID: 'app-tab-multisig',
+    title: UPSTREAM_TEXT.multisig.tabLabel,
   },
   {
     focusedIcon: Platform.OS === 'ios' ? { sfSymbol: 'sparkles' } : undefined,
@@ -623,6 +630,17 @@ function App() {
     );
   }
 
+  function renderMultiSignatureScene() {
+    return (
+      <TabScene>
+        <MultiSignatureScreen
+          isActive={activeTab === 'multisig'}
+          isDarkMode={isDarkMode}
+        />
+      </TabScene>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <EntropySyncProvider>
@@ -647,6 +665,8 @@ function App() {
                       return renderMethodScene();
                     case 'bip85':
                       return renderBip85Scene();
+                    case 'multisig':
+                      return renderMultiSignatureScene();
                     case 'vanity':
                       return renderVanityScene();
                     case 'settings':
