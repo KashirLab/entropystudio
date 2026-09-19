@@ -30,7 +30,7 @@ const KEY_ORDER_OPTIONS: readonly NativeSelectOption<KeyOrder>[] = [
   { label: UPSTREAM_TEXT.multisig.keyOrders.listed, value: 'listed' },
 ];
 
-const SCRIPT_TYPES: readonly { readonly label: string; readonly value: ScriptType }[] = [
+const SCRIPT_TYPE_OPTIONS: readonly NativeSelectOption<ScriptType>[] = [
   { label: UPSTREAM_TEXT.multisig.scriptTypes.legacy, value: 'p2sh' },
   { label: UPSTREAM_TEXT.multisig.scriptTypes.nestedSegwit, value: 'p2sh-p2wsh' },
   { label: UPSTREAM_TEXT.multisig.scriptTypes.nativeSegwit, value: 'p2wsh' },
@@ -52,14 +52,6 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
     quorum || '0',
     signerCount,
   );
-  const selectedScriptButtonColors = {
-    backgroundColor: colors.surface,
-    borderColor: colors.accent,
-  };
-  const unselectedScriptButtonColors = {
-    backgroundColor: 'transparent',
-    borderColor: colors.border,
-  };
 
   useEffect(() => {
     if (!isActive || !isImporting) return undefined;
@@ -208,25 +200,14 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
 
             <View style={[styles.section, { borderColor: colors.border }]}> 
           <Text style={[styles.label, { color: colors.text }]}>{copy.scriptType}</Text>
-          <View style={styles.scriptGrid}>
-            {SCRIPT_TYPES.map(option => {
-              const selected = option.value === scriptType;
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  key={option.value}
-                  onPress={() => setScriptType(option.value)}
-                  style={[
-                    styles.scriptButton,
-                    selected ? selectedScriptButtonColors : unselectedScriptButtonColors,
-                  ]}
-                >
-                  <Text style={[styles.scriptLabel, { color: selected ? colors.accent : colors.text }]}>{option.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <NativeSelect
+            accessibilityLabel={copy.scriptType}
+            colors={colors}
+            controlTestID="multisig-script-type-picker"
+            onValueChange={setScriptType}
+            options={SCRIPT_TYPE_OPTIONS}
+            selectedValue={scriptType}
+          />
           <Text style={[styles.label, { color: colors.text }]}>{copy.keyOrder}</Text>
           <Text style={[styles.help, { color: colors.muted }]}>{copy.keyOrderHelp}</Text>
           <NativeSelect
@@ -289,9 +270,6 @@ const styles = StyleSheet.create({
   requirementValue: { fontFamily: 'monospace', fontWeight: '700' },
   pressed: { opacity: 0.72 },
   screen: { flex: 1 },
-  scriptButton: { alignItems: 'center', borderRadius: 6, borderWidth: 1, flexBasis: '48%', flexGrow: 1, justifyContent: 'center', minHeight: 44, padding: 8 },
-  scriptGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  scriptLabel: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
   section: { borderRadius: 8, borderWidth: 1, gap: 10, padding: 14 },
   sectionTitle: { fontSize: 18, fontWeight: '700' },
   thresholdField: { flex: 1, gap: 6 },
