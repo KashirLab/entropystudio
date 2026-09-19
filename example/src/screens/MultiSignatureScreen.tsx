@@ -52,6 +52,14 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
     quorum || '0',
     signerCount,
   );
+  const selectedScriptButtonColors = {
+    backgroundColor: colors.surface,
+    borderColor: colors.accent,
+  };
+  const unselectedScriptButtonColors = {
+    backgroundColor: 'transparent',
+    borderColor: colors.border,
+  };
 
   useEffect(() => {
     if (!isActive || !isImporting) return undefined;
@@ -118,6 +126,22 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
               ]}
               value={descriptor}
             />
+            <Pressable
+              accessibilityLabel={copy.importDescriptor}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: true }}
+              disabled
+              style={[
+                styles.importDescriptorButton,
+                styles.disabled,
+                { borderColor: colors.border },
+              ]}
+              testID="multisig-import-descriptor"
+            >
+              <Text style={[styles.importDescriptorButtonText, { color: colors.muted }]}>
+                {copy.importDescriptor}
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <>
@@ -193,7 +217,10 @@ export function MultiSignatureScreen({ isActive, isDarkMode }: Props) {
                   accessibilityState={{ selected }}
                   key={option.value}
                   onPress={() => setScriptType(option.value)}
-                  style={[styles.scriptButton, { borderColor: selected ? colors.accent : colors.border, backgroundColor: selected ? colors.surface : 'transparent' }]}
+                  style={[
+                    styles.scriptButton,
+                    selected ? selectedScriptButtonColors : unselectedScriptButtonColors,
+                  ]}
                 >
                   <Text style={[styles.scriptLabel, { color: selected ? colors.accent : colors.text }]}>{option.label}</Text>
                 </Pressable>
@@ -247,9 +274,12 @@ const styles = StyleSheet.create({
   disclosure: { alignItems: 'center', borderRadius: 6, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 14 },
   disclosureLabel: { flex: 1, fontSize: 16, fontWeight: '700' },
   disclosureMark: { fontSize: 24, lineHeight: 28, marginLeft: 12 },
+  disabled: { opacity: 0.45 },
   help: { fontSize: 13, lineHeight: 18 },
   hidden: { display: 'none' },
   input: { borderRadius: 6, borderWidth: 1, fontSize: 16, minHeight: 44, paddingHorizontal: 12, paddingVertical: 10, textAlignVertical: 'top' },
+  importDescriptorButton: { alignItems: 'center', alignSelf: 'flex-start', borderRadius: 6, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 14 },
+  importDescriptorButtonText: { fontSize: 15, fontWeight: '700' },
   importHeader: { alignItems: 'center', flexDirection: 'row', marginLeft: -2 },
   importScreen: { gap: 12 },
   importTitle: { flex: 1, fontSize: 24, fontWeight: '700', lineHeight: 30 },

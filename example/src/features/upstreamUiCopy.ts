@@ -423,6 +423,7 @@ export const UPSTREAM_TEXT = {
       'Input a wallet-exported multisig descriptor — the quorum, script type, key order, and co-signer xpubs will be filled in below. Only accepts watch-only public keys; a descriptor carrying private keys will be refused.',
     descriptorLabel: 'Paste wallet descriptor here',
     descriptorPlaceholder: 'wsh(sortedmulti(2,[fingerprint/48h/0h/0h/2h]Zpub…/0/*, …))',
+    importDescriptor: 'Import Descriptor',
     quorum: 'Quorum',
     thresholdHelp:
       'This will be updated for you if you import an existing multisig above, or you can configure a new multisig directly below.',
